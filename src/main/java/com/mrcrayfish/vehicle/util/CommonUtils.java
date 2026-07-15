@@ -8,7 +8,7 @@ import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.vector.Vector3d;
 import net.minecraft.util.math.vector.Vector3f;
-import net.minecraft.util.text.TranslationTextComponent;
+
 import net.minecraftforge.common.util.Constants;
 
 /**
@@ -46,7 +46,7 @@ public class CommonUtils
     {
         if(player instanceof ServerPlayerEntity)
         {
-            player.displayClientMessage(new TranslationTextComponent(message), true);
+            player.displayClientMessage(Component.translatable(message), true);
         }
     }
 

@@ -23,10 +23,6 @@ repositories {
     maven {
         url = "https://www.cursemaven.com"
     }
-    maven {
-        name = "LWJGL"
-        url = "https://build.lwjgl.org/release"
-    }
 }
 
 

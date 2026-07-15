@@ -30,9 +30,9 @@ import net.minecraft.util.math.BlockRayTraceResult;
 import net.minecraft.util.math.shapes.CollisionContext;
 import net.minecraft.util.math.shapes.VoxelShape;
 import net.minecraft.network.chat.Component;
-import net.minecraft.util.text.StringTextComponent;
+
 import net.minecraft.util.text.TextFormatting;
-import net.minecraft.util.text.TranslationTextComponent;
+
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
 import net.minecraftforge.common.util.Constants;
@@ -75,11 +75,11 @@ public class FuelDrumBlock extends Block
     }
 
     @Override
-    public void appendHoverText(ItemStack stack, @Nullable BlockAndTintGetter reader, List<ITextComponent> list, ITooltipFlag advanced)
+    public void appendHoverText(ItemStack stack, @Nullable BlockAndTintGetter reader, List<Component> list, ITooltipFlag advanced)
     {
         if(Screen.hasShiftDown())
         {
-            list.addAll(RenderUtil.lines(new TranslationTextComponent(ModBlocks.FUEL_DRUM.get().getDescriptionId() + ".info"), 150));
+            list.addAll(RenderUtil.lines(Component.translatable(ModBlocks.FUEL_DRUM.get().getDescriptionId() + ".info"), 150));
         }
         else
         {
@@ -94,17 +94,17 @@ public class FuelDrumBlock extends Block
                     int amount = blockEntityTag.getInt("Amount");
                     if(fluid != null && amount > 0)
                     {
-                        list.add(new TranslationTextComponent(fluid.getAttributes().getTranslationKey()).withStyle(TextFormatting.BLUE));
-                        list.add(new StringTextComponent(amount + " / " + this.getCapacity() + "mb").withStyle(TextFormatting.GRAY));
+                        list.add(Component.translatable(fluid.getAttributes().getTranslationKey()).withStyle(TextFormatting.BLUE));
+                        list.add(Component.literal(amount + " / " + this.getCapacity() + "mb").withStyle(TextFormatting.GRAY));
                     }
                 }
             }
-            list.add(new TranslationTextComponent("vehicle.info_help").withStyle(TextFormatting.YELLOW));
+            list.add(Component.translatable("vehicle.info_help").withStyle(TextFormatting.YELLOW));
         }
     }
 
     @Override
-    public ActionResultType use(BlockState state, World world, BlockPos pos, PlayerEntity playerEntity, Hand hand, BlockRayTraceResult result)
+    public ActionResultType use(BlockState state, Level world, BlockPos pos, PlayerEntity playerEntity, Hand hand, BlockRayTraceResult result)
     {
         if(!world.isClientSide())
         {

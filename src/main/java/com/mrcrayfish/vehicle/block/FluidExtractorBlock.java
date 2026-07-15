@@ -1,7 +1,7 @@
 package com.mrcrayfish.vehicle.block;
 
 import com.mrcrayfish.vehicle.blockentity.FluidExtractorBlockEntity;
-import com.mrcrayfish.vehicle.util.TileEntityUtil;
+import com.mrcrayfish.vehicle.util.BlockEntityUtil;
 import net.minecraft.block.AbstractBlock;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
@@ -43,7 +43,7 @@ public class FluidExtractorBlock extends RotatedObjectBlock
     }
 
     @Override
-    public ActionResultType use(BlockState state, World world, BlockPos pos, PlayerEntity playerEntity, Hand hand, BlockRayTraceResult result)
+    public ActionResultType use(BlockState state, Level world, BlockPos pos, PlayerEntity playerEntity, Hand hand, BlockRayTraceResult result)
     {
         if(!world.isClientSide)
         {
@@ -54,10 +54,10 @@ public class FluidExtractorBlock extends RotatedObjectBlock
                 return ActionResultType.SUCCESS;
             }
 
-            TileEntity tileEntity = world.getBlockEntity(pos);
+            BlockEntity tileEntity = world.getBlockEntity(pos);
             if(tileEntity instanceof FluidExtractorBlockEntity)
             {
-                TileEntityUtil.sendUpdatePacket(tileEntity, (ServerPlayerEntity) playerEntity);
+                BlockEntityUtil.sendUpdatePacket(tileEntity, (ServerPlayerEntity) playerEntity);
                 NetworkHooks.openGui((ServerPlayerEntity) playerEntity, (INamedContainerProvider) tileEntity, pos);
                 return ActionResultType.SUCCESS;
             }
@@ -70,7 +70,7 @@ public class FluidExtractorBlock extends RotatedObjectBlock
     {
         if(state.getBlock() != newState.getBlock())
         {
-            TileEntity tileentity = worldIn.getBlockEntity(pos);
+            BlockEntity tileentity = worldIn.getBlockEntity(pos);
             if(tileentity instanceof IInventory)
             {
                 InventoryHelper.dropContents(worldIn, pos, (IInventory) tileentity);

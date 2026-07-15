@@ -32,7 +32,7 @@ public class ClientPlayHandler
 {
     public static void handleSyncStorage(MessageSyncStorage message)
     {
-        World world = Minecraft.getInstance().level;
+        Level world = Minecraft.getInstance().level;
         if(world == null)
             return;
 
@@ -56,7 +56,7 @@ public class ClientPlayHandler
 
     public static void handleEntityFluid(MessageEntityFluid message)
     {
-        World world = Minecraft.getInstance().level;
+        Level world = Minecraft.getInstance().level;
         if(world == null)
             return;
 
@@ -97,7 +97,7 @@ public class ClientPlayHandler
 
     public static void handleSyncHeldVehicle(MessageSyncHeldVehicle message)
     {
-        World world = Minecraft.getInstance().level;
+        Level world = Minecraft.getInstance().level;
         if(world != null)
         {
             Entity entity = world.getEntity(message.getEntityId());
@@ -110,7 +110,7 @@ public class ClientPlayHandler
 
     public static void handleSyncCosmetics(MessageSyncCosmetics message)
     {
-        World world = Minecraft.getInstance().level;
+        Level world = Minecraft.getInstance().level;
         if(world == null)
             return;
 
@@ -126,7 +126,7 @@ public class ClientPlayHandler
 
     public static void handleSyncActionData(MessageSyncActionData message)
     {
-        World world = Minecraft.getInstance().level;
+        Level world = Minecraft.getInstance().level;
         if(world == null)
             return;
 

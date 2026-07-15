@@ -36,7 +36,7 @@ import net.minecraft.util.math.shapes.VoxelShape;
 import net.minecraft.util.math.shapes.VoxelShapes;
 import net.minecraft.network.chat.Component;
 import net.minecraft.util.text.TextFormatting;
-import net.minecraft.util.text.TranslationTextComponent;
+
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.Level;
@@ -87,7 +87,7 @@ public class VehicleCrateBlock extends RotatedObjectBlock
     @Override
     public VoxelShape getShape(BlockState state, BlockAndTintGetter worldIn, BlockPos pos, CollisionContext context)
     {
-        TileEntity te = worldIn.getBlockEntity(pos);
+        BlockEntity te = worldIn.getBlockEntity(pos);
         if(te instanceof VehicleCrateBlockEntity && ((VehicleCrateBlockEntity)te).isOpened())
             return PANEL;
         return VoxelShapes.block();
@@ -121,7 +121,7 @@ public class VehicleCrateBlock extends RotatedObjectBlock
     }
 
     @Override
-    public ActionResultType use(BlockState state, World world, BlockPos pos, PlayerEntity playerEntity, Hand hand, BlockRayTraceResult result)
+    public ActionResultType use(BlockState state, Level world, BlockPos pos, PlayerEntity playerEntity, Hand hand, BlockRayTraceResult result)
     {
         if(result.getDirection() == Direction.UP && playerEntity.getItemInHand(hand).getItem() == ModItems.WRENCH.get())
         {
@@ -132,7 +132,7 @@ public class VehicleCrateBlock extends RotatedObjectBlock
     }
 
     @Override
-    public void setPlacedBy(World world, BlockPos pos, BlockState state, @Nullable LivingEntity livingEntity, ItemStack stack)
+    public void setPlacedBy(Level world, BlockPos pos, BlockState state, @Nullable LivingEntity livingEntity, ItemStack stack)
     {
         if(livingEntity instanceof PlayerEntity && ((PlayerEntity) livingEntity).isCreative())
         {
@@ -140,9 +140,9 @@ public class VehicleCrateBlock extends RotatedObjectBlock
         }
     }
 
-    private void openCrate(World world, BlockPos pos, BlockState state, LivingEntity placer)
+    private void openCrate(Level world, BlockPos pos, BlockState state, LivingEntity placer)
     {
-        TileEntity tileEntity = world.getBlockEntity(pos);
+        BlockEntity tileEntity = world.getBlockEntity(pos);
         if(tileEntity instanceof VehicleCrateBlockEntity && this.canOpen(world, pos))
         {
             if(world.isClientSide)
@@ -194,9 +194,9 @@ public class VehicleCrateBlock extends RotatedObjectBlock
 
     @Override
     @OnlyIn(Dist.CLIENT)
-    public void appendHoverText(ItemStack stack, @Nullable BlockAndTintGetter reader, List<ITextComponent> list, ITooltipFlag advanced)
+    public void appendHoverText(ItemStack stack, @Nullable BlockAndTintGetter reader, List<Component> list, ITooltipFlag advanced)
     {
-        ITextComponent vehicleName = EntityType.PIG.getDescription();
+        Component vehicleName = EntityType.PIG.getDescription();
         CompoundNBT tagCompound = stack.getTag();
         if(tagCompound != null)
         {
@@ -212,12 +212,12 @@ public class VehicleCrateBlock extends RotatedObjectBlock
         }
         if(Screen.hasShiftDown())
         {
-            list.addAll(RenderUtil.lines(new TranslationTextComponent(this.getDescriptionId() + ".info", vehicleName), 150));
+            list.addAll(RenderUtil.lines(Component.translatable(this.getDescriptionId() + ".info", vehicleName), 150));
         }
         else
         {
             list.add(vehicleName.copy().withStyle(TextFormatting.BLUE));
-            list.add(new TranslationTextComponent("vehicle.info_help").withStyle(TextFormatting.YELLOW));
+            list.add(Component.translatable("vehicle.info_help").withStyle(TextFormatting.YELLOW));
         }
     }
 

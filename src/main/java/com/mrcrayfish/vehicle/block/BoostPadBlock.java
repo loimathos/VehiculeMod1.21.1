@@ -62,7 +62,7 @@ public class BoostPadBlock extends RotatedObjectBlock
             if(facing == entityIn.getDirection())
             {
                 float speedMultiplier = 0.0F;
-                TileEntity tileEntity = worldIn.getBlockEntity(pos);
+                BlockEntity tileEntity = worldIn.getBlockEntity(pos);
                 if(tileEntity instanceof BoostBlockEntity)
                 {
                     speedMultiplier = ((BoostBlockEntity) tileEntity).getSpeedMultiplier();

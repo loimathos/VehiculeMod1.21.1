@@ -9,7 +9,7 @@ import com.mrcrayfish.vehicle.block.FluidPumpBlock;
 import com.mrcrayfish.vehicle.common.FluidNetworkHandler;
 import com.mrcrayfish.vehicle.init.ModBlockEntities;
 import com.mrcrayfish.vehicle.util.FluidUtils;
-import com.mrcrayfish.vehicle.util.TileEntityUtil;
+import com.mrcrayfish.vehicle.util.BlockEntityUtil;
 import net.minecraft.block.BlockState;
 import net.minecraft.nbt.CompoundNBT;
 
@@ -299,7 +299,7 @@ public class PumpBlockEntity extends PipeBlockEntity implements BlockEntityTicke
         {
             CompoundNBT compound = new CompoundNBT();
             this.writePowerMode(compound);
-            TileEntityUtil.sendUpdatePacket(this, super.save(compound));
+            BlockEntityUtil.sendUpdatePacket(this, super.save(compound));
             BlockState state = this.getBlockState();
             state = ((FluidPumpBlock) state.getBlock()).getDisabledState(state, this.level, this.worldPosition);
             this.level.setBlock(this.worldPosition, state, Constants.BlockFlags.BLOCK_UPDATE | Constants.BlockFlags.RERENDER_MAIN_THREAD);

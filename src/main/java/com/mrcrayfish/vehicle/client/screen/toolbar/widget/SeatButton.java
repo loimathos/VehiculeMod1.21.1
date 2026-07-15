@@ -5,7 +5,7 @@ import com.mrcrayfish.vehicle.client.screen.DashboardScreen;
 import com.mrcrayfish.vehicle.entity.VehicleEntity;
 import com.mrcrayfish.vehicle.network.PacketHandler;
 import com.mrcrayfish.vehicle.network.message.MessageSetSeat;
-import net.minecraft.util.text.TranslationTextComponent;
+
 
 import java.lang.ref.WeakReference;
 
@@ -19,7 +19,7 @@ public class SeatButton extends IconButton
 
     public SeatButton(VehicleEntity entity, int index, boolean driver)
     {
-        super(20, 20, driver ? DashboardScreen.Icons.SEAT_DRIVER : DashboardScreen.Icons.SEAT_PASSENGER, new TranslationTextComponent(driver ? "vehicle.toolbar.label.driver_seat" : "vehicle.toolbar.label.passenger_seat"), onPress -> {
+        super(20, 20, driver ? DashboardScreen.Icons.SEAT_DRIVER : DashboardScreen.Icons.SEAT_PASSENGER, Component.translatable(driver ? "vehicle.toolbar.label.driver_seat" : "vehicle.toolbar.label.passenger_seat"), onPress -> {
             PacketHandler.getPlayChannel().sendToServer(new MessageSetSeat(index));
         });
         this.vehicleRef = new WeakReference<>(entity);

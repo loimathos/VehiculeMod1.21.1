@@ -3,7 +3,7 @@ package com.mrcrayfish.vehicle.client.screen.toolbar.widget;
 import com.mojang.blaze3d.matrix.MatrixStack;
 import net.minecraft.client.gui.AbstractGui;
 import net.minecraft.client.gui.widget.Widget;
-import net.minecraft.util.text.StringTextComponent;
+
 
 /**
  * Author: MrCrayfish
@@ -12,7 +12,7 @@ public class Spacer extends Widget
 {
     public Spacer(int widthIn)
     {
-        super(0, 0, widthIn, 20, StringTextComponent.EMPTY);
+        super(0, 0, widthIn, 20, Component.empty());
     }
 
     public static Spacer of(int width)

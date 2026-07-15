@@ -284,7 +284,7 @@ public class MopedEntity extends MotorcycleEntity implements IStorage, IAttachab
 
     public class ChestInventory extends StorageInventory
     {
-        public ChestInventory(Entity entity, ITextComponent displayName, int rows)
+        public ChestInventory(Entity entity, Component displayName, int rows)
         {
             super(entity, displayName, rows);
         }

@@ -125,7 +125,7 @@ public class CommonEvents
         }
     }
 
-    public static boolean handleVehicleInteraction(World world, PlayerEntity player, Hand hand, Entity entity)
+    public static boolean handleVehicleInteraction(Level world, PlayerEntity player, Hand hand, Entity entity)
     {
         if(!Config.SERVER.pickUpVehicles.get())
             return false;
@@ -217,7 +217,7 @@ public class CommonEvents
             return;
 
         PlayerEntity player = event.getPlayer();
-        World world = event.getWorld();
+        Level world = event.getWorld();
         if(!world.isClientSide())
         {
             if(HeldVehicleDataHandler.isHoldingVehicle(player))
@@ -225,7 +225,7 @@ public class CommonEvents
                 if(event.getFace() == Direction.UP)
                 {
                     BlockPos pos = event.getPos();
-                    TileEntity tileEntity = event.getWorld().getBlockEntity(pos);
+                    BlockEntity tileEntity = event.getWorld().getBlockEntity(pos);
                     if(tileEntity instanceof JackBlockEntity)
                     {
                         JackBlockEntity jack = (JackBlockEntity) tileEntity;
@@ -320,7 +320,7 @@ public class CommonEvents
         if(event.getHand() == Hand.OFF_HAND)
             return;
 
-        World world = event.getWorld();
+        Level world = event.getWorld();
         if(!world.isClientSide())
             return;
 
@@ -392,7 +392,7 @@ public class CommonEvents
         if(event.phase == TickEvent.Phase.END)
         {
             PlayerEntity player = event.player;
-            World world = player.level;
+            Level world = player.level;
             if(player.isCrouching())
             {
                 int trailerId = SyncedPlayerData.instance().get(player, ModDataKeys.TRAILER);
@@ -415,7 +415,7 @@ public class CommonEvents
             Optional<BlockPos> pos = SyncedPlayerData.instance().get(player, ModDataKeys.GAS_PUMP);
             if(pos.isPresent())
             {
-                TileEntity tileEntity = world.getBlockEntity(pos.get());
+                BlockEntity tileEntity = world.getBlockEntity(pos.get());
                 if(!(tileEntity instanceof GasPumpBlockEntity))
                 {
                     SyncedPlayerData.instance().set(player, ModDataKeys.GAS_PUMP, Optional.empty());
@@ -443,7 +443,7 @@ public class CommonEvents
         }
         else if(event.getItemStack().getItem() instanceof FluidPipeItem)
         {
-            TileEntity relativeTileEntity = event.getWorld().getBlockEntity(event.getPos());
+            BlockEntity relativeTileEntity = event.getWorld().getBlockEntity(event.getPos());
             if(relativeTileEntity != null && relativeTileEntity.getCapability(CapabilityFluidHandler.FLUID_HANDLER_CAPABILITY, event.getFace()).isPresent())
             {
                 event.setUseBlock(Event.Result.DENY);

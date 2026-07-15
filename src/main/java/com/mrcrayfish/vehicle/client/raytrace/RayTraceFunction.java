@@ -50,7 +50,7 @@ public interface RayTraceFunction
         gasPump: if(SyncedPlayerData.instance().get(player, ModDataKeys.GAS_PUMP).isPresent() && ControllerHandler.isRightClicking())
         {
             BlockPos pos = SyncedPlayerData.instance().get(player, ModDataKeys.GAS_PUMP).get();
-            TileEntity tileEntity = player.level.getBlockEntity(pos);
+            BlockEntity tileEntity = player.level.getBlockEntity(pos);
             if(!(tileEntity instanceof GasPumpBlockEntity))
                 break gasPump;
 

@@ -1,10 +1,10 @@
 package com.mrcrayfish.vehicle.blockentity;
 
-import com.mrcrayfish.vehicle.util.TileEntityUtil;
+import com.mrcrayfish.vehicle.util.BlockEntityUtil;
 import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.network.NetworkManager;
-import net.minecraft.network.play.server.SUpdateTileEntityPacket;
+import net.minecraft.network.play.server.SUpdateBlockEntityPacket;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraftforge.fluids.FluidStack;
 import net.minecraftforge.fluids.capability.TileFluidHandler;
@@ -48,7 +48,7 @@ public class BlockFluidHandlerSynced extends TileFluidHandler
         {
             CompoundNBT compound = new CompoundNBT();
             super.save(compound);
-            TileEntityUtil.sendUpdatePacket(this, compound);
+            BlockEntityUtil.sendUpdatePacket(this, compound);
         }
     }
 
@@ -58,7 +58,7 @@ public class BlockFluidHandlerSynced extends TileFluidHandler
         {
             CompoundNBT compound = new CompoundNBT();
             super.save(compound);
-            TileEntityUtil.sendUpdatePacket(this, compound);
+            BlockEntityUtil.sendUpdatePacket(this, compound);
         }
     }
 
@@ -70,13 +70,13 @@ public class BlockFluidHandlerSynced extends TileFluidHandler
 
     @Nullable
     @Override
-    public SUpdateTileEntityPacket getUpdatePacket()
+    public SUpdateBlockEntityPacket getUpdatePacket()
     {
-        return new SUpdateTileEntityPacket(this.worldPosition, 0, this.getUpdateTag());
+        return new SUpdateBlockEntityPacket(this.worldPosition, 0, this.getUpdateTag());
     }
 
     @Override
-    public void onDataPacket(NetworkManager net, SUpdateTileEntityPacket pkt)
+    public void onDataPacket(NetworkManager net, SUpdateBlockEntityPacket pkt)
     {
         this.load(null, pkt.getTag());
     }

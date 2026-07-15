@@ -15,7 +15,7 @@ import net.minecraft.client.renderer.Tessellator;
 import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.network.chat.Component;
-import net.minecraft.util.text.TranslationTextComponent;
+
 import org.apache.commons.lang3.tuple.Pair;
 import org.lwjgl.opengl.GL11;
 
@@ -33,7 +33,7 @@ public abstract class AbstractToolbarScreen extends Screen
     private Screen parent;
     private int contentWidth;
 
-    protected AbstractToolbarScreen(ITextComponent titleIn, @Nullable Screen parent)
+    protected AbstractToolbarScreen(Component titleIn, @Nullable Screen parent)
     {
         super(titleIn);
         this.parent = parent;
@@ -45,7 +45,7 @@ public abstract class AbstractToolbarScreen extends Screen
         List<Widget> widgets = new ArrayList<>();
         if(this.parent != null)
         {
-            widgets.add(new IconButton(20, 20, DashboardScreen.Icons.BACK, new TranslationTextComponent("vehicle.toolbar.label.back"), onPress -> this.minecraft.setScreen(this.parent)));
+            widgets.add(new IconButton(20, 20, DashboardScreen.Icons.BACK, Component.translatable("vehicle.toolbar.label.back"), onPress -> this.minecraft.setScreen(this.parent)));
             widgets.add(Spacer.of(5));
         }
         this.loadWidgets(widgets);
@@ -102,7 +102,7 @@ public abstract class AbstractToolbarScreen extends Screen
 
         if(hoveredWidget instanceof IToolbarLabel)
         {
-            ITextComponent message = ((IToolbarLabel) hoveredWidget).getLabel();
+            Component message = ((IToolbarLabel) hoveredWidget).getLabel();
             int messageWidth = this.minecraft.font.width(message);
             drawString(matrixStack, this.minecraft.font, message, this.width / 2 - messageWidth / 2, startY - 12, 0xFFFFFF);
         }

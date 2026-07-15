@@ -1,9 +1,9 @@
 package com.mrcrayfish.vehicle.blockentity;
 
-import com.mrcrayfish.vehicle.util.TileEntityUtil;
+import com.mrcrayfish.vehicle.util.BlockEntityUtil;
 import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.network.NetworkManager;
-import net.minecraft.network.play.server.SUpdateTileEntityPacket;
+import net.minecraft.network.play.server.SUpdateBlockEntityPacket;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 
@@ -19,7 +19,7 @@ public class BlockEntitySynced extends BlockEntity
     public void syncToClient()
     {
         this.setChanged();
-        TileEntityUtil.sendUpdatePacket(this);
+        BlockEntityUtil.sendUpdatePacket(this);
     }
 
     @Override
@@ -30,13 +30,13 @@ public class BlockEntitySynced extends BlockEntity
 
     @Nullable
     @Override
-    public SUpdateTileEntityPacket getUpdatePacket()
+    public SUpdateBlockEntityPacket getUpdatePacket()
     {
-        return new SUpdateTileEntityPacket(this.getBlockPos(), 0, this.getUpdateTag());
+        return new SUpdateBlockEntityPacket(this.getBlockPos(), 0, this.getUpdateTag());
     }
 
     @Override
-    public void onDataPacket(final NetworkManager net, final SUpdateTileEntityPacket pkt)
+    public void onDataPacket(final NetworkManager net, final SUpdateBlockEntityPacket pkt)
     {
         this.load(null, pkt.getTag());
     }

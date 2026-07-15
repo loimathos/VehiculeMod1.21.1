@@ -13,7 +13,7 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.util.NonNullList;
 import net.minecraft.network.chat.Component;
-import net.minecraft.util.text.TranslationTextComponent;
+
 
 import javax.annotation.Nullable;
 
@@ -56,9 +56,9 @@ public class WorkstationBlockEntity extends BlockEntitySynced implements IStorag
     }
 
     @Override
-    public ITextComponent getDisplayName()
+    public Component getDisplayName()
     {
-        return new TranslationTextComponent("container.vehicle.workstation");
+        return Component.translatable("container.vehicle.workstation");
     }
 
     @Nullable

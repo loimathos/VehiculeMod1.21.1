@@ -65,7 +65,7 @@ public class ServerPlayHandler
 {
     public static void handleAttachChestMessage(ServerPlayerEntity player, MessageAttachChest message)
     {
-        World world = player.level;
+        Level world = player.level;
         Entity targetEntity = world.getEntity(message.getEntityId());
         if(targetEntity instanceof IAttachableChest)
         {
@@ -102,7 +102,7 @@ public class ServerPlayHandler
 
     public static void handleCraftVehicleMessage(ServerPlayerEntity player, MessageCraftVehicle message)
     {
-        World world = player.level;
+        Level world = player.level;
         if(!(player.containerMenu instanceof WorkstationContainer))
             return;
 
@@ -475,7 +475,7 @@ public class ServerPlayHandler
 
     public static void handleOpenStorageMessage(ServerPlayerEntity player, MessageOpenStorage message)
     {
-        World world = player.level;
+        Level world = player.level;
         Entity targetEntity = world.getEntity(message.getEntityId());
         if(!(targetEntity instanceof IStorage))
             return;

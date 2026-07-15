@@ -77,7 +77,7 @@ public class EntityJack extends Entity implements IEntityAdditionalSpawnData
             this.liftProgress--;
         }
 
-        TileEntity tileEntity = this.level.getBlockEntity(new BlockPos(this.initialX, this.initialY, this.initialZ));
+        BlockEntity tileEntity = this.level.getBlockEntity(new BlockPos(this.initialX, this.initialY, this.initialZ));
         if(tileEntity instanceof JackBlockEntity)
         {
             JackBlockEntity jackTileEntity = (JackBlockEntity) tileEntity;

@@ -80,7 +80,7 @@ public class GasPumpBlock extends RotatedObjectBlock
     }
 
     @Override
-    public ActionResultType use(BlockState state, World world, BlockPos pos, PlayerEntity playerEntity, Hand hand, BlockRayTraceResult result)
+    public ActionResultType use(BlockState state, Level world, BlockPos pos, PlayerEntity playerEntity, Hand hand, BlockRayTraceResult result)
     {
         if(world.isClientSide())
         {
@@ -89,7 +89,7 @@ public class GasPumpBlock extends RotatedObjectBlock
 
         if(state.getValue(TOP))
         {
-            TileEntity tileEntity = world.getBlockEntity(pos);
+            BlockEntity tileEntity = world.getBlockEntity(pos);
             if(tileEntity instanceof GasPumpBlockEntity)
             {
                 GasPumpBlockEntity gasPump = (GasPumpBlockEntity) tileEntity;
@@ -126,7 +126,7 @@ public class GasPumpBlock extends RotatedObjectBlock
     }
 
     @Override
-    public void playerWillDestroy(World world, BlockPos pos, BlockState state, PlayerEntity player)
+    public void playerWillDestroy(Level world, BlockPos pos, BlockState state, PlayerEntity player)
     {
         if (!world.isClientSide())
         {
@@ -152,7 +152,7 @@ public class GasPumpBlock extends RotatedObjectBlock
             if (origin != null)
             {
                 BlockPos pos = new BlockPos(origin);
-                TileEntity tileEntity = builder.getLevel().getBlockEntity(pos.below());
+                BlockEntity tileEntity = builder.getLevel().getBlockEntity(pos.below());
                 if (tileEntity != null)
                 {
                     builder = builder.withParameter(LootParameters.BLOCK_ENTITY, tileEntity);

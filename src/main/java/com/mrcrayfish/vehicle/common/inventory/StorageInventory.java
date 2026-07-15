@@ -24,10 +24,10 @@ import java.util.function.Predicate;
 public class StorageInventory extends Inventory
 {
     private final WeakReference<Entity> entityRef;
-    private final ITextComponent displayName;
+    private final Component displayName;
     private final Predicate<ItemStack> itemPredicate;
 
-    public StorageInventory(Entity entity, ITextComponent displayName, int rows)
+    public StorageInventory(Entity entity, Component displayName, int rows)
     {
         super(rows * 9);
         this.entityRef = new WeakReference<>(entity);
@@ -35,7 +35,7 @@ public class StorageInventory extends Inventory
         this.itemPredicate = stack -> true;
     }
 
-    public StorageInventory(Entity entity, ITextComponent displayName, int rows, Predicate<ItemStack> itemPredicate)
+    public StorageInventory(Entity entity, Component displayName, int rows, Predicate<ItemStack> itemPredicate)
     {
         super(rows * 9);
         this.entityRef = new WeakReference<>(entity);
@@ -49,7 +49,7 @@ public class StorageInventory extends Inventory
         return this.entityRef.get();
     }
 
-    public ITextComponent getDisplayName()
+    public Component getDisplayName()
     {
         return this.displayName;
     }

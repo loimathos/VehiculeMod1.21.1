@@ -1,7 +1,7 @@
 package com.mrcrayfish.vehicle.blockentity;
 
 import com.mrcrayfish.vehicle.init.ModBlockEntities;
-import com.mrcrayfish.vehicle.util.TileEntityUtil;
+import com.mrcrayfish.vehicle.util.BlockEntityUtil;
 import net.minecraft.block.BlockState;
 import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.world.level.block.entity.BlockEntityType;
@@ -67,7 +67,7 @@ public class PipeBlockEntity extends BlockEntitySynced
         {
             CompoundNBT compound = new CompoundNBT();
             this.writeConnections(compound);
-            TileEntityUtil.sendUpdatePacket(this, super.save(compound));
+            BlockEntityUtil.sendUpdatePacket(this, super.save(compound));
         }
     }
 

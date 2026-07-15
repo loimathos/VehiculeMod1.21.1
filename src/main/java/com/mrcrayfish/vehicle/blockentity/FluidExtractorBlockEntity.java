@@ -24,8 +24,8 @@ import net.minecraft.util.IIntArray;
 import net.minecraft.util.INameable;
 import net.minecraft.util.NonNullList;
 import net.minecraft.network.chat.Component;
-import net.minecraft.util.text.StringTextComponent;
-import net.minecraft.util.text.TranslationTextComponent;
+
+
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.common.ForgeHooks;
@@ -366,7 +366,7 @@ public class FluidExtractorBlockEntity extends BlockEntity implements IInventory
     }
 
     @Override
-    public ITextComponent getName()
+    public Component getName()
     {
         return this.getDisplayName();
     }
@@ -378,9 +378,9 @@ public class FluidExtractorBlockEntity extends BlockEntity implements IInventory
     }
 
     @Override
-    public ITextComponent getDisplayName()
+    public Component getDisplayName()
     {
-        return this.hasCustomName() ? new StringTextComponent(this.customName) : new TranslationTextComponent("container.fluid_extractor");
+        return this.hasCustomName() ? Component.literal(this.customName) : Component.translatable("container.fluid_extractor");
     }
 
     private void shrinkItem(int index)

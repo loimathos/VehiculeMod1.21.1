@@ -5,7 +5,7 @@ import com.mrcrayfish.vehicle.Config;
 import com.mrcrayfish.vehicle.client.util.HermiteInterpolator;
 import com.mrcrayfish.vehicle.init.ModDataKeys;
 import com.mrcrayfish.vehicle.init.ModBlockEntities;
-import com.mrcrayfish.vehicle.util.TileEntityUtil;
+import com.mrcrayfish.vehicle.util.BlockEntityUtil;
 import net.minecraft.block.BlockState;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.PlayerEntity;
@@ -155,7 +155,7 @@ public class GasPumpBlockEntity extends BlockEntity
     {
         CompoundNBT compound = new CompoundNBT();
         compound.putInt("FuelingEntity", this.fuelingEntityId);
-        TileEntityUtil.sendUpdatePacket(this, super.save(compound));
+        BlockEntityUtil.sendUpdatePacket(this, super.save(compound));
     }
 
     @Override

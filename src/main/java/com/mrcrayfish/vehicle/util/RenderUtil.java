@@ -23,7 +23,7 @@ import net.minecraft.item.Items;
 import net.minecraft.util.Direction;
 import net.minecraft.network.chat.Component;
 import net.minecraft.util.text.ITextProperties;
-import net.minecraft.util.text.StringTextComponent;
+
 import net.minecraft.util.text.Style;
 import net.minecraft.util.text.TextFormatting;
 import org.lwjgl.opengl.GL11;
@@ -196,9 +196,9 @@ public class RenderUtil
         }
     }
 
-    public static List<ITextComponent> lines(ITextProperties text, int maxWidth)
+    public static List<Component> lines(ITextProperties text, int maxWidth)
     {
         List<ITextProperties> lines = Minecraft.getInstance().font.getSplitter().splitLines(text, maxWidth, Style.EMPTY);
-        return lines.stream().map(t -> new StringTextComponent(t.getString()).withStyle(TextFormatting.GRAY)).collect(Collectors.toList());
+        return lines.stream().map(t -> Component.literal(t.getString()).withStyle(TextFormatting.GRAY)).collect(Collectors.toList());
     }
 }

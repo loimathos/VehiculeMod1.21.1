@@ -8,7 +8,7 @@ import net.minecraft.client.util.ITooltipFlag;
 import net.minecraft.item.ItemStack;
 import net.minecraft.network.chat.Component;
 import net.minecraft.util.text.TextFormatting;
-import net.minecraft.util.text.TranslationTextComponent;
+
 import net.minecraft.world.level.BlockGetter;
 
 import javax.annotation.Nullable;
@@ -25,15 +25,15 @@ public class ObjectBlock extends Block
     }
 
     @Override
-    public void appendHoverText(ItemStack stack, @Nullable BlockAndTintGetter reader, List<ITextComponent> list, ITooltipFlag flag)
+    public void appendHoverText(ItemStack stack, @Nullable BlockAndTintGetter reader, List<Component> list, ITooltipFlag flag)
     {
         if(Screen.hasShiftDown())
         {
-            list.addAll(RenderUtil.lines(new TranslationTextComponent(this.getDescriptionId() + ".info"), 150));
+            list.addAll(RenderUtil.lines(Component.translatable(this.getDescriptionId() + ".info"), 150));
         }
         else
         {
-            list.add(new TranslationTextComponent("vehicle.info_help").withStyle(TextFormatting.YELLOW));
+            list.add(Component.translatable("vehicle.info_help").withStyle(TextFormatting.YELLOW));
         }
     }
 }

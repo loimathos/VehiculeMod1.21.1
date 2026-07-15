@@ -37,7 +37,7 @@ public class FluidNetworkHandler
     }
 
     private boolean dirty = false;
-    private Map<RegistryKey<World>, Set<BlockPos>> pipeUpdateMap = new HashMap<>();
+    private Map<RegistryKey<Level>, Set<BlockPos>> pipeUpdateMap = new HashMap<>();
 
     private FluidNetworkHandler() {}
 
@@ -64,7 +64,7 @@ public class FluidNetworkHandler
         {
             positions.forEach(pos ->
             {
-                TileEntity tileEntity = event.world.getBlockEntity(pos);
+                BlockEntity tileEntity = event.world.getBlockEntity(pos);
                 if(tileEntity instanceof PipeBlockEntity)
                 {
                     PipeBlockEntity pipeTileEntity = (PipeBlockEntity) tileEntity;

@@ -13,8 +13,8 @@ import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.widget.Widget;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.network.chat.Component;
-import net.minecraft.util.text.StringTextComponent;
-import net.minecraft.util.text.TranslationTextComponent;
+
+
 
 import javax.annotation.Nullable;
 import java.lang.ref.WeakReference;
@@ -29,11 +29,11 @@ public class DashboardScreen extends AbstractToolbarScreen
 
     public DashboardScreen(@Nullable Screen parent, VehicleEntity vehicle)
     {
-        super(new StringTextComponent("Dashboard"), parent);
+        super(Component.literal("Dashboard"), parent);
         this.vehicleRef = new WeakReference<>(vehicle);
     }
 
-    private DashboardScreen(@Nullable Screen parent, ITextComponent title, VehicleEntity vehicle)
+    private DashboardScreen(@Nullable Screen parent, Component title, VehicleEntity vehicle)
     {
         super(title, parent);
         this.vehicleRef = new WeakReference<>(vehicle);
@@ -42,10 +42,10 @@ public class DashboardScreen extends AbstractToolbarScreen
     @Override
     protected void loadWidgets(List<Widget> widgets)
     {
-        widgets.add(new IconButton(20, 20, Icons.LEFT_DOOR, new TranslationTextComponent("vehicle.toolbar.label.doors"), onPress -> {
+        widgets.add(new IconButton(20, 20, Icons.LEFT_DOOR, Component.translatable("vehicle.toolbar.label.doors"), onPress -> {
             this.minecraft.setScreen(new DoorScreen(this, this.vehicleRef.get()));
         }));
-        widgets.add(new IconButton(20, 20, Icons.SEAT_PASSENGER, new TranslationTextComponent("vehicle.toolbar.label.seats"), onPress -> {
+        widgets.add(new IconButton(20, 20, Icons.SEAT_PASSENGER, Component.translatable("vehicle.toolbar.label.seats"), onPress -> {
             this.minecraft.setScreen(new SeatScreen(this, this.vehicleRef.get()));
         }));
     }
@@ -54,7 +54,7 @@ public class DashboardScreen extends AbstractToolbarScreen
     {
         private DoorScreen(@Nullable Screen parent, VehicleEntity vehicle)
         {
-            super(parent, new StringTextComponent("Doors"), vehicle);
+            super(parent, Component.literal("Doors"), vehicle);
         }
 
         @Override
@@ -77,7 +77,7 @@ public class DashboardScreen extends AbstractToolbarScreen
     {
         private SeatScreen(@Nullable Screen parent, VehicleEntity vehicle)
         {
-            super(parent, new StringTextComponent("Seats"), vehicle);
+            super(parent, Component.literal("Seats"), vehicle);
         }
 
         @Override

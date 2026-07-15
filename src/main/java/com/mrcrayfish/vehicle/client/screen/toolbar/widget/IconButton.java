@@ -10,7 +10,7 @@ import net.minecraft.client.renderer.Tessellator;
 import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.network.chat.Component;
-import net.minecraft.util.text.StringTextComponent;
+
 import org.lwjgl.opengl.GL11;
 
 import javax.annotation.Nullable;
@@ -21,23 +21,23 @@ import javax.annotation.Nullable;
 public class IconButton extends Button implements IToolbarLabel
 {
     private IconProvider icon;
-    private ITextComponent label;
+    private Component label;
 
-    public IconButton(int width, int height, @Nullable IconProvider icon, ITextComponent label, IPressable onPress)
+    public IconButton(int width, int height, @Nullable IconProvider icon, Component label, IPressable onPress)
     {
-        super(0, 0, width, height, StringTextComponent.EMPTY, onPress);
+        super(0, 0, width, height, Component.empty(), onPress);
         this.icon = icon;
         this.label = label;
     }
 
-    public IconButton setLabel(ITextComponent label)
+    public IconButton setLabel(Component label)
     {
         this.label = label;
         return this;
     }
 
     @Override
-    public ITextComponent getLabel()
+    public Component getLabel()
     {
         return this.label;
     }

@@ -190,7 +190,7 @@ public abstract class PoweredVehicleEntity extends VehicleEntity implements IInv
         if(SyncedPlayerData.instance().get(player, ModDataKeys.GAS_PUMP).isPresent())
         {
             BlockPos pos = SyncedPlayerData.instance().get(player, ModDataKeys.GAS_PUMP).get();
-            TileEntity tileEntity = this.level.getBlockEntity(pos);
+            BlockEntity tileEntity = this.level.getBlockEntity(pos);
             if(!(tileEntity instanceof GasPumpBlockEntity))
                 return;
 
@@ -1034,7 +1034,7 @@ public abstract class PoweredVehicleEntity extends VehicleEntity implements IInv
     }
 
     @Override
-    public ITextComponent getDisplayName()
+    public Component getDisplayName()
     {
         return this.getName();
     }

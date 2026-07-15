@@ -60,7 +60,7 @@ public class BoostRampBlock extends RotatedObjectBlock
     }
 
     @Override
-    public void entityInside(BlockState state, World world, BlockPos pos, Entity entity)
+    public void entityInside(BlockState state, Level world, BlockPos pos, Entity entity)
     {
         if(entity instanceof PoweredVehicleEntity && entity.getControllingPassenger() != null)
         {
@@ -68,7 +68,7 @@ public class BoostRampBlock extends RotatedObjectBlock
             if(facing == entity.getDirection())
             {
                 float speedMultiplier = 0.0F;
-                TileEntity tileEntity = world.getBlockEntity(pos);
+                BlockEntity tileEntity = world.getBlockEntity(pos);
                 if(tileEntity instanceof BoostBlockEntity)
                 {
                     speedMultiplier = ((BoostBlockEntity) tileEntity).getSpeedMultiplier();

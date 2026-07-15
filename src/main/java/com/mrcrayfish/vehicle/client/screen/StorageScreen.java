@@ -20,7 +20,7 @@ public class StorageScreen extends ContainerScreen<StorageContainer>
     private final PlayerInventory playerInventory;
     private final int inventoryRows;
 
-    public StorageScreen(StorageContainer container, PlayerInventory playerInventory, ITextComponent title)
+    public StorageScreen(StorageContainer container, PlayerInventory playerInventory, Component title)
     {
         super(container, playerInventory, title);
         this.playerInventory = playerInventory;

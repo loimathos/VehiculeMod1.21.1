@@ -19,7 +19,7 @@ public class CheckBox extends Widget
 
     private boolean toggled = false;
 
-    public CheckBox(int left, int top, ITextComponent title)
+    public CheckBox(int left, int top, Component title)
     {
         super(left, top, 8, 8, title);
     }

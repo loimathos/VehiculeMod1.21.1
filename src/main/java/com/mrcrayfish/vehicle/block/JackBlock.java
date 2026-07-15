@@ -38,7 +38,7 @@ public class JackBlock extends RotatedObjectBlock
     @Override
     public VoxelShape getShape(BlockState state, BlockAndTintGetter worldIn, BlockPos pos, CollisionContext context)
     {
-        TileEntity tileEntity = worldIn.getBlockEntity(pos);
+        BlockEntity tileEntity = worldIn.getBlockEntity(pos);
         if(tileEntity instanceof JackBlockEntity)
         {
             JackBlockEntity jack = (JackBlockEntity) tileEntity;
@@ -73,9 +73,9 @@ public class JackBlock extends RotatedObjectBlock
         builder.add(ENABLED);
     }
 
-    // Prevents the tile entity from being removed if the replacement block is the same
+    // Prevents the block entity from being removed if the replacement block is the same
     @Override
-    public void onRemove(BlockState state, World world, BlockPos pos, BlockState replaceState, boolean what)
+    public void onRemove(BlockState state, Level world, BlockPos pos, BlockState replaceState, boolean what)
     {
         if(!state.is(replaceState.getBlock()))
         {

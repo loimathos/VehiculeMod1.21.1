@@ -72,7 +72,7 @@ public class FluidPumpBlock extends FluidPipeBlock
     }
 
     @Override
-    public ActionResultType use(BlockState state, World world, BlockPos pos, PlayerEntity player, Hand hand, BlockRayTraceResult result)
+    public ActionResultType use(BlockState state, Level world, BlockPos pos, PlayerEntity player, Hand hand, BlockRayTraceResult result)
     {
         if(super.use(state, world, pos, player, hand, result) == ActionResultType.SUCCESS)
         {
@@ -114,11 +114,11 @@ public class FluidPumpBlock extends FluidPipeBlock
     }
 
     @Override
-    public void onRemove(BlockState state, World world, BlockPos pos, BlockState replaceState, boolean what)
+    public void onRemove(BlockState state, Level world, BlockPos pos, BlockState replaceState, boolean what)
     {
         if(!state.is(replaceState.getBlock()))
         {
-            TileEntity tileEntity = world.getBlockEntity(pos);
+            BlockEntity tileEntity = world.getBlockEntity(pos);
             if(tileEntity instanceof PumpBlockEntity)
             {
                 ((PumpBlockEntity) tileEntity).removePumpFromPipes();
@@ -128,11 +128,11 @@ public class FluidPumpBlock extends FluidPipeBlock
     }
 
     @Override
-    protected void invalidatePipeNetwork(World world, BlockPos pos)
+    protected void invalidatePipeNetwork(Level world, BlockPos pos)
     {
         super.invalidatePipeNetwork(world, pos);
 
-        TileEntity tileEntity = world.getBlockEntity(pos);
+        BlockEntity tileEntity = world.getBlockEntity(pos);
         if(tileEntity instanceof PumpBlockEntity)
         {
             ((PumpBlockEntity) tileEntity).invalidatePipeNetwork();
@@ -143,7 +143,7 @@ public class FluidPumpBlock extends FluidPipeBlock
     @Override
     public BlockState getStateForPlacement(BlockItemUseContext context)
     {
-        World world = context.getLevel();
+        Level world = context.getLevel();
         BlockPos pos = context.getClickedPos();
         Direction face = context.getClickedFace();
         BlockState state = this.defaultBlockState().setValue(DIRECTION, face);
@@ -153,10 +153,10 @@ public class FluidPumpBlock extends FluidPipeBlock
     }
 
     @Override
-    public BlockState getDisabledState(BlockState state, World world, BlockPos pos)
+    public BlockState getDisabledState(BlockState state, Level world, BlockPos pos)
     {
         boolean disabled = false;
-        TileEntity tileEntity = world.getBlockEntity(pos);
+        BlockEntity tileEntity = world.getBlockEntity(pos);
         if(tileEntity instanceof PumpBlockEntity)
         {
             PumpBlockEntity pump = (PumpBlockEntity) tileEntity;

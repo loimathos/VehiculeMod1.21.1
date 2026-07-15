@@ -9,7 +9,7 @@ import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.util.math.vector.Vector3d;
 import net.minecraft.network.chat.Component;
-import net.minecraft.util.text.StringTextComponent;
+
 import net.minecraft.util.text.TextFormatting;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
@@ -24,7 +24,7 @@ import java.util.List;
  */
 public class OverlayHandler
 {
-    private List<ITextComponent> stats = new ArrayList<>();
+    private List<Component> stats = new ArrayList<>();
 
     @SubscribeEvent
     public void onClientTick(TickEvent.ClientTickEvent event)
@@ -77,7 +77,7 @@ public class OverlayHandler
 
     private void addStat(String label, String value)
     {
-        this.stats.add(new StringTextComponent(label + ": ").withStyle(TextFormatting.BOLD).withStyle(TextFormatting.RESET).append(new StringTextComponent(value).withStyle(TextFormatting.YELLOW)));
+        this.stats.add(Component.literal(label + ": ").withStyle(TextFormatting.BOLD).withStyle(TextFormatting.RESET).append(Component.literal(value).withStyle(TextFormatting.YELLOW)));
     }
 
     @SubscribeEvent

@@ -4,5 +4,5 @@ import net.minecraft.network.chat.Component;
 
 public interface IToolbarLabel
 {
-    ITextComponent getLabel();
+    Component getLabel();
 }

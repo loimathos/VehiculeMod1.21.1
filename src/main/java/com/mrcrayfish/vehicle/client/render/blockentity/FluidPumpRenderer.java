@@ -21,7 +21,7 @@ import net.minecraft.util.math.RayTraceResult;
 import net.minecraft.util.math.shapes.VoxelShape;
 import net.minecraft.util.math.vector.Matrix4f;
 import net.minecraft.network.chat.Component;
-import net.minecraft.util.text.TranslationTextComponent;
+
 
 /**
  * Author: MrCrayfish
@@ -69,7 +69,7 @@ public class FluidPumpRenderer extends BlockEntityRenderer<PumpBlockEntity>
         matrixStack.scale(-0.015F, -0.015F, 0.015F);
         Matrix4f matrix4f = matrixStack.last().pose();
         FontRenderer fontRenderer = this.renderer.font;
-        ITextComponent text = new TranslationTextComponent(tileEntity.getPowerMode().getKey());
+        Component text = Component.translatable(tileEntity.getPowerMode().getKey());
         float x = (float)(-fontRenderer.width(text) / 2);
         fontRenderer.drawInBatch(text, x, 0, -1, true, matrix4f, renderTypeBuffer, true, 0, 15728880);
         matrixStack.popPose();

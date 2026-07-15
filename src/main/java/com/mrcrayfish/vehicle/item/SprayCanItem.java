@@ -11,9 +11,9 @@ import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.util.NonNullList;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.network.chat.Component;
-import net.minecraft.util.text.StringTextComponent;
+
 import net.minecraft.util.text.TextFormatting;
-import net.minecraft.util.text.TranslationTextComponent;
+
 import net.minecraft.world.level.Level;
 import net.minecraftforge.common.util.Constants;
 
@@ -42,23 +42,23 @@ public class SprayCanItem extends Item implements IDyeable
     }
 
     @Override
-    public void appendHoverText(ItemStack stack, @Nullable World world, List<ITextComponent> tooltip, ITooltipFlag flag)
+    public void appendHoverText(ItemStack stack, @Nullable Level world, List<Component> tooltip, ITooltipFlag flag)
     {
         if(Screen.hasShiftDown())
         {
-            tooltip.addAll(RenderUtil.lines(new TranslationTextComponent(this.getDescriptionId() + ".info"), 150));
+            tooltip.addAll(RenderUtil.lines(Component.translatable(this.getDescriptionId() + ".info"), 150));
         }
         else
         {
             if(this.hasColor(stack))
             {
-                tooltip.add(new StringTextComponent(String.format("#%06X", this.getColor(stack))).withStyle(TextFormatting.BLUE));
+                tooltip.add(Component.literal(String.format("#%06X", this.getColor(stack))).withStyle(TextFormatting.BLUE));
             }
             else
             {
-                tooltip.add(new TranslationTextComponent(this.getDescriptionId() + ".empty").withStyle(TextFormatting.RED));
+                tooltip.add(Component.translatable(this.getDescriptionId() + ".empty").withStyle(TextFormatting.RED));
             }
-            tooltip.add(new TranslationTextComponent("vehicle.info_help").withStyle(TextFormatting.YELLOW));
+            tooltip.add(Component.translatable("vehicle.info_help").withStyle(TextFormatting.YELLOW));
         }
     }
 

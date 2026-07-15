@@ -29,7 +29,7 @@ public class GasPumpTankRenderer extends BlockEntityRenderer<GasPumpTankBlockEnt
     @Override
     public void render(GasPumpTankBlockEntity gasPump, float partialTicks, MatrixStack matrixStack, IRenderTypeBuffer renderTypeBuffer, int light, int overlay)
     {
-        World world = gasPump.getLevel();
+        Level world = gasPump.getLevel();
         BlockState state = gasPump.getBlockState();
         if(state.getBlock() != ModBlocks.GAS_PUMP.get())
             return;
