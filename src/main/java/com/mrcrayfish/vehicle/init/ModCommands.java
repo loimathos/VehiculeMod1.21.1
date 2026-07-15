@@ -2,7 +2,7 @@ package com.mrcrayfish.vehicle.init;
 
 import com.mojang.brigadier.CommandDispatcher;
 import com.mrcrayfish.vehicle.common.command.SetCosmeticCommand;
-import net.minecraft.command.CommandSource;
+import net.minecraft.commands.CommandSource;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.event.server.FMLServerAboutToStartEvent;
 import net.minecraftforge.fml.loading.FMLLoader;
