@@ -7,10 +7,10 @@ buildscript {
         mavenCentral()
     }
     dependencies {
-        classpath group: 'net.minecraftforge.gradle', name: 'ForgeGradle', version: '6.0.11', changing: true
+        classpath('net.minecraftforge.gradle:ForgeGradle:6.2.2')
     }
 }
-apply plugin: 'net.minecraftforge.gradle'
+apply plugin: 'net.minecraftforge.gradle.forge'
 apply plugin: 'maven-publish'
 
 version = "0.45.2-1.21.1"
@@ -25,43 +25,31 @@ minecraft {
     mappings channel: "official", version: "1.21.1"
 
     runs {
-        client {
+        createRun("client") {
             workingDirectory project.file('run')
             property 'mixin.env.remapRefMap', 'true'
             property 'mixin.env.refMapRemappingFile', "${projectDir}/build/createSrgToMcp/output.srg"
             property 'forge.logging.markers', 'SCAN,REGISTRIES,REGISTRYDUMP'
             property 'forge.logging.console.level', 'debug'
-            mods {
-                vehicle {
-                    source sourceSets.main
-                }
-            }
+            mod sourceSets.main
         }
 
-        server {
+        createRun("server") {
             workingDirectory project.file('run')
             property 'mixin.env.remapRefMap', 'true'
             property 'mixin.env.refMapRemappingFile', "${projectDir}/build/createSrgToMcp/output.srg"
             property 'forge.logging.markers', 'SCAN,REGISTRIES,REGISTRYDUMP'
             property 'forge.logging.console.level', 'debug'
-            mods {
-                vehicle {
-                    source sourceSets.main
-                }
-            }
+            mod sourceSets.main
         }
 
-        data {
+        createRun("data") {
             workingDirectory project.file('run')
             property 'mixin.env.remapRefMap', 'true'
             property 'mixin.env.refMapRemappingFile', "${projectDir}/build/createSrgToMcp/output.srg"
             property 'forge.logging.console.level', 'debug'
             args '--mod', 'vehicle', '--all', '--output', file('src/generated/resources/')
-            mods {
-                vehicle {
-                    source sourceSets.main
-                }
-            }
+            mod sourceSets.main
         }
     }
 }
