@@ -19,7 +19,7 @@ public abstract class BoatEntity extends PoweredVehicleEntity
     protected State previousState;
     private double waterLevel;
 
-    public BoatEntity(EntityType<?> entityType, World worldIn)
+    public BoatEntity(EntityType<?> entityType, Level worldIn)
     {
         super(entityType, worldIn);
     }

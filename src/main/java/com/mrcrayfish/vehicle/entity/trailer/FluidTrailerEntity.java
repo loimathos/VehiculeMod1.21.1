@@ -42,7 +42,7 @@ public class FluidTrailerEntity extends TrailerEntity implements IEntityAddition
         }
     };
 
-    public FluidTrailerEntity(EntityType<? extends FluidTrailerEntity> type, World worldIn)
+    public FluidTrailerEntity(EntityType<? extends FluidTrailerEntity> type, Level worldIn)
     {
         super(type, worldIn);
     }

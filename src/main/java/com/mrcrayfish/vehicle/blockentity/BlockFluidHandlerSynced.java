@@ -1,4 +1,4 @@
-package com.mrcrayfish.vehicle.tileentity;
+package com.mrcrayfish.vehicle.blockentity;
 
 import com.mrcrayfish.vehicle.util.TileEntityUtil;
 import net.minecraft.entity.player.ServerPlayerEntity;
@@ -14,9 +14,9 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.function.Predicate;
 
-public class TileFluidHandlerSynced extends TileFluidHandler
+public class BlockFluidHandlerSynced extends TileFluidHandler
 {
-    public TileFluidHandlerSynced(@Nonnull TileEntityType<?> tileEntityTypeIn, int capacity)
+    public BlockFluidHandlerSynced(@Nonnull BlockEntityType<?> tileEntityTypeIn, int capacity)
     {
         super(tileEntityTypeIn);
         this.tank = new FluidTank(capacity)
@@ -24,12 +24,12 @@ public class TileFluidHandlerSynced extends TileFluidHandler
             @Override
             protected void onContentsChanged()
             {
-                TileFluidHandlerSynced.this.syncFluidToClient();
+                BlockFluidHandlerSynced.this.syncFluidToClient();
             }
         };
     }
 
-    public TileFluidHandlerSynced(@Nonnull TileEntityType<?> tileEntityTypeIn, int capacity, Predicate<FluidStack> validator)
+    public BlockFluidHandlerSynced(@Nonnull BlockEntityType<?> tileEntityTypeIn, int capacity, Predicate<FluidStack> validator)
     {
         super(tileEntityTypeIn);
         this.tank = new FluidTank(capacity, validator)
@@ -37,14 +37,14 @@ public class TileFluidHandlerSynced extends TileFluidHandler
             @Override
             protected void onContentsChanged()
             {
-                TileFluidHandlerSynced.this.syncFluidToClient();
+                BlockFluidHandlerSynced.this.syncFluidToClient();
             }
         };
     }
 
     public void syncFluidToClient()
     {
-        if(this.level != null && !this.level.isClientSide)
+        if(this.level != null && !this.level.isClientSide())
         {
             CompoundNBT compound = new CompoundNBT();
             super.save(compound);
@@ -54,7 +54,7 @@ public class TileFluidHandlerSynced extends TileFluidHandler
 
     public void syncFluidToPlayer(ServerPlayerEntity player)
     {
-        if(this.level != null && !this.level.isClientSide)
+        if(this.level != null && !this.level.isClientSide())
         {
             CompoundNBT compound = new CompoundNBT();
             super.save(compound);

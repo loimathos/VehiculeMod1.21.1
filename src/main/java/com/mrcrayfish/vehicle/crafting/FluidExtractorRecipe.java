@@ -1,7 +1,7 @@
 package com.mrcrayfish.vehicle.crafting;
 
 import com.mrcrayfish.vehicle.init.ModRecipeSerializers;
-import com.mrcrayfish.vehicle.tileentity.FluidExtractorTileEntity;
+import com.mrcrayfish.vehicle.blockentity.FluidExtractorBlockEntity;
 import com.mrcrayfish.vehicle.util.InventoryUtil;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.crafting.IRecipe;
@@ -13,7 +13,7 @@ import net.minecraft.world.level.Level;
 /**
  * Author: MrCrayfish
  */
-public class FluidExtractorRecipe implements IRecipe<FluidExtractorTileEntity>
+public class FluidExtractorRecipe implements IRecipe<FluidExtractorBlockEntity>
 {
     private ResourceLocation id;
     private ItemStack ingredient;
@@ -37,14 +37,14 @@ public class FluidExtractorRecipe implements IRecipe<FluidExtractorTileEntity>
     }
 
     @Override
-    public boolean matches(FluidExtractorTileEntity fluidExtractor, World worldIn)
+    public boolean matches(FluidExtractorBlockEntity fluidExtractor, Level worldIn)
     {
-        ItemStack source = fluidExtractor.getItem(FluidExtractorTileEntity.SLOT_FLUID_SOURCE);
+        ItemStack source = fluidExtractor.getItem(FluidExtractorBlockEntity.SLOT_FLUID_SOURCE);
         return InventoryUtil.areItemStacksEqualIgnoreCount(source, this.ingredient);
     }
 
     @Override
-    public ItemStack assemble(FluidExtractorTileEntity inv)
+    public ItemStack assemble(FluidExtractorBlockEntity inv)
     {
         return ItemStack.EMPTY;
     }

@@ -1,6 +1,6 @@
 package com.mrcrayfish.vehicle.block;
 
-import com.mrcrayfish.vehicle.tileentity.FluidExtractorTileEntity;
+import com.mrcrayfish.vehicle.blockentity.FluidExtractorBlockEntity;
 import com.mrcrayfish.vehicle.util.TileEntityUtil;
 import net.minecraft.block.AbstractBlock;
 import net.minecraft.block.Block;
@@ -55,7 +55,7 @@ public class FluidExtractorBlock extends RotatedObjectBlock
             }
 
             TileEntity tileEntity = world.getBlockEntity(pos);
-            if(tileEntity instanceof FluidExtractorTileEntity)
+            if(tileEntity instanceof FluidExtractorBlockEntity)
             {
                 TileEntityUtil.sendUpdatePacket(tileEntity, (ServerPlayerEntity) playerEntity);
                 NetworkHooks.openGui((ServerPlayerEntity) playerEntity, (INamedContainerProvider) tileEntity, pos);
@@ -66,7 +66,7 @@ public class FluidExtractorBlock extends RotatedObjectBlock
     }
 
     @Override
-    public void onRemove(BlockState state, World worldIn, BlockPos pos, BlockState newState, boolean isMoving)
+    public void onRemove(BlockState state, Level worldIn, BlockPos pos, BlockState newState, boolean isMoving)
     {
         if(state.getBlock() != newState.getBlock())
         {
@@ -88,9 +88,9 @@ public class FluidExtractorBlock extends RotatedObjectBlock
 
     @Nullable
     @Override
-    public TileEntity createTileEntity(BlockState state, IBlockReader world)
+    public BlockEntity newBlockEntity(BlockPos pos, BlockState state)
     {
-        return new FluidExtractorTileEntity();
+        return new FluidExtractorBlockEntity();
     }
 
     @Override

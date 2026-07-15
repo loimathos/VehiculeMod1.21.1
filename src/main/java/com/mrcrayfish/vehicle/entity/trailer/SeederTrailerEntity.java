@@ -52,7 +52,7 @@ public class SeederTrailerEntity extends TrailerEntity implements IStorage
     private int inventoryTimer;
     private StorageInventory inventory;
 
-    public SeederTrailerEntity(EntityType<? extends SeederTrailerEntity> type, World worldIn)
+    public SeederTrailerEntity(EntityType<? extends SeederTrailerEntity> type, Level worldIn)
     {
         super(type, worldIn);
         this.initInventory();

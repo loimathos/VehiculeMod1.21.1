@@ -41,7 +41,7 @@ public abstract class LandVehicleEntity extends PoweredVehicleEntity
     @OnlyIn(Dist.CLIENT)
     protected int prevWheelieCount;
 
-    public LandVehicleEntity(EntityType<?> entityType, World worldIn)
+    public LandVehicleEntity(EntityType<?> entityType, Level worldIn)
     {
         super(entityType, worldIn);
     }

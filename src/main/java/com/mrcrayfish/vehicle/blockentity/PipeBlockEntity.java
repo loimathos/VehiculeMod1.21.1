@@ -1,6 +1,6 @@
-package com.mrcrayfish.vehicle.tileentity;
+package com.mrcrayfish.vehicle.blockentity;
 
-import com.mrcrayfish.vehicle.init.ModTileEntities;
+import com.mrcrayfish.vehicle.init.ModBlockEntities;
 import com.mrcrayfish.vehicle.util.TileEntityUtil;
 import net.minecraft.block.BlockState;
 import net.minecraft.nbt.CompoundNBT;
@@ -15,17 +15,17 @@ import java.util.Set;
 /**
  * Author: MrCrayfish
  */
-public class PipeTileEntity extends TileEntitySynced
+public class PipeBlockEntity extends BlockEntitySynced
 {
     protected Set<BlockPos> pumps = new HashSet<>();
     protected boolean[] disabledConnections = new boolean[Direction.values().length];
 
-    public PipeTileEntity()
+    public PipeBlockEntity()
     {
-        super(ModTileEntities.FLUID_PIPE.get());
+        super(ModBlockEntities.FLUID_PIPE.get());
     }
 
-    public PipeTileEntity(TileEntityType<?> tileEntityType)
+    public PipeBlockEntity(BlockEntityType<?> tileEntityType)
     {
         super(tileEntityType);
     }

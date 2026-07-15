@@ -1,16 +1,16 @@
-package com.mrcrayfish.vehicle.tileentity;
+package com.mrcrayfish.vehicle.blockentity;
 
 import com.mrcrayfish.vehicle.block.JackBlock;
 import com.mrcrayfish.vehicle.entity.EntityJack;
 import com.mrcrayfish.vehicle.entity.VehicleEntity;
 import com.mrcrayfish.vehicle.init.ModEntities;
 import com.mrcrayfish.vehicle.init.ModSounds;
-import com.mrcrayfish.vehicle.init.ModTileEntities;
+import com.mrcrayfish.vehicle.init.ModBlockEntities;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.material.PushReaction;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.MoverType;
-import net.minecraft.tileentity.ITickableTileEntity;
+
 import net.minecraft.util.SoundCategory;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.vector.Vector3d;
@@ -24,7 +24,7 @@ import java.util.List;
 /**
  * Author: MrCrayfish
  */
-public class JackTileEntity extends TileEntitySynced implements ITickableTileEntity
+public class JackBlockEntity extends BlockEntitySynced implements BlockEntityTicker
 {
     public static final int MAX_LIFT_PROGRESS = 20;
 
@@ -34,9 +34,9 @@ public class JackTileEntity extends TileEntitySynced implements ITickableTileEnt
     public int prevLiftProgress;
     public int liftProgress;
 
-    public JackTileEntity()
+    public JackBlockEntity()
     {
-        super(ModTileEntities.JACK.get());
+        super(ModBlockEntities.JACK.get());
     }
 
     public void setVehicle(VehicleEntity vehicle)

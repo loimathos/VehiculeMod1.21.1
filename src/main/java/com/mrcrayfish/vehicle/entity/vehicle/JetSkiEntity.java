@@ -10,7 +10,7 @@ import net.minecraft.world.level.Level;
  */
 public class JetSkiEntity extends BoatEntity
 {
-    public JetSkiEntity(EntityType<? extends JetSkiEntity> type, World worldIn)
+    public JetSkiEntity(EntityType<? extends JetSkiEntity> type, Level worldIn)
     {
         super(type, worldIn);
     }

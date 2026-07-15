@@ -9,7 +9,7 @@ import net.minecraft.world.level.Level;
  */
 public class DirtBikeEntity extends MotorcycleEntity
 {
-    public DirtBikeEntity(EntityType<? extends DirtBikeEntity> type, World worldIn)
+    public DirtBikeEntity(EntityType<? extends DirtBikeEntity> type, Level worldIn)
     {
         super(type, worldIn);
     }

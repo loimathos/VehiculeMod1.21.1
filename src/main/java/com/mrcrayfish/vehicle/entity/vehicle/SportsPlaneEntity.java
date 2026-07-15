@@ -10,7 +10,7 @@ import net.minecraft.world.level.Level;
  */
 public class SportsPlaneEntity extends PlaneEntity
 {
-    public SportsPlaneEntity(EntityType<? extends SportsPlaneEntity> type, World worldIn)
+    public SportsPlaneEntity(EntityType<? extends SportsPlaneEntity> type, Level worldIn)
     {
         super(type, worldIn);
     }

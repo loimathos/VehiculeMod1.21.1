@@ -25,7 +25,7 @@ import net.minecraftforge.common.Tags;
  */
 public class CompactHelicopterEntity extends HelicopterEntity
 {
-    public CompactHelicopterEntity(EntityType<?> entityType, World worldIn)
+    public CompactHelicopterEntity(EntityType<?> entityType, Level worldIn)
     {
         super(entityType, worldIn);
     }

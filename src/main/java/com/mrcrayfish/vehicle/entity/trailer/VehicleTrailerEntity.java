@@ -20,7 +20,7 @@ import net.minecraftforge.api.distmarker.OnlyIn;
  */
 public class VehicleTrailerEntity extends TrailerEntity
 {
-    public VehicleTrailerEntity(EntityType<? extends VehicleTrailerEntity> type, World worldIn)
+    public VehicleTrailerEntity(EntityType<? extends VehicleTrailerEntity> type, Level worldIn)
     {
         super(type, worldIn);
     }

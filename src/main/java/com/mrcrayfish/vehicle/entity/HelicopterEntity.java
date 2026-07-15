@@ -50,7 +50,7 @@ public abstract class HelicopterEntity extends PoweredVehicleEntity
     @OnlyIn(Dist.CLIENT)
     protected float prevJoystickForward;
 
-    protected HelicopterEntity(EntityType<?> entityType, World worldIn)
+    protected HelicopterEntity(EntityType<?> entityType, Level worldIn)
     {
         super(entityType, worldIn);
     }

@@ -1,20 +1,20 @@
-package com.mrcrayfish.vehicle.tileentity;
+package com.mrcrayfish.vehicle.blockentity;
 
 import com.mrcrayfish.vehicle.init.ModBlocks;
-import com.mrcrayfish.vehicle.init.ModTileEntities;
+import com.mrcrayfish.vehicle.init.ModBlockEntities;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 
 /**
  * Author: MrCrayfish
  */
-public class FuelDrumTileEntity extends TileFluidHandlerSynced
+public class FuelDrumBlockEntity extends BlockEntity
 {
-    public FuelDrumTileEntity()
+    public FuelDrumBlockEntity()
     {
-        super(ModTileEntities.FUEL_DRUM.get(), ModBlocks.FUEL_DRUM.get().getCapacity());
+        super(ModBlockEntities.FUEL_DRUM.get(), ModBlocks.FUEL_DRUM.get().getCapacity());
     }
 
-    public FuelDrumTileEntity(TileEntityType<?> tileEntityType, int capacity)
+    public FuelDrumBlockEntity(BlockEntityType<?> tileEntityType, int capacity)
     {
         super(tileEntityType, capacity);
     }

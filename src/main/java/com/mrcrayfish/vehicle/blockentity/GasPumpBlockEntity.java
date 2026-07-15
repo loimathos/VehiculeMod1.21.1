@@ -1,16 +1,16 @@
-package com.mrcrayfish.vehicle.tileentity;
+package com.mrcrayfish.vehicle.blockentity;
 
 import com.mrcrayfish.obfuscate.common.data.SyncedPlayerData;
 import com.mrcrayfish.vehicle.Config;
 import com.mrcrayfish.vehicle.client.util.HermiteInterpolator;
 import com.mrcrayfish.vehicle.init.ModDataKeys;
-import com.mrcrayfish.vehicle.init.ModTileEntities;
+import com.mrcrayfish.vehicle.init.ModBlockEntities;
 import com.mrcrayfish.vehicle.util.TileEntityUtil;
 import net.minecraft.block.BlockState;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.nbt.CompoundNBT;
-import net.minecraft.tileentity.ITickableTileEntity;
+
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.util.SoundCategory;
 import net.minecraft.util.SoundEvents;
@@ -26,7 +26,7 @@ import java.util.Optional;
 /**
  * Author: MrCrayfish
  */
-public class GasPumpTileEntity extends TileEntitySynced implements ITickableTileEntity
+public class GasPumpBlockEntity extends BlockEntity
 {
     private int fuelingEntityId;
     private PlayerEntity fuelingEntity;
@@ -34,9 +34,9 @@ public class GasPumpTileEntity extends TileEntitySynced implements ITickableTile
     private HermiteInterpolator cachedSpline;
     private boolean recentlyUsed;
 
-    public GasPumpTileEntity()
+    public GasPumpBlockEntity()
     {
-        super(ModTileEntities.GAS_PUMP.get());
+        super(ModBlockEntities.GAS_PUMP.get());
     }
 
     public HermiteInterpolator getCachedSpline()
@@ -62,10 +62,10 @@ public class GasPumpTileEntity extends TileEntitySynced implements ITickableTile
     @Nullable
     public FluidTank getTank()
     {
-        TileEntity tileEntity = this.level.getBlockEntity(this.worldPosition.below());
-        if(tileEntity instanceof GasPumpTankTileEntity)
+        BlockEntity tileEntity = this.level.getBlockEntity(this.worldPosition.below());
+        if(tileEntity instanceof GasPumpTankBlockEntity)
         {
-            return ((GasPumpTankTileEntity) tileEntity).getFluidTank();
+            return ((GasPumpTankBlockEntity) tileEntity).getFluidTank();
         }
         return null;
     }

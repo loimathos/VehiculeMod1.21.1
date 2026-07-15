@@ -34,7 +34,7 @@ public abstract class TrailerEntity extends VehicleEntity
     @OnlyIn(Dist.CLIENT)
     public float prevWheelRotation;
 
-    public TrailerEntity(EntityType<?> entityType, World worldIn)
+    public TrailerEntity(EntityType<?> entityType, Level worldIn)
     {
         super(entityType, worldIn);
         this.maxUpStep = 1.0F;

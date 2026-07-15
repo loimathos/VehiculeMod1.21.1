@@ -218,7 +218,7 @@ public abstract class VehicleEntity extends Entity implements IEntityAdditionalS
                     }
                     if(this.getHealth() == this.getMaxHealth())
                     {
-                        if(level instanceof ServerWorld)
+                        if(level instanceof ServerLevel)
                         {
                             //TODO send as single packet instead of multiple
                             int count = (int) (50 * (this.getBbWidth() * this.getBbHeight()));
@@ -235,7 +235,7 @@ public abstract class VehicleEntity extends Entity implements IEntityAdditionalS
                                 double d0 = random.nextGaussian() * 0.02D;
                                 double d1 = random.nextGaussian() * 0.02D;
                                 double d2 = random.nextGaussian() * 0.02D;
-                                ((ServerWorld) this.level).sendParticles(ParticleTypes.HAPPY_VILLAGER, x, y, z, 1, d0, d1, d2, 1.0);
+                                ((ServerLevel) this.level).sendParticles(ParticleTypes.HAPPY_VILLAGER, x, y, z, 1, d0, d1, d2, 1.0);
                             }
                         }
                         this.level.playSound(null, this.getX(), this.getY(), this.getZ(), SoundEvents.PLAYER_LEVELUP, SoundCategory.PLAYERS, 1.0F, 1.5F);
@@ -409,7 +409,7 @@ public abstract class VehicleEntity extends Entity implements IEntityAdditionalS
     {
         if(!this.level.isClientSide && this.trailerId != null && this.trailer == null)
         {
-            ServerWorld server = (ServerWorld) this.level;
+            ServerLevel server = (ServerLevel) this.level;
             Entity entity = server.getEntity(this.trailerId);
             if(entity instanceof TrailerEntity)
             {

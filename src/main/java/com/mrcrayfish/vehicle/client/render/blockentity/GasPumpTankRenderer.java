@@ -1,15 +1,15 @@
-package com.mrcrayfish.vehicle.client.render.tileentity;
+package com.mrcrayfish.vehicle.client.render.blockentity;
 
 import com.mojang.blaze3d.matrix.MatrixStack;
 import com.mrcrayfish.vehicle.block.RotatedObjectBlock;
 import com.mrcrayfish.vehicle.client.render.Axis;
 import com.mrcrayfish.vehicle.init.ModBlocks;
-import com.mrcrayfish.vehicle.tileentity.GasPumpTankTileEntity;
+import com.mrcrayfish.vehicle.blockentity.GasPumpTankBlockEntity;
 import com.mrcrayfish.vehicle.util.FluidUtils;
 import net.minecraft.block.BlockState;
 import net.minecraft.client.renderer.IRenderTypeBuffer;
-import net.minecraft.client.renderer.tileentity.TileEntityRenderer;
-import net.minecraft.client.renderer.tileentity.TileEntityRendererDispatcher;
+import net.minecraft.client.renderer.blockentity.BlockEntityRenderer;
+import net.minecraft.client.renderer.blockentity.BlockEntityRendererDispatcher;
 import net.minecraft.util.Direction;
 import net.minecraft.world.level.Level;
 import net.minecraftforge.fluids.capability.templates.FluidTank;
@@ -17,7 +17,7 @@ import net.minecraftforge.fluids.capability.templates.FluidTank;
 /**
  * Author: MrCrayfish
  */
-public class GasPumpTankRenderer extends TileEntityRenderer<GasPumpTankTileEntity>
+public class GasPumpTankRenderer extends BlockEntityRenderer<GasPumpTankBlockEntity>
 {
     private static final FluidUtils.FluidSides FLUID_SIDES = new FluidUtils.FluidSides(Direction.NORTH, Direction.SOUTH, Direction.UP);
 
@@ -27,7 +27,7 @@ public class GasPumpTankRenderer extends TileEntityRenderer<GasPumpTankTileEntit
     }
 
     @Override
-    public void render(GasPumpTankTileEntity gasPump, float partialTicks, MatrixStack matrixStack, IRenderTypeBuffer renderTypeBuffer, int light, int overlay)
+    public void render(GasPumpTankBlockEntity gasPump, float partialTicks, MatrixStack matrixStack, IRenderTypeBuffer renderTypeBuffer, int light, int overlay)
     {
         World world = gasPump.getLevel();
         BlockState state = gasPump.getBlockState();

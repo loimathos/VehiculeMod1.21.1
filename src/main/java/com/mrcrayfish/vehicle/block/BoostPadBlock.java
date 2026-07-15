@@ -2,7 +2,7 @@ package com.mrcrayfish.vehicle.block;
 
 import com.mrcrayfish.vehicle.entity.PoweredVehicleEntity;
 import com.mrcrayfish.vehicle.init.ModSounds;
-import com.mrcrayfish.vehicle.tileentity.BoostTileEntity;
+import com.mrcrayfish.vehicle.blockentity.BoostBlockEntity;
 import com.mrcrayfish.vehicle.util.StateHelper;
 import net.minecraft.block.AbstractBlock;
 import net.minecraft.block.Block;
@@ -16,7 +16,7 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.util.Direction;
 import net.minecraft.util.SoundCategory;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.shapes.ISelectionContext;
+import net.minecraft.util.math.shapes.CollisionContext;
 import net.minecraft.util.math.shapes.VoxelShape;
 import net.minecraft.util.math.shapes.VoxelShapes;
 import net.minecraft.world.level.BlockGetter;
@@ -42,19 +42,19 @@ public class BoostPadBlock extends RotatedObjectBlock
     }
 
     @Override
-    public VoxelShape getShape(BlockState state, IBlockReader worldIn, BlockPos pos, ISelectionContext context)
+    public VoxelShape getShape(BlockState state, BlockAndTintGetter worldIn, BlockPos pos, CollisionContext context)
     {
         return SHAPE;
     }
 
     @Override
-    public VoxelShape getCollisionShape(BlockState state, IBlockReader worldIn, BlockPos pos, ISelectionContext context)
+    public VoxelShape getCollisionShape(BlockState state, BlockAndTintGetter worldIn, BlockPos pos, CollisionContext context)
     {
         return VoxelShapes.empty();
     }
 
     @Override
-    public void entityInside(BlockState state, World worldIn, BlockPos pos, Entity entityIn)
+    public void entityInside(BlockState state, Level worldIn, BlockPos pos, Entity entityIn)
     {
         if(entityIn instanceof PoweredVehicleEntity && entityIn.getControllingPassenger() != null)
         {
@@ -63,9 +63,9 @@ public class BoostPadBlock extends RotatedObjectBlock
             {
                 float speedMultiplier = 0.0F;
                 TileEntity tileEntity = worldIn.getBlockEntity(pos);
-                if(tileEntity instanceof BoostTileEntity)
+                if(tileEntity instanceof BoostBlockEntity)
                 {
-                    speedMultiplier = ((BoostTileEntity) tileEntity).getSpeedMultiplier();
+                    speedMultiplier = ((BoostBlockEntity) tileEntity).getSpeedMultiplier();
                 }
 
                 PoweredVehicleEntity poweredVehicle = (PoweredVehicleEntity) entityIn;
@@ -126,8 +126,8 @@ public class BoostPadBlock extends RotatedObjectBlock
 
     @Nullable
     @Override
-    public TileEntity createTileEntity(BlockState state, IBlockReader world)
+    public BlockEntity newBlockEntity(BlockPos pos, BlockState state)
     {
-        return new BoostTileEntity(0.5F);
+        return new BoostBlockEntity(0.5F);
     }
 }

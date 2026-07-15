@@ -29,7 +29,7 @@ public class SportsCarEntity extends LandVehicleEntity implements IStorage
 
     private final ImmutableMap<String, StorageInventory> storageMap;
 
-    public SportsCarEntity(EntityType<? extends LandVehicleEntity> type, World worldIn)
+    public SportsCarEntity(EntityType<? extends LandVehicleEntity> type, Level worldIn)
     {
         super(type, worldIn);
         ImmutableMap.Builder<String, StorageInventory> builder = ImmutableMap.builder();

@@ -20,7 +20,7 @@ public class RecipeRefillSprayCan extends SpecialRecipe
     }
 
     @Override
-    public boolean matches(CraftingInventory inventory, World worldIn)
+    public boolean matches(CraftingInventory inventory, Level worldIn)
     {
         ItemStack sprayCan = ItemStack.EMPTY;
         ItemStack emptySprayCan = ItemStack.EMPTY;

@@ -9,7 +9,7 @@ import net.minecraft.world.level.Level;
  */
 public class SofacopterEntity extends HelicopterEntity
 {
-    public SofacopterEntity(EntityType<? extends SofacopterEntity> type, World worldIn)
+    public SofacopterEntity(EntityType<? extends SofacopterEntity> type, Level worldIn)
     {
         super(type, worldIn);
         this.entityData.set(COLOR, 11546150);

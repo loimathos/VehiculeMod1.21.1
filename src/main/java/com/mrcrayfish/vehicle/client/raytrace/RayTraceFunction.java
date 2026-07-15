@@ -8,8 +8,8 @@ import com.mrcrayfish.vehicle.init.ModDataKeys;
 import com.mrcrayfish.vehicle.item.JerryCanItem;
 import com.mrcrayfish.vehicle.network.PacketHandler;
 import com.mrcrayfish.vehicle.network.message.MessageFuelVehicle;
-import com.mrcrayfish.vehicle.tileentity.GasPumpTankTileEntity;
-import com.mrcrayfish.vehicle.tileentity.GasPumpTileEntity;
+import com.mrcrayfish.vehicle.blockentity.GasPumpTankBlockEntity;
+import com.mrcrayfish.vehicle.blockentity.GasPumpBlockEntity;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
@@ -51,14 +51,14 @@ public interface RayTraceFunction
         {
             BlockPos pos = SyncedPlayerData.instance().get(player, ModDataKeys.GAS_PUMP).get();
             TileEntity tileEntity = player.level.getBlockEntity(pos);
-            if(!(tileEntity instanceof GasPumpTileEntity))
+            if(!(tileEntity instanceof GasPumpBlockEntity))
                 break gasPump;
 
             tileEntity = player.level.getBlockEntity(pos.below());
-            if(!(tileEntity instanceof GasPumpTankTileEntity))
+            if(!(tileEntity instanceof GasPumpTankBlockEntity))
                 break gasPump;
 
-            GasPumpTankTileEntity gasPumpTank = (GasPumpTankTileEntity) tileEntity;
+            GasPumpTankBlockEntity gasPumpTank = (GasPumpTankBlockEntity) tileEntity;
             FluidTank tank = gasPumpTank.getFluidTank();
             FluidStack stack = tank.getFluid();
             if(stack.isEmpty() || !Config.SERVER.validFuels.get().contains(stack.getFluid().getRegistryName().toString()))

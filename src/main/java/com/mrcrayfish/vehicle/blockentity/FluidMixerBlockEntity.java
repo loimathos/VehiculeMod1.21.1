@@ -1,4 +1,4 @@
-package com.mrcrayfish.vehicle.tileentity;
+package com.mrcrayfish.vehicle.blockentity;
 
 import com.mrcrayfish.vehicle.Config;
 import com.mrcrayfish.vehicle.block.FluidMixerBlock;
@@ -7,7 +7,7 @@ import com.mrcrayfish.vehicle.crafting.FluidEntry;
 import com.mrcrayfish.vehicle.crafting.FluidMixerRecipe;
 import com.mrcrayfish.vehicle.crafting.RecipeType;
 import com.mrcrayfish.vehicle.init.ModFluids;
-import com.mrcrayfish.vehicle.init.ModTileEntities;
+import com.mrcrayfish.vehicle.init.ModBlockEntities;
 import com.mrcrayfish.vehicle.inventory.container.FluidMixerContainer;
 import com.mrcrayfish.vehicle.util.InventoryUtil;
 import net.minecraft.block.BlockState;
@@ -21,7 +21,7 @@ import net.minecraft.inventory.container.Container;
 import net.minecraft.inventory.container.INamedContainerProvider;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.CompoundNBT;
-import net.minecraft.tileentity.ITickableTileEntity;
+
 import net.minecraft.util.Direction;
 import net.minecraft.util.IIntArray;
 import net.minecraft.util.NonNullList;
@@ -49,7 +49,7 @@ import java.util.stream.Collectors;
 /**
  * Author: MrCrayfish
  */
-public class FluidMixerTileEntity extends TileEntitySynced implements IInventory, ITickableTileEntity, INamedContainerProvider, IFluidTankWriter
+public class FluidMixerBlockEntity extends BlockEntity implements IInventory, INamedContainerProvider, IFluidTankWriter
 {
     private NonNullList<ItemStack> inventory = NonNullList.withSize(7, ItemStack.EMPTY);
 
@@ -145,9 +145,9 @@ public class FluidMixerTileEntity extends TileEntitySynced implements IInventory
         }
     };
 
-    public FluidMixerTileEntity()
+    public FluidMixerBlockEntity()
     {
-        super(ModTileEntities.FLUID_MIXER.get());
+        super(ModBlockEntities.FLUID_MIXER.get());
     }
 
     @Override

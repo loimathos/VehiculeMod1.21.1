@@ -24,7 +24,7 @@ import com.mrcrayfish.vehicle.item.EngineItem;
 import com.mrcrayfish.vehicle.item.WheelItem;
 import com.mrcrayfish.vehicle.network.PacketHandler;
 import com.mrcrayfish.vehicle.network.message.MessageCraftVehicle;
-import com.mrcrayfish.vehicle.tileentity.WorkstationTileEntity;
+import com.mrcrayfish.vehicle.blockentity.WorkstationBlockEntity;
 import com.mrcrayfish.vehicle.util.CommonUtils;
 import com.mrcrayfish.vehicle.util.InventoryUtil;
 import net.minecraft.client.Minecraft;
@@ -71,7 +71,7 @@ public class WorkstationScreen extends ContainerScreen<WorkstationContainer>
     private final List<MaterialItem> materials;
     private List<MaterialItem> filteredMaterials;
     private final PlayerInventory playerInventory;
-    private final WorkstationTileEntity workstation;
+    private final WorkstationBlockEntity workstation;
     private Button btnCraft;
     private CheckBox checkBoxMaterials;
     private boolean validEngine;

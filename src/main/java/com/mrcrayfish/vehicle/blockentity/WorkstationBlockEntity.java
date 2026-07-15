@@ -1,6 +1,6 @@
-package com.mrcrayfish.vehicle.tileentity;
+package com.mrcrayfish.vehicle.blockentity;
 
-import com.mrcrayfish.vehicle.init.ModTileEntities;
+import com.mrcrayfish.vehicle.init.ModBlockEntities;
 import com.mrcrayfish.vehicle.inventory.IStorageBlock;
 import com.mrcrayfish.vehicle.inventory.container.WorkstationContainer;
 import net.minecraft.block.BlockState;
@@ -20,13 +20,13 @@ import javax.annotation.Nullable;
 /**
  * Author: MrCrayfish
  */
-public class WorkstationTileEntity extends TileEntitySynced implements IStorageBlock
+public class WorkstationBlockEntity extends BlockEntitySynced implements IStorageBlock
 {
     private NonNullList<ItemStack> inventory = NonNullList.withSize(3, ItemStack.EMPTY);
 
-    public WorkstationTileEntity()
+    public WorkstationBlockEntity()
     {
-        super(ModTileEntities.WORKSTATION.get());
+        super(ModBlockEntities.WORKSTATION.get());
     }
 
     @Override

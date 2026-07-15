@@ -14,12 +14,12 @@ import com.mrcrayfish.vehicle.client.model.ComponentManager;
 import com.mrcrayfish.vehicle.client.particle.DustParticle;
 import com.mrcrayfish.vehicle.client.particle.TyreSmokeParticle;
 import com.mrcrayfish.vehicle.client.raytrace.EntityRayTracer;
-import com.mrcrayfish.vehicle.client.render.tileentity.FluidExtractorRenderer;
-import com.mrcrayfish.vehicle.client.render.tileentity.FluidPumpRenderer;
-import com.mrcrayfish.vehicle.client.render.tileentity.FuelDrumRenderer;
-import com.mrcrayfish.vehicle.client.render.tileentity.GasPumpRenderer;
-import com.mrcrayfish.vehicle.client.render.tileentity.GasPumpTankRenderer;
-import com.mrcrayfish.vehicle.client.render.tileentity.VehicleCrateRenderer;
+import com.mrcrayfish.vehicle.client.render.blockentity.FluidExtractorRenderer;
+import com.mrcrayfish.vehicle.client.render.blockentity.FluidPumpRenderer;
+import com.mrcrayfish.vehicle.client.render.blockentity.FuelDrumRenderer;
+import com.mrcrayfish.vehicle.client.render.blockentity.GasPumpRenderer;
+import com.mrcrayfish.vehicle.client.render.blockentity.GasPumpTankRenderer;
+import com.mrcrayfish.vehicle.client.render.blockentity.VehicleCrateRenderer;
 import com.mrcrayfish.vehicle.client.render.vehicle.*;
 import com.mrcrayfish.vehicle.client.screen.EditVehicleScreen;
 import com.mrcrayfish.vehicle.client.screen.FluidExtractorScreen;
@@ -38,7 +38,7 @@ import com.mrcrayfish.vehicle.init.ModContainers;
 import com.mrcrayfish.vehicle.init.ModEntities;
 import com.mrcrayfish.vehicle.init.ModFluids;
 import com.mrcrayfish.vehicle.init.ModParticleTypes;
-import com.mrcrayfish.vehicle.init.ModTileEntities;
+import com.mrcrayfish.vehicle.init.ModBlockEntities;
 import com.mrcrayfish.vehicle.item.PartItem;
 import com.mrcrayfish.vehicle.item.SprayCanItem;
 import com.mrcrayfish.vehicle.util.FluidUtils;
@@ -175,14 +175,14 @@ public class ClientHandler
 
     private static void setupTileEntityRenderers()
     {
-        ClientRegistry.bindTileEntityRenderer(ModTileEntities.FLUID_EXTRACTOR.get(), FluidExtractorRenderer::new);
-        ClientRegistry.bindTileEntityRenderer(ModTileEntities.FUEL_DRUM.get(), FuelDrumRenderer::new);
-        ClientRegistry.bindTileEntityRenderer(ModTileEntities.INDUSTRIAL_FUEL_DRUM.get(), FuelDrumRenderer::new);
-        ClientRegistry.bindTileEntityRenderer(ModTileEntities.VEHICLE_CRATE.get(), VehicleCrateRenderer::new);
-        ClientRegistry.bindTileEntityRenderer(ModTileEntities.JACK.get(), com.mrcrayfish.vehicle.client.render.tileentity.JackRenderer::new);
-        ClientRegistry.bindTileEntityRenderer(ModTileEntities.GAS_PUMP.get(), GasPumpRenderer::new);
-        ClientRegistry.bindTileEntityRenderer(ModTileEntities.GAS_PUMP_TANK.get(), GasPumpTankRenderer::new);
-        ClientRegistry.bindTileEntityRenderer(ModTileEntities.FLUID_PUMP.get(), FluidPumpRenderer::new);
+        ClientRegistry.bindBlockEntityRenderer(ModBlockEntities.FLUID_EXTRACTOR.get(), FluidExtractorRenderer::new);
+        ClientRegistry.bindBlockEntityRenderer(ModBlockEntities.FUEL_DRUM.get(), FuelDrumRenderer::new);
+        ClientRegistry.bindBlockEntityRenderer(ModBlockEntities.INDUSTRIAL_FUEL_DRUM.get(), FuelDrumRenderer::new);
+        ClientRegistry.bindBlockEntityRenderer(ModBlockEntities.VEHICLE_CRATE.get(), VehicleCrateRenderer::new);
+        ClientRegistry.bindBlockEntityRenderer(ModBlockEntities.JACK.get(), com.mrcrayfish.vehicle.client.render.blockentity.JackRenderer::new);
+        ClientRegistry.bindBlockEntityRenderer(ModBlockEntities.GAS_PUMP.get(), GasPumpRenderer::new);
+        ClientRegistry.bindBlockEntityRenderer(ModBlockEntities.GAS_PUMP_TANK.get(), GasPumpTankRenderer::new);
+        ClientRegistry.bindBlockEntityRenderer(ModBlockEntities.FLUID_PUMP.get(), FluidPumpRenderer::new);
     }
 
     private static void setupScreenFactories()

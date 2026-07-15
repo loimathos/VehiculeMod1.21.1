@@ -1,4 +1,4 @@
-package com.mrcrayfish.vehicle.client.render.tileentity;
+package com.mrcrayfish.vehicle.client.render.blockentity;
 
 import com.mojang.blaze3d.matrix.MatrixStack;
 import com.mojang.blaze3d.vertex.IVertexBuilder;
@@ -7,7 +7,7 @@ import com.mrcrayfish.vehicle.client.render.Axis;
 import com.mrcrayfish.vehicle.client.render.VehicleRenderRegistry;
 import com.mrcrayfish.vehicle.entity.VehicleEntity;
 import com.mrcrayfish.vehicle.init.ModBlocks;
-import com.mrcrayfish.vehicle.tileentity.JackTileEntity;
+import com.mrcrayfish.vehicle.blockentity.JackBlockEntity;
 import net.minecraft.block.BlockState;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.BlockRendererDispatcher;
@@ -15,8 +15,8 @@ import net.minecraft.client.renderer.IRenderTypeBuffer;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.model.IBakedModel;
 import net.minecraft.client.renderer.texture.OverlayTexture;
-import net.minecraft.client.renderer.tileentity.TileEntityRenderer;
-import net.minecraft.client.renderer.tileentity.TileEntityRendererDispatcher;
+import net.minecraft.client.renderer.blockentity.BlockEntityRenderer;
+import net.minecraft.client.renderer.blockentity.BlockEntityRendererDispatcher;
 import net.minecraft.entity.Entity;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.vector.Vector3d;
@@ -26,7 +26,7 @@ import java.util.Random;
 /**
  * Author: MrCrayfish
  */
-public class JackRenderer extends TileEntityRenderer<JackTileEntity>
+public class JackRenderer extends TileEntityRenderer<JackBlockEntity>
 {
     public JackRenderer(TileEntityRendererDispatcher dispatcher)
     {
@@ -35,7 +35,7 @@ public class JackRenderer extends TileEntityRenderer<JackTileEntity>
 
     @Override
     @SuppressWarnings({"rawtypes", "unchecked"})
-    public void render(JackTileEntity jack, float partialTicks, MatrixStack matrixStack, IRenderTypeBuffer renderTypeBuffer, int light, int i1)
+    public void render(JackBlockEntity jack, float partialTicks, MatrixStack matrixStack, IRenderTypeBuffer renderTypeBuffer, int light, int i1)
     {
         if(!jack.hasLevel())
             return;
@@ -59,7 +59,7 @@ public class JackRenderer extends TileEntityRenderer<JackTileEntity>
 
         matrixStack.pushPose();
         {
-            float progress = (jack.prevLiftProgress + (jack.liftProgress - jack.prevLiftProgress) * partialTicks) / (float) JackTileEntity.MAX_LIFT_PROGRESS;
+            float progress = (jack.prevLiftProgress + (jack.liftProgress - jack.prevLiftProgress) * partialTicks) / (float) JackBlockEntity.MAX_LIFT_PROGRESS;
             matrixStack.translate(0, 0.5 * progress, 0);
 
             //Render the head
@@ -81,7 +81,7 @@ public class JackRenderer extends TileEntityRenderer<JackTileEntity>
                 {
                     matrixStack.translate(0, 1 * 0.0625, 0);
                     matrixStack.translate(0.5, 0.5, 0.5);
-                    float progress = (jack.prevLiftProgress + (jack.liftProgress - jack.prevLiftProgress) * partialTicks) / (float) JackTileEntity.MAX_LIFT_PROGRESS;
+                    float progress = (jack.prevLiftProgress + (jack.liftProgress - jack.prevLiftProgress) * partialTicks) / (float) JackBlockEntity.MAX_LIFT_PROGRESS;
                     matrixStack.translate(0, 0.5 * progress, 0);
 
                     VehicleEntity vehicle = (VehicleEntity) passenger;

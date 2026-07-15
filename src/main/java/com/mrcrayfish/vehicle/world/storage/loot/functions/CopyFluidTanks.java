@@ -3,7 +3,7 @@ package com.mrcrayfish.vehicle.world.storage.loot.functions;
 import com.google.gson.JsonDeserializationContext;
 import com.google.gson.JsonObject;
 import com.mrcrayfish.vehicle.init.ModLootFunctions;
-import com.mrcrayfish.vehicle.tileentity.IFluidTankWriter;
+import com.mrcrayfish.vehicle.blockentity.IFluidTankWriter;
 import net.minecraft.block.BlockState;
 import net.minecraft.item.ItemStack;
 import net.minecraft.loot.LootContext;
@@ -36,7 +36,7 @@ public class CopyFluidTanks extends LootFunction
         BlockState state = context.getParamOrNull(LootParameters.BLOCK_STATE);
         if(state != null && stack.getItem() == state.getBlock().asItem())
         {
-            TileEntity tileEntity = context.getParamOrNull(LootParameters.BLOCK_ENTITY);
+            BlockEntity tileEntity = context.getParamOrNull(LootParameters.BLOCK_ENTITY);
             if(tileEntity != null)
             {
                 CompoundNBT tileEntityTag = new CompoundNBT();

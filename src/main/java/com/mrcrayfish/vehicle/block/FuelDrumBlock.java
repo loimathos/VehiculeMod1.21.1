@@ -2,7 +2,7 @@ package com.mrcrayfish.vehicle.block;
 
 import com.mrcrayfish.vehicle.Config;
 import com.mrcrayfish.vehicle.init.ModBlocks;
-import com.mrcrayfish.vehicle.tileentity.FuelDrumTileEntity;
+import com.mrcrayfish.vehicle.blockentity.FuelDrumBlockEntity;
 import com.mrcrayfish.vehicle.util.RenderUtil;
 import net.minecraft.block.AbstractBlock;
 import net.minecraft.block.Block;
@@ -27,7 +27,7 @@ import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.Rotation;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.BlockRayTraceResult;
-import net.minecraft.util.math.shapes.ISelectionContext;
+import net.minecraft.util.math.shapes.CollisionContext;
 import net.minecraft.util.math.shapes.VoxelShape;
 import net.minecraft.network.chat.Component;
 import net.minecraft.util.text.StringTextComponent;
@@ -63,19 +63,19 @@ public class FuelDrumBlock extends Block
     }
 
     @Override
-    public VoxelShape getShape(BlockState state, IBlockReader worldIn, BlockPos pos, ISelectionContext context)
+    public VoxelShape getShape(BlockState state, BlockAndTintGetter worldIn, BlockPos pos, CollisionContext context)
     {
         return SHAPE[state.getValue(AXIS).ordinal()];
     }
 
     @Override
-    public VoxelShape getCollisionShape(BlockState state, IBlockReader worldIn, BlockPos pos, ISelectionContext context)
+    public VoxelShape getCollisionShape(BlockState state, BlockAndTintGetter worldIn, BlockPos pos, CollisionContext context)
     {
         return SHAPE[state.getValue(AXIS).ordinal()];
     }
 
     @Override
-    public void appendHoverText(ItemStack stack, @Nullable IBlockReader reader, List<ITextComponent> list, ITooltipFlag advanced)
+    public void appendHoverText(ItemStack stack, @Nullable BlockAndTintGetter reader, List<ITextComponent> list, ITooltipFlag advanced)
     {
         if(Screen.hasShiftDown())
         {
@@ -164,8 +164,8 @@ public class FuelDrumBlock extends Block
 
     @Nullable
     @Override
-    public TileEntity createTileEntity(BlockState state, IBlockReader world)
+    public BlockEntity newBlockEntity(BlockPos pos, BlockState state)
     {
-        return new FuelDrumTileEntity();
+        return new FuelDrumBlockEntity();
     }
 }

@@ -55,7 +55,7 @@ public class InventoryUtil
         return t;
     }
 
-    public static void dropInventoryItems(World worldIn, double x, double y, double z, IInventory inventory)
+    public static void dropInventoryItems(Level worldIn, double x, double y, double z, IInventory inventory)
     {
         for(int i = 0; i < inventory.getContainerSize(); ++i)
         {
@@ -68,7 +68,7 @@ public class InventoryUtil
         }
     }
 
-    public static void spawnItemStack(World worldIn, double x, double y, double z, ItemStack stack)
+    public static void spawnItemStack(Level worldIn, double x, double y, double z, ItemStack stack)
     {
         float offsetX = -0.25F + RANDOM.nextFloat() * 0.5F;
         float offsetY = RANDOM.nextFloat() * 0.8F;

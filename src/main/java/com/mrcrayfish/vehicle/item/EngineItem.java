@@ -45,7 +45,7 @@ public class EngineItem extends PartItem
 
     @Override
     @OnlyIn(Dist.CLIENT)
-    public void appendHoverText(ItemStack stack, @Nullable World worldIn, List<ITextComponent> tooltip, ITooltipFlag flagIn)
+    public void appendHoverText(ItemStack stack, @Nullable Level worldIn, List<ITextComponent> tooltip, ITooltipFlag flagIn)
     {
         tooltip.add(new TranslationTextComponent("vehicle.engine_info.acceleration").append(": ").withStyle(TextFormatting.YELLOW).append(new StringTextComponent(this.tier.getPowerMultiplier() + "x").withStyle(TextFormatting.GRAY)));
         tooltip.add(new TranslationTextComponent("vehicle.engine_info.additional_max_speed").append(": ").withStyle(TextFormatting.YELLOW).append(new StringTextComponent((this.tier.getAdditionalMaxSpeed()) + "bps").withStyle(TextFormatting.GRAY)));

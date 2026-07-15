@@ -1,4 +1,4 @@
-package com.mrcrayfish.vehicle.tileentity;
+package com.mrcrayfish.vehicle.blockentity;
 
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableMap;
@@ -7,12 +7,12 @@ import com.mrcrayfish.vehicle.Reference;
 import com.mrcrayfish.vehicle.block.FluidPipeBlock;
 import com.mrcrayfish.vehicle.block.FluidPumpBlock;
 import com.mrcrayfish.vehicle.common.FluidNetworkHandler;
-import com.mrcrayfish.vehicle.init.ModTileEntities;
+import com.mrcrayfish.vehicle.init.ModBlockEntities;
 import com.mrcrayfish.vehicle.util.FluidUtils;
 import com.mrcrayfish.vehicle.util.TileEntityUtil;
 import net.minecraft.block.BlockState;
 import net.minecraft.nbt.CompoundNBT;
-import net.minecraft.tileentity.ITickableTileEntity;
+
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.util.Direction;
 import net.minecraft.util.math.BlockPos;
@@ -31,7 +31,7 @@ import java.util.function.Function;
 /**
  * Author: MrCrayfish
  */
-public class PumpTileEntity extends PipeTileEntity implements ITickableTileEntity
+public class PumpBlockEntity extends PipeBlockEntity implements BlockEntityTicker
 {
     private int lastHandlerIndex;
     private boolean validatedNetwork;
@@ -39,9 +39,9 @@ public class PumpTileEntity extends PipeTileEntity implements ITickableTileEntit
     private List<Pair<BlockPos, Direction>> fluidHandlers = new ArrayList<>();
     private PowerMode powerMode = PowerMode.ALWAYS_ACTIVE;
 
-    public PumpTileEntity()
+    public PumpBlockEntity()
     {
-        super(ModTileEntities.FLUID_PUMP.get());
+        super(ModBlockEntities.FLUID_PUMP.get());
     }
 
     @Override
@@ -201,10 +201,10 @@ public class PumpTileEntity extends PipeTileEntity implements ITickableTileEntit
             {
                 if(state.getValue(FluidPipeBlock.CONNECTED_PIPES[direction.get3DDataValue()]))
                 {
-                    TileEntity selfTileEntity = this.level.getBlockEntity(pos);
-                    if(selfTileEntity instanceof PipeTileEntity)
+                    BlockEntity selfTileEntity = this.level.getBlockEntity(pos);
+                    if(selfTileEntity instanceof PipeBlockEntity)
                     {
-                        PipeTileEntity pipeTileEntity = (PipeTileEntity) selfTileEntity;
+                        PipeBlockEntity pipeTileEntity = (PipeBlockEntity) selfTileEntity;
                         pipeTileEntity.addPump(this.worldPosition);
                         node.tileEntity = new WeakReference<>(pipeTileEntity);
                         FluidNetworkHandler.instance().addPipeForUpdate(pipeTileEntity);
@@ -217,7 +217,7 @@ public class PumpTileEntity extends PipeTileEntity implements ITickableTileEntit
                         continue;
 
                     BlockPos relativePos = pos.relative(direction);
-                    TileEntity relativeTileEntity = this.level.getBlockEntity(relativePos);
+                    BlockEntity relativeTileEntity = this.level.getBlockEntity(relativePos);
                     if(relativeTileEntity != null && relativeTileEntity.getCapability(CapabilityFluidHandler.FLUID_HANDLER_CAPABILITY, direction.getOpposite()).isPresent())
                     {
                         this.fluidHandlers.add(Pair.of(relativePos, direction.getOpposite()));
@@ -234,7 +234,7 @@ public class PumpTileEntity extends PipeTileEntity implements ITickableTileEntit
                 continue;
 
             BlockPos relativePos = this.worldPosition.relative(direction);
-            TileEntity relativeTileEntity = this.level.getBlockEntity(relativePos);
+            BlockEntity relativeTileEntity = this.level.getBlockEntity(relativePos);
             if(relativeTileEntity != null && relativeTileEntity.getCapability(CapabilityFluidHandler.FLUID_HANDLER_CAPABILITY, direction.getOpposite()).isPresent())
             {
                 this.fluidHandlers.add(Pair.of(relativePos, direction.getOpposite()));
@@ -246,7 +246,7 @@ public class PumpTileEntity extends PipeTileEntity implements ITickableTileEntit
     {
         this.fluidNetwork.forEach((pos, node) ->
         {
-            PipeTileEntity tileEntity = node.tileEntity.get();
+            PipeBlockEntity tileEntity = node.tileEntity.get();
             if(tileEntity != null)
             {
                 tileEntity.removePump(this.worldPosition);
@@ -255,14 +255,14 @@ public class PumpTileEntity extends PipeTileEntity implements ITickableTileEntit
         });
     }
 
-    public List<IFluidHandler> getFluidHandlersOnNetwork(World world)
+    public List<IFluidHandler> getFluidHandlersOnNetwork(Level world)
     {
         List<IFluidHandler> handlers = new ArrayList<>();
         this.fluidHandlers.forEach(pair ->
         {
             if(world.isLoaded(pair.getLeft()))
             {
-                TileEntity tileEntity = world.getBlockEntity(pair.getLeft());
+                BlockEntity tileEntity = world.getBlockEntity(pair.getLeft());
                 if(tileEntity != null)
                 {
                     LazyOptional<IFluidHandler> lazyOptional = tileEntity.getCapability(CapabilityFluidHandler.FLUID_HANDLER_CAPABILITY, pair.getRight());
@@ -277,10 +277,10 @@ public class PumpTileEntity extends PipeTileEntity implements ITickableTileEntit
         return handlers;
     }
 
-    public Optional<IFluidHandler> getSourceFluidHandler(World world)
+    public Optional<IFluidHandler> getSourceFluidHandler(Level world)
     {
         Direction direction = this.getBlockState().getValue(FluidPumpBlock.DIRECTION);
-        TileEntity tileEntity = world.getBlockEntity(this.worldPosition.relative(direction.getOpposite()));
+        BlockEntity tileEntity = world.getBlockEntity(this.worldPosition.relative(direction.getOpposite()));
         if(tileEntity != null)
         {
             LazyOptional<IFluidHandler> lazyOptional = tileEntity.getCapability(CapabilityFluidHandler.FLUID_HANDLER_CAPABILITY, direction);
@@ -330,7 +330,7 @@ public class PumpTileEntity extends PipeTileEntity implements ITickableTileEntit
 
     private static class PipeNode
     {
-        private WeakReference<PipeTileEntity> tileEntity;
+        private WeakReference<PipeBlockEntity> tileEntity;
     }
 
     public enum PowerMode
@@ -341,15 +341,15 @@ public class PumpTileEntity extends PipeTileEntity implements ITickableTileEntit
 
         private static final String LANG_KEY_CHAT_PREFIX = Reference.MOD_ID + ".chat.pump.power";
         private String key;
-        private Function<PumpTileEntity, Boolean> function;
+        private Function<PumpBlockEntity, Boolean> function;
 
-        PowerMode(String key, Function<PumpTileEntity, Boolean> function)
+        PowerMode(String key, Function<PumpBlockEntity, Boolean> function)
         {
             this.key = String.join(".", LANG_KEY_CHAT_PREFIX, key);
             this.function = function;
         }
 
-        public boolean test(PumpTileEntity pump)
+        public boolean test(PumpBlockEntity pump)
         {
             return this.function.apply(pump);
         }

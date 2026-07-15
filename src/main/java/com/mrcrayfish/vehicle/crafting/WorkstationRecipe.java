@@ -2,7 +2,7 @@ package com.mrcrayfish.vehicle.crafting;
 
 import com.google.common.collect.ImmutableList;
 import com.mrcrayfish.vehicle.init.ModRecipeSerializers;
-import com.mrcrayfish.vehicle.tileentity.WorkstationTileEntity;
+import com.mrcrayfish.vehicle.blockentity.WorkstationBlockEntity;
 import com.mrcrayfish.vehicle.util.InventoryUtil;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.player.PlayerEntity;
@@ -16,7 +16,7 @@ import net.minecraft.world.level.Level;
 /**
  * Author: MrCrayfish
  */
-public class WorkstationRecipe implements IRecipe<WorkstationTileEntity>
+public class WorkstationRecipe implements IRecipe<WorkstationBlockEntity>
 {
     private ResourceLocation id;
     private EntityType<?> vehicle;
@@ -40,13 +40,13 @@ public class WorkstationRecipe implements IRecipe<WorkstationTileEntity>
     }
 
     @Override
-    public boolean matches(WorkstationTileEntity inv, World worldIn)
+    public boolean matches(WorkstationBlockEntity inv, Level worldIn)
     {
         return false;
     }
 
     @Override
-    public ItemStack assemble(WorkstationTileEntity inv)
+    public ItemStack assemble(WorkstationBlockEntity inv)
     {
         return ItemStack.EMPTY;
     }

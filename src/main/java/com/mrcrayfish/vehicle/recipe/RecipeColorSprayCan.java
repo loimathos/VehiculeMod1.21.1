@@ -25,7 +25,7 @@ public class RecipeColorSprayCan extends SpecialRecipe
     }
 
     @Override
-    public boolean matches(CraftingInventory inventory, World worldIn)
+    public boolean matches(CraftingInventory inventory, Level worldIn)
     {
         ItemStack dyeableItem = ItemStack.EMPTY;
         List<ItemStack> dyes = Lists.newArrayList();

@@ -3,7 +3,7 @@ package com.mrcrayfish.vehicle.inventory.container;
 import com.mrcrayfish.vehicle.init.ModContainers;
 import com.mrcrayfish.vehicle.item.EngineItem;
 import com.mrcrayfish.vehicle.item.WheelItem;
-import com.mrcrayfish.vehicle.tileentity.WorkstationTileEntity;
+import com.mrcrayfish.vehicle.blockentity.WorkstationBlockEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.inventory.IInventory;
 import net.minecraft.inventory.container.Container;
@@ -17,10 +17,10 @@ import net.minecraft.util.math.BlockPos;
  */
 public class WorkstationContainer extends Container
 {
-    private WorkstationTileEntity workstationTileEntity;
+    private WorkstationBlockEntity workstationTileEntity;
     private BlockPos pos;
 
-    public WorkstationContainer(int windowId, IInventory playerInventory, WorkstationTileEntity workstationTileEntity)
+    public WorkstationContainer(int windowId, IInventory playerInventory, WorkstationBlockEntity workstationTileEntity)
     {
         super(ModContainers.WORKSTATION.get(), windowId);
         this.workstationTileEntity = workstationTileEntity;
@@ -170,7 +170,7 @@ public class WorkstationContainer extends Container
         return pos;
     }
 
-    public WorkstationTileEntity getTileEntity()
+    public WorkstationBlockEntity getTileEntity()
     {
         return workstationTileEntity;
     }

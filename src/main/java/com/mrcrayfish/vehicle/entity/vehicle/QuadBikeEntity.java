@@ -9,7 +9,7 @@ import net.minecraft.world.level.Level;
  */
 public class QuadBikeEntity extends LandVehicleEntity
 {
-    public QuadBikeEntity(EntityType<? extends QuadBikeEntity> type, World worldIn)
+    public QuadBikeEntity(EntityType<? extends QuadBikeEntity> type, Level worldIn)
     {
         super(type, worldIn);
     }

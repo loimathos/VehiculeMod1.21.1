@@ -49,7 +49,7 @@ public class FertilizerTrailerEntity extends TrailerEntity implements IStorage
     private StorageInventory inventory;
     private BlockPos[] lastPos = new BlockPos[3];
 
-    public FertilizerTrailerEntity(EntityType<? extends FertilizerTrailerEntity> type, World worldIn)
+    public FertilizerTrailerEntity(EntityType<? extends FertilizerTrailerEntity> type, Level worldIn)
     {
         super(type, worldIn);
         this.initInventory();
@@ -128,7 +128,7 @@ public class FertilizerTrailerEntity extends TrailerEntity implements IStorage
             {
                 if(growable.isBonemealSuccess(level, random, pos, state))
                 {
-                    growable.performBonemeal((ServerWorld) level, random, pos, state);
+                    growable.performBonemeal((ServerLevel) level, random, pos, state);
                     level.levelEvent(2005, pos, 0);
                     return true;
                 }

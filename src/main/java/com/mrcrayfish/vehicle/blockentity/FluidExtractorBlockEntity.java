@@ -1,10 +1,10 @@
-package com.mrcrayfish.vehicle.tileentity;
+package com.mrcrayfish.vehicle.blockentity;
 
 import com.mrcrayfish.vehicle.Config;
 import com.mrcrayfish.vehicle.block.FluidMixerBlock;
 import com.mrcrayfish.vehicle.crafting.FluidExtractorRecipe;
 import com.mrcrayfish.vehicle.crafting.RecipeType;
-import com.mrcrayfish.vehicle.init.ModTileEntities;
+import com.mrcrayfish.vehicle.init.ModBlockEntities;
 import com.mrcrayfish.vehicle.inventory.container.FluidExtractorContainer;
 import com.mrcrayfish.vehicle.util.InventoryUtil;
 import net.minecraft.block.BlockState;
@@ -18,7 +18,7 @@ import net.minecraft.inventory.container.Container;
 import net.minecraft.inventory.container.INamedContainerProvider;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.CompoundNBT;
-import net.minecraft.tileentity.ITickableTileEntity;
+
 import net.minecraft.util.Direction;
 import net.minecraft.util.IIntArray;
 import net.minecraft.util.INameable;
@@ -46,7 +46,7 @@ import java.util.stream.Collectors;
 /**
  * Author: MrCrayfish
  */
-public class FluidExtractorTileEntity extends TileFluidHandlerSynced implements IInventory, ITickableTileEntity, INamedContainerProvider, INameable
+public class FluidExtractorBlockEntity extends BlockEntity implements IInventory, INamedContainerProvider, INameable
 {
     private NonNullList<ItemStack> inventory = NonNullList.withSize(7, ItemStack.EMPTY);
 
@@ -114,9 +114,9 @@ public class FluidExtractorTileEntity extends TileFluidHandlerSynced implements 
         }
     };
 
-    public FluidExtractorTileEntity()
+    public FluidExtractorBlockEntity()
     {
-        super(ModTileEntities.FLUID_EXTRACTOR.get(), Config.SERVER.extractorCapacity.get(), stack -> true);
+        super(ModBlockEntities.FLUID_EXTRACTOR.get(), Config.SERVER.extractorCapacity.get(), stack -> true);
         this.capacity = Config.SERVER.extractorCapacity.get();
     }
 

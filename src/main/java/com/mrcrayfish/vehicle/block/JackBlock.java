@@ -1,6 +1,6 @@
 package com.mrcrayfish.vehicle.block;
 
-import com.mrcrayfish.vehicle.tileentity.JackTileEntity;
+import com.mrcrayfish.vehicle.blockentity.JackBlockEntity;
 import net.minecraft.block.AbstractBlock;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockRenderType;
@@ -12,7 +12,7 @@ import net.minecraft.state.properties.BlockStateProperties;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.util.Direction;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.shapes.ISelectionContext;
+import net.minecraft.util.math.shapes.CollisionContext;
 import net.minecraft.util.math.shapes.VoxelShape;
 import net.minecraft.util.math.shapes.VoxelShapes;
 import net.minecraft.world.level.BlockGetter;
@@ -36,12 +36,12 @@ public class JackBlock extends RotatedObjectBlock
     }
 
     @Override
-    public VoxelShape getShape(BlockState state, IBlockReader worldIn, BlockPos pos, ISelectionContext context)
+    public VoxelShape getShape(BlockState state, BlockAndTintGetter worldIn, BlockPos pos, CollisionContext context)
     {
         TileEntity tileEntity = worldIn.getBlockEntity(pos);
-        if(tileEntity instanceof JackTileEntity)
+        if(tileEntity instanceof JackBlockEntity)
         {
-            JackTileEntity jack = (JackTileEntity) tileEntity;
+            JackBlockEntity jack = (JackBlockEntity) tileEntity;
             return VoxelShapes.create(SHAPE.bounds().expandTowards(0, 0.5 * jack.getProgress(), 0));
         }
         return SHAPE;
@@ -55,9 +55,9 @@ public class JackBlock extends RotatedObjectBlock
 
     @Nullable
     @Override
-    public TileEntity createTileEntity(BlockState state, IBlockReader world)
+    public BlockEntity newBlockEntity(BlockPos pos, BlockState state)
     {
-        return new JackTileEntity();
+        return new JackBlockEntity();
     }
 
     @Override

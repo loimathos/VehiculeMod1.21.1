@@ -9,7 +9,7 @@ import net.minecraft.world.level.Level;
  */
 public class GoKartEntity extends LandVehicleEntity
 {
-    public GoKartEntity(EntityType<? extends GoKartEntity> type, World worldIn)
+    public GoKartEntity(EntityType<? extends GoKartEntity> type, Level worldIn)
     {
         super(type, worldIn);
         this.maxUpStep = 0.625F;

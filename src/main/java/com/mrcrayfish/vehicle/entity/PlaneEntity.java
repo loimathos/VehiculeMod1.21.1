@@ -62,7 +62,7 @@ public abstract class PlaneEntity extends PoweredVehicleEntity
     @OnlyIn(Dist.CLIENT)
     protected float prevElevatorAngle;
 
-    protected PlaneEntity(EntityType<?> entityType, World worldIn)
+    protected PlaneEntity(EntityType<?> entityType, Level worldIn)
     {
         super(entityType, worldIn);
     }

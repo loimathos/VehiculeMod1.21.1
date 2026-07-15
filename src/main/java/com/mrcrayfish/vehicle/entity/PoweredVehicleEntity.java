@@ -21,8 +21,8 @@ import com.mrcrayfish.vehicle.network.message.MessageHandbrake;
 import com.mrcrayfish.vehicle.network.message.MessageHorn;
 import com.mrcrayfish.vehicle.network.message.MessageThrottle;
 import com.mrcrayfish.vehicle.network.message.MessageTurnAngle;
-import com.mrcrayfish.vehicle.tileentity.GasPumpTankTileEntity;
-import com.mrcrayfish.vehicle.tileentity.GasPumpTileEntity;
+import com.mrcrayfish.vehicle.blockentity.GasPumpTankBlockEntity;
+import com.mrcrayfish.vehicle.blockentity.GasPumpBlockEntity;
 import com.mrcrayfish.vehicle.util.CommonUtils;
 import com.mrcrayfish.vehicle.util.InventoryUtil;
 import net.minecraft.block.BlockState;
@@ -121,13 +121,13 @@ public abstract class PoweredVehicleEntity extends VehicleEntity implements IInv
     @OnlyIn(Dist.CLIENT)
     protected float engineVolume;
 
-    protected PoweredVehicleEntity(EntityType<?> entityType, World worldIn)
+    protected PoweredVehicleEntity(EntityType<?> entityType, Level worldIn)
     {
         super(entityType, worldIn);
         this.maxUpStep = 1.0F;
     }
 
-    public PoweredVehicleEntity(EntityType<?> entityType, World worldIn, double posX, double posY, double posZ)
+    public PoweredVehicleEntity(EntityType<?> entityType, Level worldIn, double posX, double posY, double posZ)
     {
         this(entityType, worldIn);
         this.setPos(posX, posY, posZ);
@@ -191,14 +191,14 @@ public abstract class PoweredVehicleEntity extends VehicleEntity implements IInv
         {
             BlockPos pos = SyncedPlayerData.instance().get(player, ModDataKeys.GAS_PUMP).get();
             TileEntity tileEntity = this.level.getBlockEntity(pos);
-            if(!(tileEntity instanceof GasPumpTileEntity))
+            if(!(tileEntity instanceof GasPumpBlockEntity))
                 return;
 
             tileEntity = this.level.getBlockEntity(pos.below());
-            if(!(tileEntity instanceof GasPumpTankTileEntity))
+            if(!(tileEntity instanceof GasPumpTankBlockEntity))
                 return;
 
-            GasPumpTankTileEntity gasPumpTank = (GasPumpTankTileEntity) tileEntity;
+            GasPumpTankBlockEntity gasPumpTank = (GasPumpTankBlockEntity) tileEntity;
             FluidTank tank = gasPumpTank.getFluidTank();
             FluidStack stack = tank.getFluid();
             if(stack.isEmpty() || !Config.SERVER.validFuels.get().contains(stack.getFluid().getRegistryName().toString()))

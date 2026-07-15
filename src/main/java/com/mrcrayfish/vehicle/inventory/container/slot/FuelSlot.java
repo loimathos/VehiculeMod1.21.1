@@ -4,7 +4,7 @@ import net.minecraft.inventory.IInventory;
 import net.minecraft.inventory.container.Slot;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
-import net.minecraft.tileentity.AbstractFurnaceTileEntity;
+import net.minecraft.world.level.block.entity.AbstractFurnaceBlockEntity;
 
 /**
  * Author: MrCrayfish
@@ -19,7 +19,7 @@ public class FuelSlot extends Slot
     @Override
     public boolean mayPlace(ItemStack stack)
     {
-        return AbstractFurnaceTileEntity.isFuel(stack) || isBucket(stack);
+        return AbstractFurnaceBlockEntity.isFuel(stack) || isBucket(stack);
     }
 
     @Override

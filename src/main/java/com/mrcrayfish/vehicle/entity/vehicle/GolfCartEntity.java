@@ -9,7 +9,7 @@ import net.minecraft.world.level.Level;
  */
 public class GolfCartEntity extends HelicopterEntity
 {
-    public GolfCartEntity(EntityType<? extends GolfCartEntity> type, World worldIn)
+    public GolfCartEntity(EntityType<? extends GolfCartEntity> type, Level worldIn)
     {
         super(type, worldIn);
         //TODO figure out electric vehicles

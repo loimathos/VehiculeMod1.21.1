@@ -1,4 +1,4 @@
-package com.mrcrayfish.vehicle.tileentity;
+package com.mrcrayfish.vehicle.blockentity;
 
 import net.minecraft.nbt.CompoundNBT;
 

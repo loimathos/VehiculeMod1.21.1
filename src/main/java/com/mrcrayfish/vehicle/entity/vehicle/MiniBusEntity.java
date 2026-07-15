@@ -9,7 +9,7 @@ import net.minecraft.world.level.Level;
  */
 public class MiniBusEntity extends LandVehicleEntity
 {
-    public MiniBusEntity(EntityType<? extends MiniBusEntity> type, World worldIn)
+    public MiniBusEntity(EntityType<? extends MiniBusEntity> type, Level worldIn)
     {
         super(type, worldIn);
     }

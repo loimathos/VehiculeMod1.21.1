@@ -25,7 +25,7 @@ public class ObjectBlock extends Block
     }
 
     @Override
-    public void appendHoverText(ItemStack stack, @Nullable IBlockReader reader, List<ITextComponent> list, ITooltipFlag flag)
+    public void appendHoverText(ItemStack stack, @Nullable BlockAndTintGetter reader, List<ITextComponent> list, ITooltipFlag flag)
     {
         if(Screen.hasShiftDown())
         {

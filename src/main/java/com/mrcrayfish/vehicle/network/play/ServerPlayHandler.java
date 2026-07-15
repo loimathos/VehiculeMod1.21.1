@@ -30,7 +30,7 @@ import com.mrcrayfish.vehicle.inventory.container.WorkstationContainer;
 import com.mrcrayfish.vehicle.item.EngineItem;
 import com.mrcrayfish.vehicle.item.WheelItem;
 import com.mrcrayfish.vehicle.network.message.*;
-import com.mrcrayfish.vehicle.tileentity.WorkstationTileEntity;
+import com.mrcrayfish.vehicle.blockentity.WorkstationBlockEntity;
 import com.mrcrayfish.vehicle.util.CommonUtils;
 import net.minecraft.block.SoundType;
 import net.minecraft.entity.Entity;
@@ -136,7 +136,7 @@ public class ServerPlayHandler
             PoweredVehicleEntity entityPoweredVehicle = (PoweredVehicleEntity) entity;
             engineType = entityPoweredVehicle.getEngineType();
 
-            WorkstationTileEntity workstationTileEntity = workstation.getTileEntity();
+            WorkstationBlockEntity workstationTileEntity = workstation.getTileEntity();
             ItemStack workstationEngine = workstationTileEntity.getItem(1);
             if(workstationEngine.isEmpty() || !(workstationEngine.getItem() instanceof EngineItem))
                 return;
@@ -157,7 +157,7 @@ public class ServerPlayHandler
 
         recipe.consumeMaterials(player);
 
-        WorkstationTileEntity workstationTileEntity = workstation.getTileEntity();
+        WorkstationBlockEntity workstationTileEntity = workstation.getTileEntity();
 
         /* Gets the color based on the dye */
         int color = VehicleEntity.DYE_TO_COLOR[0];

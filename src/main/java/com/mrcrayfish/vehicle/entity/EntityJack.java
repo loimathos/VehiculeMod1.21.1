@@ -1,6 +1,6 @@
 package com.mrcrayfish.vehicle.entity;
 
-import com.mrcrayfish.vehicle.tileentity.JackTileEntity;
+import com.mrcrayfish.vehicle.blockentity.JackBlockEntity;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
 import net.minecraft.nbt.CompoundNBT;
@@ -24,14 +24,14 @@ public class EntityJack extends Entity implements IEntityAdditionalSpawnData
     private boolean activated = false;
     private int liftProgress;
 
-    public EntityJack(EntityType<? extends EntityJack> type, World worldIn)
+    public EntityJack(EntityType<? extends EntityJack> type, Level worldIn)
     {
         super(type, worldIn);
         this.setNoGravity(true);
         this.noPhysics = true;
     }
 
-    public EntityJack(EntityType<? extends EntityJack> type, World worldIn, BlockPos pos, double yOffset, float yaw)
+    public EntityJack(EntityType<? extends EntityJack> type, Level worldIn, BlockPos pos, double yOffset, float yaw)
     {
         this(type, worldIn);
         this.setPos(pos.getX() + 0.5, pos.getY() + yOffset, pos.getZ() + 0.5);
@@ -78,10 +78,10 @@ public class EntityJack extends Entity implements IEntityAdditionalSpawnData
         }
 
         TileEntity tileEntity = this.level.getBlockEntity(new BlockPos(this.initialX, this.initialY, this.initialZ));
-        if(tileEntity instanceof JackTileEntity)
+        if(tileEntity instanceof JackBlockEntity)
         {
-            JackTileEntity jackTileEntity = (JackTileEntity) tileEntity;
-            this.setPos(this.initialX, this.initialY + 0.5 * (jackTileEntity.liftProgress / (double) JackTileEntity.MAX_LIFT_PROGRESS), this.initialZ);
+            JackBlockEntity jackTileEntity = (JackBlockEntity) tileEntity;
+            this.setPos(this.initialX, this.initialY + 0.5 * (jackTileEntity.liftProgress / (double) JackBlockEntity.MAX_LIFT_PROGRESS), this.initialZ);
         }
     }
 

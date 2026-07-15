@@ -21,7 +21,7 @@ public class TileEntityUtil
      *
      * @param tileEntity the tile entity to update
      */
-    public static void sendUpdatePacket(TileEntity tileEntity)
+    public static void sendUpdatePacket(BlockEntity tileEntity)
     {
         SUpdateTileEntityPacket packet = tileEntity.getUpdatePacket();
         if(packet != null)
@@ -35,7 +35,7 @@ public class TileEntityUtil
      *
      * @param tileEntity the tile entity to update
      */
-    public static void sendUpdatePacket(TileEntity tileEntity, CompoundNBT compound)
+    public static void sendUpdatePacket(BlockEntity tileEntity, CompoundNBT compound)
     {
         SUpdateTileEntityPacket packet = new SUpdateTileEntityPacket(tileEntity.getBlockPos(), 0, compound);
         sendUpdatePacket(tileEntity.getLevel(), tileEntity.getBlockPos(), packet);
@@ -49,7 +49,7 @@ public class TileEntityUtil
      * @param tileEntity the tile entity to update
      * @param player the player to send the update to
      */
-    public static void sendUpdatePacket(TileEntity tileEntity, ServerPlayerEntity player)
+    public static void sendUpdatePacket(BlockEntity tileEntity, ServerPlayerEntity player)
     {
         sendUpdatePacket(tileEntity, tileEntity.getUpdateTag(), player);
     }
@@ -63,17 +63,17 @@ public class TileEntityUtil
      * @param compound the update tag to send
      * @param player the player to send the update to
      */
-    public static void sendUpdatePacket(TileEntity tileEntity, CompoundNBT compound, ServerPlayerEntity player)
+    public static void sendUpdatePacket(BlockEntity tileEntity, CompoundNBT compound, ServerPlayerEntity player)
     {
         SUpdateTileEntityPacket packet = new SUpdateTileEntityPacket(tileEntity.getBlockPos(), 0, compound);
         player.connection.send(packet);
     }
 
-    private static void sendUpdatePacket(World world, BlockPos pos, SUpdateTileEntityPacket packet)
+    private static void sendUpdatePacket(Level world, BlockPos pos, SUpdateTileEntityPacket packet)
     {
-        if(world instanceof ServerWorld)
+        if(world instanceof ServerLevel)
         {
-            ServerWorld server = (ServerWorld) world;
+            ServerLevel server = (ServerLevel) world;
             Stream<ServerPlayerEntity> players = server.getChunkSource().chunkMap.getPlayers(new ChunkPos(pos), false);
             players.forEach(player -> player.connection.send(packet));
         }

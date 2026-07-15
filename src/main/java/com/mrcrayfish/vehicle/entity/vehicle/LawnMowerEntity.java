@@ -25,7 +25,7 @@ import java.util.List;
  */
 public class LawnMowerEntity extends LandVehicleEntity
 {
-    public LawnMowerEntity(EntityType<? extends LawnMowerEntity> type, World worldIn)
+    public LawnMowerEntity(EntityType<? extends LawnMowerEntity> type, Level worldIn)
     {
         super(type, worldIn);
     }
@@ -59,7 +59,7 @@ public class LawnMowerEntity extends LandVehicleEntity
 
                     if(state.getBlock() instanceof BushBlock)
                     {
-                        List<ItemStack> drops = Block.getDrops(state, (ServerWorld) level, pos, null);
+                        List<ItemStack> drops = Block.getDrops(state, (ServerLevel) level, pos, null);
                         for(ItemStack stack : drops)
                         {
                             this.addItemToStorage(trailer, stack);
@@ -100,7 +100,7 @@ public class LawnMowerEntity extends LandVehicleEntity
         }
     }
 
-    private void spawnItemStack(World worldIn, ItemStack stack)
+    private void spawnItemStack(Level worldIn, ItemStack stack)
     {
         while(!stack.isEmpty())
         {

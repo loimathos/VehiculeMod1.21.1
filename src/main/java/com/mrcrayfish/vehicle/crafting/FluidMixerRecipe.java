@@ -1,7 +1,7 @@
 package com.mrcrayfish.vehicle.crafting;
 
 import com.mrcrayfish.vehicle.init.ModRecipeSerializers;
-import com.mrcrayfish.vehicle.tileentity.FluidMixerTileEntity;
+import com.mrcrayfish.vehicle.blockentity.FluidMixerBlockEntity;
 import com.mrcrayfish.vehicle.util.InventoryUtil;
 import net.minecraft.fluid.Fluid;
 import net.minecraft.item.ItemStack;
@@ -16,7 +16,7 @@ import java.util.Objects;
 /**
  * Author: MrCrayfish
  */
-public class FluidMixerRecipe implements IRecipe<FluidMixerTileEntity>
+public class FluidMixerRecipe implements IRecipe<FluidMixerBlockEntity>
 {
     private ResourceLocation id;
     private FluidEntry[] inputs;
@@ -89,7 +89,7 @@ public class FluidMixerRecipe implements IRecipe<FluidMixerTileEntity>
     }
 
     @Override
-    public boolean matches(FluidMixerTileEntity fluidMixer, World worldIn)
+    public boolean matches(FluidMixerBlockEntity fluidMixer, Level worldIn)
     {
         if(fluidMixer.getEnderSapTank().isEmpty() || fluidMixer.getBlazeTank().isEmpty())
             return false;
@@ -105,11 +105,11 @@ public class FluidMixerRecipe implements IRecipe<FluidMixerTileEntity>
         if(index == -1) return false;
         Fluid inputTwo = fluidMixer.getBlazeTank().getFluid().getFluid();
         if(!inputTwo.equals(this.inputs[index].getFluid())) return false;
-        return InventoryUtil.areItemStacksEqualIgnoreCount(fluidMixer.getItem(FluidMixerTileEntity.SLOT_INGREDIENT), this.ingredient);
+        return InventoryUtil.areItemStacksEqualIgnoreCount(fluidMixer.getItem(FluidMixerBlockEntity.SLOT_INGREDIENT), this.ingredient);
     }
 
     @Override
-    public ItemStack assemble(FluidMixerTileEntity inv)
+    public ItemStack assemble(FluidMixerBlockEntity inv)
     {
         return ItemStack.EMPTY;
     }

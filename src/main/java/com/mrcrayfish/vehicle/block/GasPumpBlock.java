@@ -1,8 +1,8 @@
 package com.mrcrayfish.vehicle.block;
 
 import com.mrcrayfish.vehicle.init.ModSounds;
-import com.mrcrayfish.vehicle.tileentity.GasPumpTankTileEntity;
-import com.mrcrayfish.vehicle.tileentity.GasPumpTileEntity;
+import com.mrcrayfish.vehicle.blockentity.GasPumpTankBlockEntity;
+import com.mrcrayfish.vehicle.blockentity.GasPumpBlockEntity;
 import com.mrcrayfish.vehicle.util.VoxelShapeHelper;
 import net.minecraft.block.AbstractBlock;
 import net.minecraft.block.Block;
@@ -23,7 +23,7 @@ import net.minecraft.util.Hand;
 import net.minecraft.util.SoundCategory;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.BlockRayTraceResult;
-import net.minecraft.util.math.shapes.ISelectionContext;
+import net.minecraft.util.math.shapes.CollisionContext;
 import net.minecraft.util.math.shapes.VoxelShape;
 import net.minecraft.util.math.vector.Vector3d;
 import net.minecraft.world.level.BlockGetter;
@@ -74,7 +74,7 @@ public class GasPumpBlock extends RotatedObjectBlock
     }
 
     @Override
-    public VoxelShape getShape(BlockState state, IBlockReader reader, BlockPos pos, ISelectionContext context)
+    public VoxelShape getShape(BlockState state, BlockAndTintGetter reader, BlockPos pos, CollisionContext context)
     {
         return this.getShape(state);
     }
@@ -90,9 +90,9 @@ public class GasPumpBlock extends RotatedObjectBlock
         if(state.getValue(TOP))
         {
             TileEntity tileEntity = world.getBlockEntity(pos);
-            if(tileEntity instanceof GasPumpTileEntity)
+            if(tileEntity instanceof GasPumpBlockEntity)
             {
-                GasPumpTileEntity gasPump = (GasPumpTileEntity) tileEntity;
+                GasPumpBlockEntity gasPump = (GasPumpBlockEntity) tileEntity;
                 if(gasPump.getFuelingEntity() != null && gasPump.getFuelingEntity().getId() == playerEntity.getId())
                 {
                     gasPump.setFuelingEntity(null);
@@ -120,7 +120,7 @@ public class GasPumpBlock extends RotatedObjectBlock
     }
 
     @Override
-    public void setPlacedBy(World worldIn, BlockPos pos, BlockState state, LivingEntity placer, ItemStack stack)
+    public void setPlacedBy(Level worldIn, BlockPos pos, BlockState state, LivingEntity placer, ItemStack stack)
     {
         worldIn.setBlockAndUpdate(pos.above(), state.setValue(TOP, true));
     }
@@ -177,12 +177,12 @@ public class GasPumpBlock extends RotatedObjectBlock
 
     @Nullable
     @Override
-    public TileEntity createTileEntity(BlockState state, IBlockReader world)
+    public BlockEntity newBlockEntity(BlockPos pos, BlockState state)
     {
         if (state.getValue(TOP))
         {
-            return new GasPumpTileEntity();
+            return new GasPumpBlockEntity();
         }
-        return new GasPumpTankTileEntity();
+        return new GasPumpTankBlockEntity();
     }
 }

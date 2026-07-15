@@ -6,7 +6,7 @@ import com.mojang.blaze3d.systems.RenderSystem;
 import com.mrcrayfish.vehicle.Config;
 import com.mrcrayfish.vehicle.init.ModFluids;
 import com.mrcrayfish.vehicle.inventory.container.FluidMixerContainer;
-import com.mrcrayfish.vehicle.tileentity.FluidMixerTileEntity;
+import com.mrcrayfish.vehicle.blockentity.FluidMixerBlockEntity;
 import com.mrcrayfish.vehicle.util.FluidUtils;
 import com.mrcrayfish.vehicle.util.RenderUtil;
 import net.minecraft.client.gui.screen.inventory.ContainerScreen;
@@ -29,7 +29,7 @@ public class FluidMixerScreen extends ContainerScreen<FluidMixerContainer>
     private static final ResourceLocation GUI = new ResourceLocation("vehicle:textures/gui/fluid_mixer.png");
 
     private PlayerInventory playerInventory;
-    private FluidMixerTileEntity fluidMixerTileEntity;
+    private FluidMixerBlockEntity fluidMixerTileEntity;
 
     public FluidMixerScreen(FluidMixerContainer container, PlayerInventory playerInventory, ITextComponent title)
     {

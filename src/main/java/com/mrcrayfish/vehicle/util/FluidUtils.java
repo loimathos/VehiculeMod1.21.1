@@ -141,7 +141,7 @@ public class FluidUtils
     }
 
     @OnlyIn(Dist.CLIENT)
-    public static void drawFluidInWorld(FluidTank tank, World world, BlockPos pos, MatrixStack matrixStack, IRenderTypeBuffer renderTypeBuffer, float x, float y, float z, float width, float height, float depth, int light, FluidSides sides)
+    public static void drawFluidInWorld(FluidTank tank, Level world, BlockPos pos, MatrixStack matrixStack, IRenderTypeBuffer renderTypeBuffer, float x, float y, float z, float width, float height, float depth, int light, FluidSides sides)
     {
         if(tank.isEmpty())
             return;

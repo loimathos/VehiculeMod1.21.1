@@ -1,4 +1,4 @@
-package com.mrcrayfish.vehicle.tileentity;
+package com.mrcrayfish.vehicle.blockentity;
 
 import com.mrcrayfish.vehicle.util.TileEntityUtil;
 import net.minecraft.nbt.CompoundNBT;
@@ -9,9 +9,9 @@ import net.minecraft.world.level.block.entity.BlockEntityType;
 
 import javax.annotation.Nullable;
 
-public class TileEntitySynced extends TileEntity
+public class BlockEntitySynced extends BlockEntity
 {
-    public TileEntitySynced(TileEntityType<?> tileEntityTypeIn)
+    public BlockEntitySynced(BlockEntityType<?> tileEntityTypeIn)
     {
         super(tileEntityTypeIn);
     }

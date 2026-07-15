@@ -1,8 +1,8 @@
 package com.mrcrayfish.vehicle.block;
 
 import com.mrcrayfish.vehicle.init.ModItems;
-import com.mrcrayfish.vehicle.tileentity.PipeTileEntity;
-import com.mrcrayfish.vehicle.tileentity.PumpTileEntity;
+import com.mrcrayfish.vehicle.blockentity.PipeBlockEntity;
+import com.mrcrayfish.vehicle.blockentity.PumpBlockEntity;
 import com.mrcrayfish.vehicle.util.VoxelShapeHelper;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
@@ -20,11 +20,10 @@ import net.minecraft.util.SoundEvents;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.BlockRayTraceResult;
-import net.minecraft.util.math.shapes.ISelectionContext;
+import net.minecraft.util.math.shapes.CollisionContext;
 import net.minecraft.util.math.shapes.VoxelShape;
 import net.minecraft.util.math.vector.Vector3d;
 import net.minecraft.world.level.BlockGetter;
-import net.minecraft.world.level.Level;
 import net.minecraft.world.level.Level;
 
 import javax.annotation.Nullable;
@@ -48,18 +47,18 @@ public class FluidPumpBlock extends FluidPipeBlock
     };
 
     @Override
-    public VoxelShape getShape(BlockState state, IBlockReader worldIn, BlockPos pos, ISelectionContext context)
+    public VoxelShape getShape(BlockState state, BlockAndTintGetter worldIn, BlockPos pos, CollisionContext context)
     {
         return this.getPumpShape(state, worldIn, pos);
     }
 
     @Override
-    public VoxelShape getCollisionShape(BlockState state, IBlockReader worldIn, BlockPos pos, ISelectionContext context)
+    public VoxelShape getCollisionShape(BlockState state, BlockAndTintGetter worldIn, BlockPos pos, CollisionContext context)
     {
         return this.getPumpShape(state, worldIn, pos);
     }
 
-    protected VoxelShape getPumpShape(BlockState state, IBlockReader worldIn, BlockPos pos)
+    protected VoxelShape getPumpShape(BlockState state, BlockAndTintGetter worldIn, BlockPos pos)
     {
         List<VoxelShape> shapes = new ArrayList<>();
         shapes.add(super.getPipeShape(state, worldIn, pos));
@@ -82,10 +81,10 @@ public class FluidPumpBlock extends FluidPipeBlock
 
         if(!world.isClientSide())
         {
-            PipeTileEntity tileEntity = getPipeTileEntity(world, pos);
-            if(tileEntity instanceof PumpTileEntity)
+            PipeBlockEntity tileEntity = getPipeTileEntity(world, pos);
+            if(tileEntity instanceof PumpBlockEntity)
             {
-                PumpTileEntity pumpTileEntity = (PumpTileEntity) tileEntity;
+                PumpBlockEntity pumpTileEntity = (PumpBlockEntity) tileEntity;
 
                 /*if(!FMLLoader.isProduction())
                 {
@@ -120,9 +119,9 @@ public class FluidPumpBlock extends FluidPipeBlock
         if(!state.is(replaceState.getBlock()))
         {
             TileEntity tileEntity = world.getBlockEntity(pos);
-            if(tileEntity instanceof PumpTileEntity)
+            if(tileEntity instanceof PumpBlockEntity)
             {
-                ((PumpTileEntity) tileEntity).removePumpFromPipes();
+                ((PumpBlockEntity) tileEntity).removePumpFromPipes();
             }
         }
         super.onRemove(state, world, pos, replaceState, what);
@@ -134,9 +133,9 @@ public class FluidPumpBlock extends FluidPipeBlock
         super.invalidatePipeNetwork(world, pos);
 
         TileEntity tileEntity = world.getBlockEntity(pos);
-        if(tileEntity instanceof PumpTileEntity)
+        if(tileEntity instanceof PumpBlockEntity)
         {
-            ((PumpTileEntity) tileEntity).invalidatePipeNetwork();
+            ((PumpBlockEntity) tileEntity).invalidatePipeNetwork();
         }
     }
 
@@ -158,9 +157,9 @@ public class FluidPumpBlock extends FluidPipeBlock
     {
         boolean disabled = false;
         TileEntity tileEntity = world.getBlockEntity(pos);
-        if(tileEntity instanceof PumpTileEntity)
+        if(tileEntity instanceof PumpBlockEntity)
         {
-            PumpTileEntity pump = (PumpTileEntity) tileEntity;
+            PumpBlockEntity pump = (PumpBlockEntity) tileEntity;
             disabled = !pump.getPowerMode().test(pump);
         }
         state = state.setValue(DISABLED, disabled);
@@ -184,8 +183,8 @@ public class FluidPumpBlock extends FluidPipeBlock
 
     @Nullable
     @Override
-    public PumpTileEntity createTileEntity(BlockState state, IBlockReader world)
+    public PumpBlockEntity createTileEntity(BlockState state, BlockAndTintGetter world)
     {
-        return new PumpTileEntity();
+        return new PumpBlockEntity();
     }
 }

@@ -1,6 +1,6 @@
 package com.mrcrayfish.vehicle.block;
 
-import com.mrcrayfish.vehicle.tileentity.FluidMixerTileEntity;
+import com.mrcrayfish.vehicle.blockentity.FluidMixerBlockEntity;
 import com.mrcrayfish.vehicle.util.TileEntityUtil;
 import net.minecraft.block.AbstractBlock;
 import net.minecraft.block.Block;
@@ -60,7 +60,7 @@ public class FluidMixerBlock extends RotatedObjectBlock
     }
 
     @Override
-    public void onRemove(BlockState state, World worldIn, BlockPos pos, BlockState newState, boolean isMoving)
+    public void onRemove(BlockState state, Level worldIn, BlockPos pos, BlockState newState, boolean isMoving)
     {
         if(state.getBlock() != newState.getBlock())
         {
@@ -82,9 +82,9 @@ public class FluidMixerBlock extends RotatedObjectBlock
 
     @Nullable
     @Override
-    public TileEntity createTileEntity(BlockState state, IBlockReader world)
+    public BlockEntity newBlockEntity(BlockPos pos, BlockState state)
     {
-        return new FluidMixerTileEntity();
+        return new FluidMixerBlockEntity();
     }
 
     @Override

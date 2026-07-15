@@ -1,4 +1,4 @@
-package com.mrcrayfish.vehicle.tileentity;
+package com.mrcrayfish.vehicle.blockentity;
 
 import com.mrcrayfish.vehicle.block.VehicleCrateBlock;
 import com.mrcrayfish.vehicle.client.VehicleHelper;
@@ -10,7 +10,7 @@ import com.mrcrayfish.vehicle.entity.properties.PoweredProperties;
 import com.mrcrayfish.vehicle.entity.properties.VehicleProperties;
 import com.mrcrayfish.vehicle.init.ModItems;
 import com.mrcrayfish.vehicle.init.ModSounds;
-import com.mrcrayfish.vehicle.init.ModTileEntities;
+import com.mrcrayfish.vehicle.init.ModBlockEntities;
 import com.mrcrayfish.vehicle.item.EngineItem;
 import com.mrcrayfish.vehicle.util.CommonUtils;
 import net.minecraft.block.BlockState;
@@ -21,7 +21,7 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.network.datasync.EntityDataManager;
 import net.minecraft.particles.ParticleTypes;
-import net.minecraft.tileentity.ITickableTileEntity;
+
 import net.minecraft.util.Direction;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.SoundEvents;
@@ -38,7 +38,7 @@ import java.util.UUID;
 /**
  * Author: MrCrayfish
  */
-public class VehicleCrateTileEntity extends TileEntitySynced implements ITickableTileEntity
+public class VehicleCrateBlockEntity extends BlockEntitySynced implements BlockEntityTicker
 {
     private static final Random RAND = new Random();
 
@@ -53,9 +53,9 @@ public class VehicleCrateTileEntity extends TileEntitySynced implements ITickabl
     @OnlyIn(Dist.CLIENT)
     private Entity entity;
 
-    public VehicleCrateTileEntity()
+    public VehicleCrateBlockEntity()
     {
-        super(ModTileEntities.VEHICLE_CRATE.get());
+        super(ModBlockEntities.VEHICLE_CRATE.get());
     }
 
     public void setEntityId(ResourceLocation entityId)

@@ -2,7 +2,7 @@ package com.mrcrayfish.vehicle.block;
 
 import com.mrcrayfish.vehicle.entity.PoweredVehicleEntity;
 import com.mrcrayfish.vehicle.init.ModSounds;
-import com.mrcrayfish.vehicle.tileentity.BoostTileEntity;
+import com.mrcrayfish.vehicle.blockentity.BoostBlockEntity;
 import com.mrcrayfish.vehicle.util.Bounds;
 import com.mrcrayfish.vehicle.util.StateHelper;
 import net.minecraft.block.AbstractBlock;
@@ -65,9 +65,9 @@ public class SteepBoostRampBlock extends RotatedObjectBlock
             {
                 float speedMultiplier = 0.0F;
                 TileEntity tileEntity = world.getBlockEntity(pos);
-                if(tileEntity instanceof BoostTileEntity)
+                if(tileEntity instanceof BoostBlockEntity)
                 {
-                    speedMultiplier = ((BoostTileEntity) tileEntity).getSpeedMultiplier();
+                    speedMultiplier = ((BoostBlockEntity) tileEntity).getSpeedMultiplier();
                 }
 
                 PoweredVehicleEntity poweredVehicle = (PoweredVehicleEntity) entity;
@@ -134,8 +134,8 @@ public class SteepBoostRampBlock extends RotatedObjectBlock
 
     @Nullable
     @Override
-    public TileEntity createTileEntity(BlockState state, IBlockReader world)
+    public BlockEntity newBlockEntity(BlockPos pos, BlockState state)
     {
-        return new BoostTileEntity(1.0F);
+        return new BoostBlockEntity(1.0F);
     }
 }

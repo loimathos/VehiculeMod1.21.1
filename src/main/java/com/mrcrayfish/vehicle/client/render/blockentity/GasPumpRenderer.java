@@ -1,4 +1,4 @@
-package com.mrcrayfish.vehicle.client.render.tileentity;
+package com.mrcrayfish.vehicle.client.render.blockentity;
 
 import com.mojang.blaze3d.matrix.MatrixStack;
 import com.mojang.blaze3d.vertex.IVertexBuilder;
@@ -9,7 +9,7 @@ import com.mrcrayfish.vehicle.client.raytrace.MatrixTransform;
 import com.mrcrayfish.vehicle.client.render.Axis;
 import com.mrcrayfish.vehicle.client.util.HermiteInterpolator;
 import com.mrcrayfish.vehicle.init.ModBlocks;
-import com.mrcrayfish.vehicle.tileentity.GasPumpTileEntity;
+import com.mrcrayfish.vehicle.blockentity.GasPumpBlockEntity;
 import com.mrcrayfish.vehicle.util.CollisionHelper;
 import com.mrcrayfish.vehicle.util.RenderUtil;
 import net.minecraft.block.BlockState;
@@ -19,8 +19,8 @@ import net.minecraft.client.renderer.IRenderTypeBuffer;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.model.ItemCameraTransforms;
 import net.minecraft.client.renderer.texture.OverlayTexture;
-import net.minecraft.client.renderer.tileentity.TileEntityRenderer;
-import net.minecraft.client.renderer.tileentity.TileEntityRendererDispatcher;
+import net.minecraft.client.renderer.blockentity.BlockEntityRenderer;
+import net.minecraft.client.renderer.blockentity.BlockEntityRendererDispatcher;
 import net.minecraft.client.settings.PointOfView;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.util.Direction;
@@ -36,7 +36,7 @@ import javax.annotation.Nullable;
 /**
  * Author: MrCrayfish
  */
-public class GasPumpRenderer extends TileEntityRenderer<GasPumpTileEntity>
+public class GasPumpRenderer extends BlockEntityRenderer<GasPumpBlockEntity>
 {
     public GasPumpRenderer(TileEntityRendererDispatcher dispatcher)
     {
@@ -44,7 +44,7 @@ public class GasPumpRenderer extends TileEntityRenderer<GasPumpTileEntity>
     }
 
     @Override
-    public void render(GasPumpTileEntity gasPump, float partialTicks, MatrixStack matrixStack, IRenderTypeBuffer renderTypeBuffer, int light, int overlay)
+    public void render(GasPumpBlockEntity gasPump, float partialTicks, MatrixStack matrixStack, IRenderTypeBuffer renderTypeBuffer, int light, int overlay)
     {
         BlockState state = gasPump.getBlockState();
         if(state.getBlock() != ModBlocks.GAS_PUMP.get())
@@ -208,7 +208,7 @@ public class GasPumpRenderer extends TileEntityRenderer<GasPumpTileEntity>
         matrixStack.popPose();
     }
 
-    private Triple<Float, Float, Float> getHoseColour(GasPumpTileEntity gasPump)
+    private Triple<Float, Float, Float> getHoseColour(GasPumpBlockEntity gasPump)
     {
         float red = 0.05F;
         float green = 0.05F;

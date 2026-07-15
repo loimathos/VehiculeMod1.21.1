@@ -9,7 +9,7 @@ import net.minecraft.world.level.Level;
  */
 public class TractorEntity extends LandVehicleEntity
 {
-    public TractorEntity(EntityType<? extends TractorEntity> type, World worldIn)
+    public TractorEntity(EntityType<? extends TractorEntity> type, Level worldIn)
     {
         super(type, worldIn);
     }

@@ -6,7 +6,7 @@ import com.mojang.blaze3d.systems.RenderSystem;
 import com.mrcrayfish.vehicle.Config;
 import com.mrcrayfish.vehicle.crafting.FluidEntry;
 import com.mrcrayfish.vehicle.inventory.container.FluidExtractorContainer;
-import com.mrcrayfish.vehicle.tileentity.FluidExtractorTileEntity;
+import com.mrcrayfish.vehicle.blockentity.FluidExtractorBlockEntity;
 import com.mrcrayfish.vehicle.util.FluidUtils;
 import com.mrcrayfish.vehicle.util.RenderUtil;
 import net.minecraft.client.Minecraft;
@@ -29,7 +29,7 @@ public class FluidExtractorScreen extends ContainerScreen<FluidExtractorContaine
     private static final ResourceLocation GUI = new ResourceLocation("vehicle:textures/gui/fluid_extractor.png");
 
     private PlayerInventory playerInventory;
-    private FluidExtractorTileEntity fluidExtractorTileEntity;
+    private FluidExtractorBlockEntity fluidExtractorTileEntity;
 
     public FluidExtractorScreen(FluidExtractorContainer container, PlayerInventory playerInventory, ITextComponent title)
     {

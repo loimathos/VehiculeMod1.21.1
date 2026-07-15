@@ -10,7 +10,7 @@ import net.minecraft.world.level.Level;
  */
 public abstract class MotorcycleEntity extends LandVehicleEntity
 {
-    public MotorcycleEntity(EntityType<?> entityType, World worldIn)
+    public MotorcycleEntity(EntityType<?> entityType, Level worldIn)
     {
         super(entityType, worldIn);
     }

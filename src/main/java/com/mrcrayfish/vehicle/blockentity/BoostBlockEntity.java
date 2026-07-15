@@ -1,6 +1,6 @@
-package com.mrcrayfish.vehicle.tileentity;
+package com.mrcrayfish.vehicle.blockentity;
 
-import com.mrcrayfish.vehicle.init.ModTileEntities;
+import com.mrcrayfish.vehicle.init.ModBlockEntities;
 import net.minecraft.block.BlockState;
 import net.minecraft.nbt.CompoundNBT;
 import net.minecraftforge.common.util.Constants;
@@ -8,18 +8,18 @@ import net.minecraftforge.common.util.Constants;
 /**
  * Author: MrCrayfish
  */
-public class BoostTileEntity extends TileEntitySynced
+public class BoostBlockEntity extends BlockEntity
 {
     private float speedMultiplier;
 
-    public BoostTileEntity()
+    public BoostBlockEntity()
     {
-        super(ModTileEntities.BOOST.get());
+        super(ModBlockEntities.BOOST.get());
     }
 
-    public BoostTileEntity(float defaultSpeedMultiplier)
+    public BoostBlockEntity(float defaultSpeedMultiplier)
     {
-        super(ModTileEntities.BOOST.get());
+        super(ModBlockEntities.BOOST.get());
         this.speedMultiplier = defaultSpeedMultiplier;
     }
 

@@ -62,7 +62,7 @@ public class VehicleMod
         ModBlocks.REGISTER.register(eventBus);
         ModItems.REGISTER.register(eventBus);
         ModEntities.REGISTER.register(eventBus);
-        ModTileEntities.REGISTER.register(eventBus);
+        ModBlockEntities.REGISTER.register(eventBus);
         ModContainers.REGISTER.register(eventBus);
         ModParticleTypes.REGISTER.register(eventBus);
         ModSounds.REGISTER.register(eventBus);

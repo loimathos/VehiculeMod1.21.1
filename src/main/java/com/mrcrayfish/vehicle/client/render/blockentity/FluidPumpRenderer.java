@@ -1,17 +1,17 @@
-package com.mrcrayfish.vehicle.client.render.tileentity;
+package com.mrcrayfish.vehicle.client.render.blockentity;
 
 import com.mojang.blaze3d.matrix.MatrixStack;
 import com.mojang.blaze3d.vertex.IVertexBuilder;
 import com.mrcrayfish.vehicle.block.FluidPumpBlock;
 import com.mrcrayfish.vehicle.client.raytrace.EntityRayTracer;
 import com.mrcrayfish.vehicle.init.ModItems;
-import com.mrcrayfish.vehicle.tileentity.PumpTileEntity;
+import com.mrcrayfish.vehicle.blockentity.PumpBlockEntity;
 import net.minecraft.block.BlockState;
 import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.client.renderer.IRenderTypeBuffer;
 import net.minecraft.client.renderer.RenderType;
-import net.minecraft.client.renderer.tileentity.TileEntityRenderer;
-import net.minecraft.client.renderer.tileentity.TileEntityRendererDispatcher;
+import net.minecraft.client.renderer.blockentity.BlockEntityRenderer;
+import net.minecraft.client.renderer.blockentity.BlockEntityRendererDispatcher;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.util.Direction;
@@ -26,7 +26,7 @@ import net.minecraft.util.text.TranslationTextComponent;
 /**
  * Author: MrCrayfish
  */
-public class FluidPumpRenderer extends TileEntityRenderer<PumpTileEntity>
+public class FluidPumpRenderer extends BlockEntityRenderer<PumpBlockEntity>
 {
     public FluidPumpRenderer(TileEntityRendererDispatcher dispatcher)
     {
@@ -34,7 +34,7 @@ public class FluidPumpRenderer extends TileEntityRenderer<PumpTileEntity>
     }
 
     @Override
-    public void render(PumpTileEntity tileEntity, float partialTicks, MatrixStack matrixStack, IRenderTypeBuffer renderTypeBuffer, int light, int overlay)
+    public void render(PumpBlockEntity tileEntity, float partialTicks, MatrixStack matrixStack, IRenderTypeBuffer renderTypeBuffer, int light, int overlay)
     {
         Entity entity = this.renderer.camera.getEntity();
         if(!(entity instanceof PlayerEntity))
@@ -75,7 +75,7 @@ public class FluidPumpRenderer extends TileEntityRenderer<PumpTileEntity>
         matrixStack.popPose();
     }
 
-    private void renderInteractableBox(PumpTileEntity tileEntity, MatrixStack matrixStack, IRenderTypeBuffer renderTypeBuffer)
+    private void renderInteractableBox(PumpBlockEntity tileEntity, MatrixStack matrixStack, IRenderTypeBuffer renderTypeBuffer)
     {
         if(this.renderer.cameraHitResult != null && this.renderer.cameraHitResult.getType() == RayTraceResult.Type.BLOCK)
         {

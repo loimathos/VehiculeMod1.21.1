@@ -1,4 +1,4 @@
-package com.mrcrayfish.vehicle.client.render.tileentity;
+package com.mrcrayfish.vehicle.client.render.blockentity;
 
 import com.mojang.blaze3d.matrix.MatrixStack;
 import com.mrcrayfish.vehicle.block.RotatedObjectBlock;
@@ -7,7 +7,7 @@ import com.mrcrayfish.vehicle.client.raytrace.EntityRayTracer;
 import com.mrcrayfish.vehicle.client.render.Axis;
 import com.mrcrayfish.vehicle.entity.VehicleEntity;
 import com.mrcrayfish.vehicle.init.ModBlocks;
-import com.mrcrayfish.vehicle.tileentity.VehicleCrateTileEntity;
+import com.mrcrayfish.vehicle.blockentity.VehicleCrateBlockEntity;
 import com.mrcrayfish.vehicle.util.RenderUtil;
 import net.minecraft.block.BlockState;
 import net.minecraft.client.Minecraft;
@@ -17,8 +17,8 @@ import net.minecraft.client.renderer.entity.EntityRenderer;
 import net.minecraft.client.renderer.model.ItemCameraTransforms;
 import net.minecraft.client.renderer.texture.AtlasTexture;
 import net.minecraft.client.renderer.texture.OverlayTexture;
-import net.minecraft.client.renderer.tileentity.TileEntityRenderer;
-import net.minecraft.client.renderer.tileentity.TileEntityRendererDispatcher;
+import net.minecraft.client.renderer.blockentity.BlockEntityRenderer;
+import net.minecraft.client.renderer.blockentity.BlockEntityRendererDispatcher;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
 import net.minecraft.util.Direction;
@@ -27,7 +27,7 @@ import org.apache.commons.lang3.tuple.Pair;
 /**
  * Author: MrCrayfish
  */
-public class VehicleCrateRenderer extends TileEntityRenderer<VehicleCrateTileEntity>
+public class VehicleCrateRenderer extends TileEntityRenderer<VehicleCrateBlockEntity>
 {
     public VehicleCrateRenderer(TileEntityRendererDispatcher dispatcher)
     {
@@ -36,7 +36,7 @@ public class VehicleCrateRenderer extends TileEntityRenderer<VehicleCrateTileEnt
 
     @SuppressWarnings("unchecked")
     @Override
-    public void render(VehicleCrateTileEntity crate, float partialTicks, MatrixStack matrixStack, IRenderTypeBuffer renderTypeBuffer, int light, int overlay)
+    public void render(VehicleCrateBlockEntity crate, float partialTicks, MatrixStack matrixStack, IRenderTypeBuffer renderTypeBuffer, int light, int overlay)
     {
         BlockState state = crate.getLevel().getBlockState(crate.getBlockPos());
         if(state.getBlock() != ModBlocks.VEHICLE_CRATE.get())

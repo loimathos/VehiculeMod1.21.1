@@ -36,7 +36,7 @@ public class StorageTrailerEntity extends TrailerEntity implements IStorage
 
     private StorageInventory inventory;
 
-    public StorageTrailerEntity(EntityType<? extends StorageTrailerEntity> type, World worldIn)
+    public StorageTrailerEntity(EntityType<? extends StorageTrailerEntity> type, Level worldIn)
     {
         super(type, worldIn);
         this.initInventory();

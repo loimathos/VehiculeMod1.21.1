@@ -58,7 +58,7 @@ public class MopedEntity extends MotorcycleEntity implements IStorage, IAttachab
     @OnlyIn(Dist.CLIENT)
     private float prevOpenProgress;
 
-    public MopedEntity(EntityType<? extends MopedEntity> type, World worldIn)
+    public MopedEntity(EntityType<? extends MopedEntity> type, Level worldIn)
     {
         super(type, worldIn);
         this.initInventory();

@@ -3,7 +3,7 @@ package com.mrcrayfish.vehicle.block;
 import com.google.common.base.Strings;
 import com.mrcrayfish.vehicle.init.ModBlocks;
 import com.mrcrayfish.vehicle.init.ModItems;
-import com.mrcrayfish.vehicle.tileentity.VehicleCrateTileEntity;
+import com.mrcrayfish.vehicle.blockentity.VehicleCrateBlockEntity;
 import com.mrcrayfish.vehicle.util.RenderUtil;
 import net.minecraft.block.AbstractBlock;
 import net.minecraft.block.BlockRenderType;
@@ -31,7 +31,7 @@ import net.minecraft.util.NonNullList;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.BlockRayTraceResult;
-import net.minecraft.util.math.shapes.ISelectionContext;
+import net.minecraft.util.math.shapes.CollisionContext;
 import net.minecraft.util.math.shapes.VoxelShape;
 import net.minecraft.util.math.shapes.VoxelShapes;
 import net.minecraft.network.chat.Component;
@@ -79,16 +79,16 @@ public class VehicleCrateBlock extends RotatedObjectBlock
     }
 
     @Override
-    public boolean propagatesSkylightDown(BlockState state, IBlockReader reader, BlockPos pos)
+    public boolean propagatesSkylightDown(BlockState state, BlockAndTintGetter reader, BlockPos pos)
     {
         return true;
     }
 
     @Override
-    public VoxelShape getShape(BlockState state, IBlockReader worldIn, BlockPos pos, ISelectionContext context)
+    public VoxelShape getShape(BlockState state, BlockAndTintGetter worldIn, BlockPos pos, CollisionContext context)
     {
         TileEntity te = worldIn.getBlockEntity(pos);
-        if(te instanceof VehicleCrateTileEntity && ((VehicleCrateTileEntity)te).isOpened())
+        if(te instanceof VehicleCrateBlockEntity && ((VehicleCrateBlockEntity)te).isOpened())
             return PANEL;
         return VoxelShapes.block();
     }
@@ -143,7 +143,7 @@ public class VehicleCrateBlock extends RotatedObjectBlock
     private void openCrate(World world, BlockPos pos, BlockState state, LivingEntity placer)
     {
         TileEntity tileEntity = world.getBlockEntity(pos);
-        if(tileEntity instanceof VehicleCrateTileEntity && this.canOpen(world, pos))
+        if(tileEntity instanceof VehicleCrateBlockEntity && this.canOpen(world, pos))
         {
             if(world.isClientSide)
             {
@@ -151,7 +151,7 @@ public class VehicleCrateBlock extends RotatedObjectBlock
             }
             else
             {
-                ((VehicleCrateTileEntity) tileEntity).open(placer.getUUID());
+                ((VehicleCrateBlockEntity) tileEntity).open(placer.getUUID());
             }
         }
     }
@@ -181,9 +181,9 @@ public class VehicleCrateBlock extends RotatedObjectBlock
 
     @Nullable
     @Override
-    public TileEntity createTileEntity(BlockState state, IBlockReader world)
+    public BlockEntity newBlockEntity(BlockPos pos, BlockState state)
     {
-        return new VehicleCrateTileEntity();
+        return new VehicleCrateBlockEntity();
     }
 
     @Override
@@ -194,7 +194,7 @@ public class VehicleCrateBlock extends RotatedObjectBlock
 
     @Override
     @OnlyIn(Dist.CLIENT)
-    public void appendHoverText(ItemStack stack, @Nullable IBlockReader reader, List<ITextComponent> list, ITooltipFlag advanced)
+    public void appendHoverText(ItemStack stack, @Nullable BlockAndTintGetter reader, List<ITextComponent> list, ITooltipFlag advanced)
     {
         ITextComponent vehicleName = EntityType.PIG.getDescription();
         CompoundNBT tagCompound = stack.getTag();
