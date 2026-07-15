@@ -1,6 +1,6 @@
 package com.mrcrayfish.vehicle.common;
 
-import net.minecraft.util.text.ITextComponent;
+import net.minecraft.network.chat.Component;
 import net.minecraft.util.text.TranslationTextComponent;
 
 /**

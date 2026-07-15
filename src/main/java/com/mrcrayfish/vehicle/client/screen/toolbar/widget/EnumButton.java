@@ -1,7 +1,7 @@
 package com.mrcrayfish.vehicle.client.screen.toolbar.widget;
 
 import net.minecraft.client.gui.widget.button.Button;
-import net.minecraft.util.text.ITextComponent;
+import net.minecraft.network.chat.Component;
 import net.minecraft.util.text.TranslationTextComponent;
 import org.apache.commons.lang3.StringUtils;
 

@@ -46,9 +46,9 @@ import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.RayTraceResult;
 import net.minecraft.util.math.vector.Vector2f;
 import net.minecraft.util.math.vector.Vector3d;
-import net.minecraft.world.GameRules;
-import net.minecraft.world.World;
-import net.minecraft.world.server.ServerWorld;
+import net.minecraft.world.level.GameRules;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.ServerLevel;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.common.util.Constants;
@@ -106,9 +106,9 @@ public abstract class VehicleEntity extends Entity implements IEntityAdditionalS
     @OnlyIn(Dist.CLIENT)
     protected float passengerPitchOffset;
 
-    public VehicleEntity(EntityType<?> entityType, World worldIn)
+    public VehicleEntity(EntityType<?> entityType, Level levelIn)
     {
-        super(entityType, worldIn);
+        super(entityType, levelIn);
         this.seatTracker = new SeatTracker(this);
         this.cosmeticTracker = new CosmeticTracker(this);
     }

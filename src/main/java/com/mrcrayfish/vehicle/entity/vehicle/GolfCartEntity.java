@@ -2,7 +2,7 @@ package com.mrcrayfish.vehicle.entity.vehicle;
 
 import com.mrcrayfish.vehicle.entity.HelicopterEntity;
 import net.minecraft.entity.EntityType;
-import net.minecraft.world.World;
+import net.minecraft.world.level.Level;
 
 /**
  * Author: MrCrayfish
