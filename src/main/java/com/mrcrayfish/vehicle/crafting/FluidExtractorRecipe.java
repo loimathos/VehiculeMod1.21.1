@@ -4,16 +4,16 @@ import com.mrcrayfish.vehicle.init.ModRecipeSerializers;
 import com.mrcrayfish.vehicle.blockentity.FluidExtractorBlockEntity;
 import com.mrcrayfish.vehicle.util.InventoryUtil;
 import net.minecraft.item.ItemStack;
-import net.minecraft.item.crafting.IRecipe;
-import net.minecraft.item.crafting.IRecipeSerializer;
-import net.minecraft.item.crafting.IRecipeType;
+import net.minecraft.world.item.crafting.Recipe;
+import net.minecraft.world.item.crafting.RecipeSerializer;
+import net.minecraft.world.item.crafting.RecipeType;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.world.level.Level;
 
 /**
  * Author: MrCrayfish
  */
-public class FluidExtractorRecipe implements IRecipe<FluidExtractorBlockEntity>
+public class FluidExtractorRecipe implements Recipe<FluidExtractorBlockEntity>
 {
     private ResourceLocation id;
     private ItemStack ingredient;
@@ -68,13 +68,13 @@ public class FluidExtractorRecipe implements IRecipe<FluidExtractorBlockEntity>
     }
 
     @Override
-    public IRecipeSerializer<?> getSerializer()
+    public RecipeSerializer<?> getSerializer()
     {
         return ModRecipeSerializers.FLUID_EXTRACTOR.get();
     }
 
     @Override
-    public IRecipeType<?> getType()
+    public RecipeType<?> getType()
     {
         return RecipeType.FLUID_EXTRACTOR;
     }

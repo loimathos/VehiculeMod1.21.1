@@ -5,7 +5,7 @@ import com.google.gson.JsonObject;
 import com.mrcrayfish.vehicle.crafting.WorkstationIngredient;
 import com.mrcrayfish.vehicle.init.ModRecipeSerializers;
 import net.minecraft.data.IFinishedRecipe;
-import net.minecraft.item.crafting.IRecipeSerializer;
+import net.minecraft.world.item.crafting.RecipeSerializer;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.common.crafting.CraftingHelper;
 import net.minecraftforge.common.crafting.conditions.ICondition;
@@ -20,12 +20,12 @@ import java.util.function.Consumer;
  */
 public class WorkstationRecipeBuilder
 {
-    private final IRecipeSerializer<?> serializer;
+    private final RecipeSerializer<?> serializer;
     private final ResourceLocation entityId;
     private final List<WorkstationIngredient> ingredients;
     private final List<ICondition> conditions = new ArrayList<>();
 
-    public WorkstationRecipeBuilder(IRecipeSerializer<?> serializer, ResourceLocation entityId, List<WorkstationIngredient> ingredients)
+    public WorkstationRecipeBuilder(RecipeSerializer<?> serializer, ResourceLocation entityId, List<WorkstationIngredient> ingredients)
     {
         this.serializer = serializer;
         this.entityId = entityId;
@@ -59,9 +59,9 @@ public class WorkstationRecipeBuilder
         private final ResourceLocation entityId;
         private final List<WorkstationIngredient> ingredients;
         private final List<ICondition> conditions;
-        private final IRecipeSerializer<?> serializer;
+        private final RecipeSerializer<?> serializer;
 
-        private Result(ResourceLocation id, IRecipeSerializer<?> serializer, ResourceLocation entityId, List<WorkstationIngredient> ingredients, List<ICondition> conditions)
+        private Result(ResourceLocation id, RecipeSerializer<?> serializer, ResourceLocation entityId, List<WorkstationIngredient> ingredients, List<ICondition> conditions)
         {
             this.id = id;
             this.serializer = serializer;
@@ -94,7 +94,7 @@ public class WorkstationRecipeBuilder
         }
 
         @Override
-        public IRecipeSerializer<?> getType()
+        public RecipeSerializer<?> getType()
         {
             return this.serializer;
         }

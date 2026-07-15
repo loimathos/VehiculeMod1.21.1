@@ -5,7 +5,7 @@ import com.google.gson.JsonObject;
 import com.mrcrayfish.vehicle.crafting.FluidEntry;
 import com.mrcrayfish.vehicle.init.ModRecipeSerializers;
 import net.minecraft.data.IFinishedRecipe;
-import net.minecraft.item.crafting.IRecipeSerializer;
+import net.minecraft.world.item.crafting.RecipeSerializer;
 import net.minecraft.item.crafting.Ingredient;
 import net.minecraft.util.ResourceLocation;
 
@@ -17,12 +17,12 @@ import java.util.function.Consumer;
  */
 public class FluidMixerRecipeBuilder
 {
-    private final IRecipeSerializer<?> serializer;
+    private final RecipeSerializer<?> serializer;
     private final FluidEntry[] input;
     private final Ingredient ingredient;
     private final FluidEntry output;
 
-    public FluidMixerRecipeBuilder(IRecipeSerializer<?> serializer, FluidEntry inputOne, FluidEntry inputTwo, Ingredient ingredient, FluidEntry output)
+    public FluidMixerRecipeBuilder(RecipeSerializer<?> serializer, FluidEntry inputOne, FluidEntry inputTwo, Ingredient ingredient, FluidEntry output)
     {
         this.serializer = serializer;
         this.input = new FluidEntry[]{inputOne, inputTwo};
@@ -48,12 +48,12 @@ public class FluidMixerRecipeBuilder
     public static class Result implements IFinishedRecipe
     {
         private final ResourceLocation id;
-        private final IRecipeSerializer<?> serializer;
+        private final RecipeSerializer<?> serializer;
         private final FluidEntry[] input;
         private final Ingredient ingredient;
         private final FluidEntry output;
 
-        private Result(ResourceLocation id, IRecipeSerializer<?> serializer, FluidEntry[] input, Ingredient ingredient, FluidEntry output)
+        private Result(ResourceLocation id, RecipeSerializer<?> serializer, FluidEntry[] input, Ingredient ingredient, FluidEntry output)
         {
             this.id = id;
             this.serializer = serializer;
@@ -80,7 +80,7 @@ public class FluidMixerRecipeBuilder
         }
 
         @Override
-        public IRecipeSerializer<?> getType()
+        public RecipeSerializer<?> getType()
         {
             return this.serializer;
         }

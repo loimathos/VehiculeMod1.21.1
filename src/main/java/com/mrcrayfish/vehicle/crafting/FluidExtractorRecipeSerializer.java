@@ -2,7 +2,7 @@ package com.mrcrayfish.vehicle.crafting;
 
 import com.google.gson.JsonObject;
 import net.minecraft.item.ItemStack;
-import net.minecraft.item.crafting.IRecipeSerializer;
+import net.minecraft.world.item.crafting.RecipeSerializer;
 import net.minecraft.network.PacketBuffer;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.common.crafting.CraftingHelper;
@@ -12,7 +12,7 @@ import javax.annotation.Nullable;
 /**
  * Author: MrCrayfish
  */
-public class FluidExtractorRecipeSerializer extends net.minecraftforge.registries.ForgeRegistryEntry<IRecipeSerializer<?>> implements IRecipeSerializer<FluidExtractorRecipe>
+public class FluidExtractorRecipeSerializer extends net.minecraftforge.registries.ForgeRegistryEntry<RecipeSerializer<?>> implements RecipeSerializer<FluidExtractorRecipe>
 {
     @Override
     public FluidExtractorRecipe fromJson(ResourceLocation recipeId, JsonObject json)

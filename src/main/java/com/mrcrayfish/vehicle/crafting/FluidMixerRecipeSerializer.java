@@ -3,7 +3,7 @@ package com.mrcrayfish.vehicle.crafting;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import net.minecraft.item.ItemStack;
-import net.minecraft.item.crafting.IRecipeSerializer;
+import net.minecraft.world.item.crafting.RecipeSerializer;
 import net.minecraft.network.PacketBuffer;
 import net.minecraft.util.JSONUtils;
 import net.minecraft.util.ResourceLocation;
@@ -14,7 +14,7 @@ import javax.annotation.Nullable;
 /**
  * Author: MrCrayfish
  */
-public class FluidMixerRecipeSerializer extends net.minecraftforge.registries.ForgeRegistryEntry<IRecipeSerializer<?>> implements IRecipeSerializer<FluidMixerRecipe>
+public class FluidMixerRecipeSerializer extends net.minecraftforge.registries.ForgeRegistryEntry<RecipeSerializer<?>> implements RecipeSerializer<FluidMixerRecipe>
 {
     @Override
     public FluidMixerRecipe fromJson(ResourceLocation recipeId, JsonObject json)

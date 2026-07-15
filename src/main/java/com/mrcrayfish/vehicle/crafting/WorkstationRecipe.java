@@ -7,16 +7,16 @@ import com.mrcrayfish.vehicle.util.InventoryUtil;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
-import net.minecraft.item.crafting.IRecipe;
-import net.minecraft.item.crafting.IRecipeSerializer;
-import net.minecraft.item.crafting.IRecipeType;
+import net.minecraft.world.item.crafting.Recipe;
+import net.minecraft.world.item.crafting.RecipeSerializer;
+import net.minecraft.world.item.crafting.RecipeType;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.world.level.Level;
 
 /**
  * Author: MrCrayfish
  */
-public class WorkstationRecipe implements IRecipe<WorkstationBlockEntity>
+public class WorkstationRecipe implements Recipe<WorkstationBlockEntity>
 {
     private ResourceLocation id;
     private EntityType<?> vehicle;
@@ -70,13 +70,13 @@ public class WorkstationRecipe implements IRecipe<WorkstationBlockEntity>
     }
 
     @Override
-    public IRecipeSerializer<?> getSerializer()
+    public RecipeSerializer<?> getSerializer()
     {
         return ModRecipeSerializers.WORKSTATION.get();
     }
 
     @Override
-    public IRecipeType<?> getType()
+    public RecipeType<?> getType()
     {
         return RecipeType.WORKSTATION;
     }

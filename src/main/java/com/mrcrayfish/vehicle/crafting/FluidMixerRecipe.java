@@ -5,9 +5,9 @@ import com.mrcrayfish.vehicle.blockentity.FluidMixerBlockEntity;
 import com.mrcrayfish.vehicle.util.InventoryUtil;
 import net.minecraft.fluid.Fluid;
 import net.minecraft.item.ItemStack;
-import net.minecraft.item.crafting.IRecipe;
-import net.minecraft.item.crafting.IRecipeSerializer;
-import net.minecraft.item.crafting.IRecipeType;
+import net.minecraft.world.item.crafting.Recipe;
+import net.minecraft.world.item.crafting.RecipeSerializer;
+import net.minecraft.world.item.crafting.RecipeType;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.world.level.Level;
 
@@ -16,7 +16,7 @@ import java.util.Objects;
 /**
  * Author: MrCrayfish
  */
-public class FluidMixerRecipe implements IRecipe<FluidMixerBlockEntity>
+public class FluidMixerRecipe implements Recipe<FluidMixerBlockEntity>
 {
     private ResourceLocation id;
     private FluidEntry[] inputs;
@@ -133,13 +133,13 @@ public class FluidMixerRecipe implements IRecipe<FluidMixerBlockEntity>
     }
 
     @Override
-    public IRecipeSerializer<?> getSerializer()
+    public RecipeSerializer<?> getSerializer()
     {
         return ModRecipeSerializers.FLUID_MIXER.get();
     }
 
     @Override
-    public IRecipeType<?> getType()
+    public RecipeType<?> getType()
     {
         return RecipeType.FLUID_MIXER;
     }
