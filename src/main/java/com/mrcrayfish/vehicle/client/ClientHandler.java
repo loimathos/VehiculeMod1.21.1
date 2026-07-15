@@ -99,7 +99,7 @@ public class ClientHandler
         setupCustomBlockModels();
         setupRenderLayers();
         setupVehicleRenders();
-        setupTileEntityRenderers();
+        setupBlockEntityRenderers();
         setupScreenFactories();
         setupItemColors();
         setupInteractableVehicles();
@@ -173,7 +173,7 @@ public class ClientHandler
         RenderingRegistry.registerEntityRenderingHandler(ModEntities.JACK.get(), com.mrcrayfish.vehicle.client.render.JackRenderer::new);
     }
 
-    private static void setupTileEntityRenderers()
+    private static void setupBlockEntityRenderers()
     {
         ClientRegistry.bindBlockEntityRenderer(ModBlockEntities.FLUID_EXTRACTOR.get(), FluidExtractorRenderer::new);
         ClientRegistry.bindBlockEntityRenderer(ModBlockEntities.FUEL_DRUM.get(), FuelDrumRenderer::new);

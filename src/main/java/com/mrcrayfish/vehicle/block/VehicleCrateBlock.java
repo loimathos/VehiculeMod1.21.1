@@ -13,7 +13,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.particle.DiggingParticle;
 import net.minecraft.client.util.ITooltipFlag;
-import net.minecraft.client.world.ClientWorld;
+import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.PlayerEntity;
@@ -147,7 +147,7 @@ public class VehicleCrateBlock extends RotatedObjectBlock
         {
             if(world.isClientSide)
             {
-                this.spawnCrateOpeningParticles((ClientWorld) world, pos, state);
+                this.spawnCrateOpeningParticles((ClientLevel) world, pos, state);
             }
             else
             {
@@ -157,7 +157,7 @@ public class VehicleCrateBlock extends RotatedObjectBlock
     }
 
     @OnlyIn(Dist.CLIENT)
-    private void spawnCrateOpeningParticles(ClientWorld world, BlockPos pos, BlockState state)
+    private void spawnCrateOpeningParticles(ClientLevel world, BlockPos pos, BlockState state)
     {
         double y = 0.875;
         double x, z;

@@ -19,9 +19,9 @@ public class BlockEntityUtil
     /**
      * Sends an update packet to clients tracking a block entity.
      *
-     * @param tileEntity the block entity to update
+     * @param blockEntity the block entity to update
      */
-    public static void sendUpdatePacket(BlockEntity tileEntity)
+    public static void sendUpdatePacket(BlockEntity blockEntity)
     {
         SUpdateBlockEntityPacket packet = tileEntity.getUpdatePacket();
         if(packet != null)
@@ -33,9 +33,9 @@ public class BlockEntityUtil
     /**
      * Sends an update packet to clients tracking a block entity with a specific CompoundNBT
      *
-     * @param tileEntity the block entity to update
+     * @param blockEntity the block entity to update
      */
-    public static void sendUpdatePacket(BlockEntity tileEntity, CompoundNBT compound)
+    public static void sendUpdatePacket(BlockEntity blockEntity, CompoundNBT compound)
     {
         SUpdateBlockEntityPacket packet = new SUpdateBlockEntityPacket(tileEntity.getBlockPos(), 0, compound);
         sendUpdatePacket(tileEntity.getLevel(), tileEntity.getBlockPos(), packet);
@@ -46,10 +46,10 @@ public class BlockEntityUtil
      * when you only want to update a block entity for a single player rather than everyone who is
      * tracking the block entity.
      *
-     * @param tileEntity the block entity to update
+     * @param blockEntity the block entity to update
      * @param player the player to send the update to
      */
-    public static void sendUpdatePacket(BlockEntity tileEntity, ServerPlayerEntity player)
+    public static void sendUpdatePacket(BlockEntity blockEntity, ServerPlayerEntity player)
     {
         sendUpdatePacket(tileEntity, tileEntity.getUpdateTag(), player);
     }
@@ -59,11 +59,11 @@ public class BlockEntityUtil
      * reduce overhead on the network when you only want to update a block entity for a single player
      * rather than everyone who is tracking the block entity.
      *
-     * @param tileEntity the block entity to update
+     * @param blockEntity the block entity to update
      * @param compound the update tag to send
      * @param player the player to send the update to
      */
-    public static void sendUpdatePacket(BlockEntity tileEntity, CompoundNBT compound, ServerPlayerEntity player)
+    public static void sendUpdatePacket(BlockEntity blockEntity, CompoundNBT compound, ServerPlayerEntity player)
     {
         SUpdateBlockEntityPacket packet = new SUpdateBlockEntityPacket(tileEntity.getBlockPos(), 0, compound);
         player.connection.send(packet);

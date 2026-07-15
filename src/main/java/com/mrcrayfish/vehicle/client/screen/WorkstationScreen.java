@@ -83,7 +83,7 @@ public class WorkstationScreen extends ContainerScreen<WorkstationContainer>
     {
         super(container, playerInventory, title);
         this.playerInventory = playerInventory;
-        this.workstation = container.getTileEntity();
+        this.workstation = container.getBlockEntity();
         this.imageWidth = 256;
         this.imageHeight = 184;
         this.inventoryLabelY = this.imageHeight - 93;

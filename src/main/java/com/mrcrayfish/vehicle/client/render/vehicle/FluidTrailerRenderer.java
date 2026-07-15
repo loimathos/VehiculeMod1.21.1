@@ -52,7 +52,7 @@ public class FluidTrailerRenderer extends AbstractTrailerRenderer<FluidTrailerEn
 
         TextureAtlasSprite sprite = Minecraft.getInstance().getTextureAtlas(AtlasTexture.LOCATION_BLOCKS).apply(fluid.getFluid().getAttributes().getStillTexture());
 
-        int fluidColor = vehicle != null ? fluid.getAttributes().getColor(vehicle.getCommandSenderWorld(), vehicle.blockPosition()) : 0xFF3F76E4;
+        int fluidColor = vehicle != null ? fluid.getAttributes().getColor(vehicle.level, vehicle.blockPosition()) : 0xFF3F76E4;
         float red = (float) (fluidColor >> 16 & 255) / 255.0F;
         float green = (float) (fluidColor >> 8 & 255) / 255.0F;
         float blue = (float) (fluidColor & 255) / 255.0F;

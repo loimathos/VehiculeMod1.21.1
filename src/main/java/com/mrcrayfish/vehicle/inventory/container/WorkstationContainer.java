@@ -17,16 +17,16 @@ import net.minecraft.util.math.BlockPos;
  */
 public class WorkstationContainer extends Container
 {
-    private WorkstationBlockEntity workstationTileEntity;
+    private WorkstationBlockEntity workstationBlockEntity;
     private BlockPos pos;
 
-    public WorkstationContainer(int windowId, IInventory playerInventory, WorkstationBlockEntity workstationTileEntity)
+    public WorkstationContainer(int windowId, IInventory playerInventory, WorkstationBlockEntity workstationBlockEntity)
     {
         super(ModContainers.WORKSTATION.get(), windowId);
-        this.workstationTileEntity = workstationTileEntity;
-        this.pos = workstationTileEntity.getBlockPos();
+        this.workstationBlockEntity = workstationBlockEntity;
+        this.pos = workstationBlockEntity.getBlockPos();
 
-        this.addSlot(new Slot(workstationTileEntity, 0, 173, 30)
+        this.addSlot(new Slot(workstationBlockEntity, 0, 173, 30)
         {
             @Override
             public boolean mayPlace(ItemStack stack)
@@ -41,7 +41,7 @@ public class WorkstationContainer extends Container
             }
         });
 
-        this.addSlot(new Slot(workstationTileEntity, 1, 193, 30)
+        this.addSlot(new Slot(workstationBlockEntity, 1, 193, 30)
         {
             @Override
             public boolean mayPlace(ItemStack stack)
@@ -56,7 +56,7 @@ public class WorkstationContainer extends Container
             }
         });
 
-        this.addSlot(new Slot(workstationTileEntity, 2, 213, 30)
+        this.addSlot(new Slot(workstationBlockEntity, 2, 213, 30)
         {
             @Override
             public boolean mayPlace(ItemStack stack)
@@ -170,8 +170,8 @@ public class WorkstationContainer extends Container
         return pos;
     }
 
-    public WorkstationBlockEntity getTileEntity()
+    public WorkstationBlockEntity getBlockEntity()
     {
-        return workstationTileEntity;
+        return workstationBlockEntity;
     }
 }

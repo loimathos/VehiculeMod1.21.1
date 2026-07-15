@@ -5,7 +5,7 @@ import net.minecraft.client.particle.IParticleFactory;
 import net.minecraft.client.particle.IParticleRenderType;
 import net.minecraft.client.particle.Particle;
 import net.minecraft.client.particle.SpriteTexturedParticle;
-import net.minecraft.client.world.ClientWorld;
+import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.particles.BasicParticleType;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
@@ -17,7 +17,7 @@ import javax.annotation.Nullable;
  */
 public class DustParticle extends SpriteTexturedParticle
 {
-    public DustParticle(ClientWorld world, double x, double y, double z, double xd, double yd, double zd)
+    public DustParticle(ClientLevel world, double x, double y, double z, double xd, double yd, double zd)
     {
         super(world, x, y, z);
         this.lifetime = 50 + this.random.nextInt(20);
@@ -66,7 +66,7 @@ public class DustParticle extends SpriteTexturedParticle
 
         @Nullable
         @Override
-        public Particle createParticle(BasicParticleType type, ClientWorld world, double x, double y, double z, double xd, double yd, double zd)
+        public Particle createParticle(BasicParticleType type, ClientLevel world, double x, double y, double z, double xd, double yd, double zd)
         {
             DustParticle particle = new DustParticle(world, x, y, z, xd, yd, zd);
             particle.pickSprite(this.spriteSet);

@@ -80,7 +80,7 @@ public class ClientPlayHandler
         PlayerEntity player = Minecraft.getInstance().player;
         if(player != null)
         {
-            Entity entity = player.getCommandSenderWorld().getEntity(message.getEntityId());
+            Entity entity = player.level.getEntity(message.getEntityId());
             if(entity instanceof VehicleEntity)
             {
                 VehicleEntity vehicle = (VehicleEntity) entity;

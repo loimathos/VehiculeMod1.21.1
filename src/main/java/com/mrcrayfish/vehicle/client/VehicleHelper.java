@@ -18,7 +18,7 @@ import net.minecraft.client.audio.SimpleSound;
 import net.minecraft.client.particle.DiggingParticle;
 import net.minecraft.client.particle.Particle;
 import net.minecraft.client.settings.PointOfView;
-import net.minecraft.client.world.ClientWorld;
+import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.util.SoundCategory;
@@ -298,7 +298,7 @@ public class VehicleHelper
     public static void spawnWheelParticle(BlockPos pos, BlockState state, double x, double y, double z, Vector3d motion)
     {
         Minecraft mc = Minecraft.getInstance();
-        ClientWorld world = mc.level;
+        ClientLevel world = mc.level;
         if(world != null)
         {
             DiggingParticle particle = new DiggingParticle(world, x, y, z, motion.x, motion.y, motion.z, state);
@@ -311,7 +311,7 @@ public class VehicleHelper
     public static void spawnSmokeParticle(double x, double y, double z, Vector3d motion)
     {
         Minecraft mc = Minecraft.getInstance();
-        ClientWorld world = mc.level;
+        ClientLevel world = mc.level;
         if(world != null)
         {
             Particle particle = mc.particleEngine.createParticle(ModParticleTypes.TYRE_SMOKE.get(), x, y, z, motion.x, motion.y, motion.z);

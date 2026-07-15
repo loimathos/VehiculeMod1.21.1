@@ -136,8 +136,8 @@ public class ServerPlayHandler
             PoweredVehicleEntity entityPoweredVehicle = (PoweredVehicleEntity) entity;
             engineType = entityPoweredVehicle.getEngineType();
 
-            WorkstationBlockEntity workstationTileEntity = workstation.getTileEntity();
-            ItemStack workstationEngine = workstationTileEntity.getItem(1);
+            WorkstationBlockEntity workstationBlockEntity = workstation.getBlockEntity()();
+            ItemStack workstationEngine = workstationBlockEntity.getItem(1);
             if(workstationEngine.isEmpty() || !(workstationEngine.getItem() instanceof EngineItem))
                 return;
 
@@ -147,7 +147,7 @@ public class ServerPlayHandler
 
             if(entityPoweredVehicle.canChangeWheels())
             {
-                ItemStack wheel = workstationTileEntity.getInventory().get(2);
+                ItemStack wheel = workstationBlockEntity.getInventory().get(2);
                 if(!(wheel.getItem() instanceof WheelItem))
                     return;
             }
@@ -157,40 +157,40 @@ public class ServerPlayHandler
 
         recipe.consumeMaterials(player);
 
-        WorkstationBlockEntity workstationTileEntity = workstation.getTileEntity();
+        WorkstationBlockEntity workstationBlockEntity = workstation.getBlockEntity()();
 
         /* Gets the color based on the dye */
         int color = VehicleEntity.DYE_TO_COLOR[0];
         if(vehicle.getProperties().canBePainted())
         {
-            ItemStack workstationDyeStack = workstationTileEntity.getInventory().get(0);
+            ItemStack workstationDyeStack = workstationBlockEntity.getInventory().get(0);
             if(workstationDyeStack.getItem() instanceof DyeItem)
             {
                 DyeItem dyeItem = (DyeItem) workstationDyeStack.getItem();
                 color = dyeItem.getDyeColor().getColorValue();
-                workstationTileEntity.getInventory().set(0, ItemStack.EMPTY);
+                workstationBlockEntity.getInventory().set(0, ItemStack.EMPTY);
             }
         }
 
         ItemStack engineStack = ItemStack.EMPTY;
         if(engineType != EngineType.NONE)
         {
-            ItemStack workstationEngineStack = workstationTileEntity.getInventory().get(1);
+            ItemStack workstationEngineStack = workstationBlockEntity.getInventory().get(1);
             if(workstationEngineStack.getItem() instanceof EngineItem)
             {
                 engineStack = workstationEngineStack.copy();
-                workstationTileEntity.getInventory().set(1, ItemStack.EMPTY);
+                workstationBlockEntity.getInventory().set(1, ItemStack.EMPTY);
             }
         }
 
         ItemStack wheelStack = ItemStack.EMPTY;
         if(vehicle instanceof PoweredVehicleEntity && ((PoweredVehicleEntity) vehicle).canChangeWheels())
         {
-            ItemStack workstationWheelStack = workstationTileEntity.getInventory().get(2);
+            ItemStack workstationWheelStack = workstationBlockEntity.getInventory().get(2);
             if(workstationWheelStack.getItem() instanceof WheelItem)
             {
                 wheelStack = workstationWheelStack.copy();
-                workstationTileEntity.getInventory().set(2, ItemStack.EMPTY);
+                workstationBlockEntity.getInventory().set(2, ItemStack.EMPTY);
             }
         }
 

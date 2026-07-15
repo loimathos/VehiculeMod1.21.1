@@ -152,7 +152,7 @@ public class RenderUtil
             }
             else
             {
-                stack.getItem().getItemStackTileEntityRenderer().renderByItem(stack, transformType, matrixStack, renderTypeBuffer, lightTexture, overlayTexture);
+                stack.getItem().getItemStackBlockEntityRenderer().renderByItem(stack, transformType, matrixStack, renderTypeBuffer, lightTexture, overlayTexture);
             }
 
             matrixStack.popPose();

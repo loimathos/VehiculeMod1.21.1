@@ -36,39 +36,39 @@ public class CopyFluidTanks extends LootFunction
         BlockState state = context.getParamOrNull(LootParameters.BLOCK_STATE);
         if(state != null && stack.getItem() == state.getBlock().asItem())
         {
-            BlockEntity tileEntity = context.getParamOrNull(LootParameters.BLOCK_ENTITY);
-            if(tileEntity != null)
+            BlockEntity blockEntity = context.getParamOrNull(LootParameters.BLOCK_ENTITY);
+            if(blockEntity != null)
             {
-                CompoundNBT tileEntityTag = new CompoundNBT();
-                if(tileEntity instanceof TileFluidHandler)
+                CompoundNBT blockEntityTag = new CompoundNBT();
+                if(blockEntity instanceof TileFluidHandler)
                 {
-                    LazyOptional<IFluidHandler> handler = tileEntity.getCapability(CapabilityFluidHandler.FLUID_HANDLER_CAPABILITY);
+                    LazyOptional<IFluidHandler> handler = blockEntity.getCapability(CapabilityFluidHandler.FLUID_HANDLER_CAPABILITY);
                     handler.ifPresent(h ->
                     {
                         FluidTank tank = (FluidTank) h;
                         if(!tank.isEmpty())
                         {
-                            tank.writeToNBT(tileEntityTag);
+                            tank.writeToNBT(blockEntityTag);
                         }
                     });
                 }
-                else if(tileEntity instanceof IFluidTankWriter)
+                else if(blockEntity instanceof IFluidTankWriter)
                 {
-                    IFluidTankWriter writer = (IFluidTankWriter) tileEntity;
+                    IFluidTankWriter writer = (IFluidTankWriter) blockEntity;
                     if(!writer.areTanksEmpty())
                     {
-                        writer.writeTanks(tileEntityTag);
+                        writer.writeTanks(blockEntityTag);
                     }
                 }
 
-                if(!tileEntityTag.isEmpty())
+                if(!blockEntityTag.isEmpty())
                 {
                     CompoundNBT compound = stack.getTag();
                     if(compound == null)
                     {
                         compound = new CompoundNBT();
                     }
-                    compound.put("BlockEntityTag", tileEntityTag);
+                    compound.put("BlockEntityTag", blockEntityTag);
                     stack.setTag(compound);
                 }
             }
