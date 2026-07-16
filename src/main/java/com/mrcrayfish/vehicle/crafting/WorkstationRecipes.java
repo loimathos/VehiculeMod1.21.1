@@ -1,6 +1,6 @@
 package com.mrcrayfish.vehicle.crafting;
 
-import net.minecraft.entity.EntityType;
+import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.level.Level;
 
 import javax.annotation.Nullable;

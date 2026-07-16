@@ -6,14 +6,14 @@ import com.mrcrayfish.vehicle.Config;
 import com.mrcrayfish.vehicle.client.CameraHelper;
 import com.mrcrayfish.vehicle.entity.VehicleEntity;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.entity.player.ClientPlayerEntity;
+import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.client.renderer.ActiveRenderInfo;
 import net.minecraft.client.settings.PointOfView;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.util.Util;
-import net.minecraft.util.math.vector.Quaternion;
-import net.minecraft.util.math.vector.Vector3f;
+import org.joml.Quaternionf;
+import org.joml.Vector3f;
 import net.minecraftforge.client.event.EntityViewRenderEvent;
 import net.minecraftforge.client.event.FOVUpdateEvent;
 import net.minecraftforge.client.event.InputEvent;
@@ -92,7 +92,7 @@ public class CameraHandler
         if(!Config.CLIENT.autoPerspective.get())
             return;
 
-        PlayerEntity player = Minecraft.getInstance().player;
+        Player player = Minecraft.getInstance().player;
         if(player == null)
             return;
 
@@ -109,7 +109,7 @@ public class CameraHandler
     @SubscribeEvent
     public void onClientTick(TickEvent.ClientTickEvent event)
     {
-        PlayerEntity player = Minecraft.getInstance().player;
+        Player player = Minecraft.getInstance().player;
         if(event.phase != TickEvent.Phase.END || player == null)
             return;
 
@@ -122,7 +122,7 @@ public class CameraHandler
     @SubscribeEvent
     public void onFovUpdate(FOVUpdateEvent event)
     {
-        PlayerEntity player = Minecraft.getInstance().player;
+        Player player = Minecraft.getInstance().player;
         if(player == null)
             return;
 
@@ -146,7 +146,7 @@ public class CameraHandler
             return;
 
         Entity entity = event.getEntityMounting();
-        if(!(entity instanceof PlayerEntity) || !((PlayerEntity) entity).isLocalPlayer())
+        if(!(entity instanceof Player) || !((Player) entity).isLocalPlayer())
             return;
 
         this.cameraHelper.load((VehicleEntity) event.getEntityBeingMounted());
@@ -168,7 +168,7 @@ public class CameraHandler
         if(minecraft.isPaused())
             return;
 
-        ClientPlayerEntity player = minecraft.player;
+        ClientPlayer player = minecraft.player;
         if(!(player.getVehicle() instanceof VehicleEntity))
             return;
 
@@ -191,7 +191,7 @@ public class CameraHandler
         if(minecraft.level == null || minecraft.player == null)
             return;
 
-        ClientPlayerEntity player = minecraft.player;
+        ClientPlayer player = minecraft.player;
         if(!(player.getVehicle() instanceof VehicleEntity))
             return;
 
@@ -211,7 +211,7 @@ public class CameraHandler
 
         ActiveRenderInfo info = Minecraft.getInstance().gameRenderer.getMainCamera();
         Entity entity = info.getEntity();
-        if(!(entity instanceof PlayerEntity) || !(entity.getVehicle() instanceof VehicleEntity))
+        if(!(entity instanceof Player) || !(entity.getVehicle() instanceof VehicleEntity))
             return;
 
         // Undo the rotations created by vanilla

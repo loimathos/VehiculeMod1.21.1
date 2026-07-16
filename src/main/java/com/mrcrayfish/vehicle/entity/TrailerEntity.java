@@ -3,16 +3,16 @@ package com.mrcrayfish.vehicle.entity;
 import com.mrcrayfish.vehicle.Config;
 import com.mrcrayfish.vehicle.entity.properties.TrailerProperties;
 import com.mrcrayfish.vehicle.entity.properties.VehicleProperties;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.EntityType;
-import net.minecraft.entity.MoverType;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.network.datasync.DataParameter;
-import net.minecraft.network.datasync.DataSerializers;
-import net.minecraft.network.datasync.EntityDataManager;
-import net.minecraft.util.SoundCategory;
-import net.minecraft.util.SoundEvents;
-import net.minecraft.util.math.vector.Vector3d;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.MoverType;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.network.syncher.DataParameter;
+import net.minecraft.network.syncher.DataSerializers;
+import net.minecraft.network.syncher.EntityDataManager;
+import net.minecraft.sounds.SoundSource;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.level.Level;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
@@ -59,7 +59,7 @@ public abstract class TrailerEntity extends VehicleEntity
             if(entityId != -1)
             {
                 Entity entity = this.level.getEntity(this.entityData.get(PULLING_ENTITY));
-                if(entity instanceof PlayerEntity || (entity instanceof VehicleEntity && ((VehicleEntity) entity).canTowTrailers()))
+                if(entity instanceof Player || (entity instanceof VehicleEntity && ((VehicleEntity) entity).canTowTrailers()))
                 {
                     this.pullingEntity = entity;
                 }
@@ -142,7 +142,7 @@ public abstract class TrailerEntity extends VehicleEntity
 
     public boolean setPullingEntity(Entity pullingEntity)
     {
-        if(pullingEntity instanceof PlayerEntity || (pullingEntity instanceof VehicleEntity && pullingEntity.getVehicle() == null && ((VehicleEntity) pullingEntity).canTowTrailers()))
+        if(pullingEntity instanceof Player || (pullingEntity instanceof VehicleEntity && pullingEntity.getVehicle() == null && ((VehicleEntity) pullingEntity).canTowTrailers()))
         {
             this.pullingEntity = pullingEntity;
             this.entityData.set(PULLING_ENTITY, pullingEntity.getId());

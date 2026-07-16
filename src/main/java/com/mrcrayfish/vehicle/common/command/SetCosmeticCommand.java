@@ -7,10 +7,10 @@ import com.mrcrayfish.vehicle.entity.VehicleEntity;
 import net.minecraft.commands.CommandSource;
 import net.minecraft.commands.Commands;
 import net.minecraft.commands.arguments.ResourceLocationArgument;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.util.ResourceLocation;
-import net.minecraft.util.math.AxisAlignedBB;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.phys.AABB;
 
 import java.util.List;
 
@@ -31,7 +31,7 @@ public class SetCosmeticCommand
     private static int handle(CommandContext<CommandSource> context)
     {
         Entity entity = context.getSource().getEntity();
-        if(!(entity instanceof PlayerEntity))
+        if(!(entity instanceof Player))
             return 1;
 
         AxisAlignedBB box = entity.getBoundingBox().inflate(10, 10, 10);

@@ -1,7 +1,7 @@
 package com.mrcrayfish.vehicle.client.raytrace;
 
 import com.mrcrayfish.vehicle.client.raytrace.data.RayTraceData;
-import net.minecraft.util.math.vector.Vector3d;
+import net.minecraft.world.phys.Vec3;
 
 import javax.annotation.Nullable;
 

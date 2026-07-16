@@ -2,8 +2,8 @@ package com.mrcrayfish.vehicle.network;
 
 import com.google.common.collect.ImmutableMap;
 import com.mrcrayfish.vehicle.entity.properties.VehicleProperties;
-import net.minecraft.network.PacketBuffer;
-import net.minecraft.util.ResourceLocation;
+import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.resources.ResourceLocation;
 import org.apache.commons.lang3.Validate;
 
 import java.util.function.IntSupplier;

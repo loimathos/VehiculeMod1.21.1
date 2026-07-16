@@ -12,27 +12,27 @@ import com.mrcrayfish.vehicle.network.PacketHandler;
 import com.mrcrayfish.vehicle.network.message.MessageAttachChest;
 import com.mrcrayfish.vehicle.network.message.MessageOpenStorage;
 import com.mrcrayfish.vehicle.util.InventoryUtil;
-import net.minecraft.block.Blocks;
+import net.minecraft.world.level.block.Blocks;
 import net.minecraft.client.Minecraft;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.EntityType;
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.item.ItemEntity;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.inventory.IInventory;
-import net.minecraft.inventory.InventoryHelper;
-import net.minecraft.inventory.ItemStackHelper;
-import net.minecraft.item.ItemStack;
-import net.minecraft.item.Items;
-import net.minecraft.nbt.CompoundNBT;
-import net.minecraft.network.datasync.DataParameter;
-import net.minecraft.network.datasync.DataSerializers;
-import net.minecraft.network.datasync.EntityDataManager;
-import net.minecraft.util.Hand;
-import net.minecraft.util.NonNullList;
-import net.minecraft.util.SoundCategory;
-import net.minecraft.util.SoundEvents;
-import net.minecraft.util.math.vector.Vector3d;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.item.ItemEntity;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.Container;
+import net.minecraft.world.ContainerHelper;
+import net.minecraft.world.ContainerHelper;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.syncher.DataParameter;
+import net.minecraft.network.syncher.DataSerializers;
+import net.minecraft.network.syncher.EntityDataManager;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.core.NonNullList;
+import net.minecraft.sounds.SoundSource;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.world.phys.Vec3;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.level.Level;
 import net.minecraftforge.api.distmarker.Dist;
@@ -73,7 +73,7 @@ public class MopedEntity extends MotorcycleEntity implements IStorage, IAttachab
     }
 
     @Override
-    protected void readAdditionalSaveData(CompoundNBT compound)
+    protected void readAdditionalSaveData(CompoundTag compound)
     {
         super.readAdditionalSaveData(compound);
         if(compound.getBoolean("ChestAttached"))
@@ -85,7 +85,7 @@ public class MopedEntity extends MotorcycleEntity implements IStorage, IAttachab
     }
 
     @Override
-    protected void addAdditionalSaveData(CompoundNBT compound)
+    protected void addAdditionalSaveData(CompoundTag compound)
     {
         super.addAdditionalSaveData(compound);
         if(this.hasChest())
@@ -156,10 +156,10 @@ public class MopedEntity extends MotorcycleEntity implements IStorage, IAttachab
         {
             this.setChest(true);
             this.initInventory();
-            CompoundNBT itemTag = stack.getTag();
+            CompoundTag itemTag = stack.getTag();
             if(itemTag != null)
             {
-                CompoundNBT blockEntityTag = itemTag.getCompound("BlockEntityTag");
+                CompoundTag blockEntityTag = itemTag.getCompound("BlockEntityTag");
                 if(!blockEntityTag.isEmpty() && blockEntityTag.contains("Items", Constants.NBT.TAG_LIST))
                 {
                     NonNullList<ItemStack> chestInventory = NonNullList.withSize(27, ItemStack.EMPTY);
@@ -234,7 +234,7 @@ public class MopedEntity extends MotorcycleEntity implements IStorage, IAttachab
         }
 
         int count = 0;
-        for(PlayerEntity player : this.level.getEntitiesOfClass(PlayerEntity.class, this.getBoundingBox().inflate(5.0F)))
+        for(Player player : this.level.getEntitiesOfClass(Player.class, this.getBoundingBox().inflate(5.0F)))
         {
             if(player.containerMenu instanceof StorageContainer)
             {
@@ -290,7 +290,7 @@ public class MopedEntity extends MotorcycleEntity implements IStorage, IAttachab
         }
 
         @Override
-        public void startOpen(PlayerEntity player)
+        public void startOpen(Player player)
         {
             Vector3d target = MopedEntity.this.getChestPosition();
             player.level.playSound(null, target.x, target.y, target.z, SoundEvents.CHEST_OPEN, MopedEntity.this.getSoundSource(), 0.5F, 0.9F);

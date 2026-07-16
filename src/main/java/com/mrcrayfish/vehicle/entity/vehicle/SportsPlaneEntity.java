@@ -1,8 +1,8 @@
 package com.mrcrayfish.vehicle.entity.vehicle;
 
 import com.mrcrayfish.vehicle.entity.PlaneEntity;
-import net.minecraft.entity.EntityType;
-import net.minecraft.util.math.AxisAlignedBB;
+import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.phys.AABB;
 import net.minecraft.world.level.Level;
 
 /**

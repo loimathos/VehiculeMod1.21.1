@@ -2,7 +2,7 @@ package com.mrcrayfish.vehicle.client.raytrace;
 
 import com.mrcrayfish.vehicle.client.raytrace.data.InteractableBoxRayTraceData;
 import com.mrcrayfish.vehicle.entity.VehicleEntity;
-import net.minecraft.util.math.AxisAlignedBB;
+import net.minecraft.world.phys.AABB;
 
 import java.util.function.BiConsumer;
 import java.util.function.Predicate;

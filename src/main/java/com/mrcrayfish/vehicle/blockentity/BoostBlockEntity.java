@@ -1,8 +1,8 @@
 package com.mrcrayfish.vehicle.blockentity;
 
 import com.mrcrayfish.vehicle.init.ModBlockEntities;
-import net.minecraft.block.BlockState;
-import net.minecraft.nbt.CompoundNBT;
+import net.minecraft.world.level.block.BlockState;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraftforge.common.util.Constants;
 
 /**
@@ -29,7 +29,7 @@ public class BoostBlockEntity extends BlockEntity
     }
 
     @Override
-    public void load(BlockState state, CompoundNBT compound)
+    public void load(BlockState state, CompoundTag compound)
     {
         super.load(state, compound);
         if(compound.contains("SpeedMultiplier", Constants.NBT.TAG_FLOAT))
@@ -39,7 +39,7 @@ public class BoostBlockEntity extends BlockEntity
     }
 
     @Override
-    public CompoundNBT save(CompoundNBT compound)
+    public CompoundTag save(CompoundTag compound)
     {
         compound.putFloat("SpeedMultiplier", this.speedMultiplier);
         return super.save(compound);

@@ -5,10 +5,10 @@ import com.mrcrayfish.vehicle.item.SprayCanItem;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.audio.SimpleSound;
 import net.minecraft.client.renderer.entity.model.PlayerModel;
-import net.minecraft.client.renderer.model.ModelRenderer;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.item.ItemStack;
-import net.minecraft.util.HandSide;
+import net.minecraft.client.resources.model.ModelRenderer;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.InteractionHandSide;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 
@@ -22,7 +22,7 @@ public class SprayCanHandler
     @SubscribeEvent
     public void onClientTick(TickEvent.ClientTickEvent event)
     {
-        PlayerEntity player = Minecraft.getInstance().player;
+        Player player = Minecraft.getInstance().player;
         if(event.phase != TickEvent.Phase.END || player == null)
             return;
 
@@ -49,7 +49,7 @@ public class SprayCanHandler
      * @param player the player holding the spray can
      * @param model  the model of the player
      */
-    static void applySprayCanPose(PlayerEntity player, PlayerModel<?> model)
+    static void applySprayCanPose(Player player, PlayerModel<?> model)
     {
         if(player.getVehicle() != null)
             return;

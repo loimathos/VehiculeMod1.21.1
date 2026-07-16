@@ -5,11 +5,11 @@ import com.mrcrayfish.vehicle.common.entity.Transform;
 import com.mrcrayfish.vehicle.entity.properties.LandProperties;
 import com.mrcrayfish.vehicle.entity.properties.VehicleProperties;
 import com.mrcrayfish.vehicle.util.CommonUtils;
-import net.minecraft.entity.EntityType;
-import net.minecraft.nbt.CompoundNBT;
-import net.minecraft.network.PacketBuffer;
-import net.minecraft.util.math.MathHelper;
-import net.minecraft.util.math.vector.Vector3d;
+import net.minecraft.world.entity.EntityType;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.util.Mth;
+import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.level.Level;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
@@ -377,11 +377,11 @@ public abstract class LandVehicleEntity extends PoweredVehicleEntity
     }
 
     @Override
-    protected void addAdditionalSaveData(CompoundNBT compound)
+    protected void addAdditionalSaveData(CompoundTag compound)
     {
         super.addAdditionalSaveData(compound);
         compound.putFloat("Traction", this.traction);
-        CompoundNBT velocity = new CompoundNBT();
+        CompoundTag velocity = new CompoundTag();
         velocity.putDouble("X", this.velocity.x);
         velocity.putDouble("Y", this.velocity.y);
         velocity.putDouble("Z", this.velocity.z);
@@ -389,11 +389,11 @@ public abstract class LandVehicleEntity extends PoweredVehicleEntity
     }
 
     @Override
-    protected void readAdditionalSaveData(CompoundNBT compound)
+    protected void readAdditionalSaveData(CompoundTag compound)
     {
         super.readAdditionalSaveData(compound);
         this.traction = compound.getFloat("Traction");
-        CompoundNBT velocity = compound.getCompound("Velocity");
+        CompoundTag velocity = compound.getCompound("Velocity");
         this.velocity = new Vector3d(velocity.getDouble("X"), velocity.getDouble("Y"), velocity.getDouble("Z"));
     }
 

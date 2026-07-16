@@ -1,6 +1,6 @@
 package com.mrcrayfish.vehicle.entity;
 
-import com.mrcrayfish.obfuscate.common.data.SyncedPlayerData;
+//import com.mrcrayfish.obfuscate.common.data.SyncedPlayerData;
 import com.mrcrayfish.vehicle.Config;
 import com.mrcrayfish.vehicle.block.VehicleCrateBlock;
 import com.mrcrayfish.vehicle.client.VehicleHelper;
@@ -25,38 +25,38 @@ import com.mrcrayfish.vehicle.blockentity.GasPumpTankBlockEntity;
 import com.mrcrayfish.vehicle.blockentity.GasPumpBlockEntity;
 import com.mrcrayfish.vehicle.util.CommonUtils;
 import com.mrcrayfish.vehicle.util.InventoryUtil;
-import net.minecraft.block.BlockState;
-import net.minecraft.block.material.Material;
+import net.minecraft.world.level.block.BlockState;
+//import net.minecraft.world.level.block.material.Material; // Removed in 1.21.1
 import net.minecraft.client.Minecraft;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.EntityType;
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.MoverType;
-import net.minecraft.entity.item.ItemEntity;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.entity.player.PlayerInventory;
-import net.minecraft.entity.player.ServerPlayerEntity;
-import net.minecraft.inventory.IInventory;
-import net.minecraft.inventory.IInventoryChangedListener;
-import net.minecraft.inventory.Inventory;
-import net.minecraft.inventory.container.Container;
-import net.minecraft.inventory.container.INamedContainerProvider;
-import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.CompoundNBT;
-import net.minecraft.network.datasync.DataParameter;
-import net.minecraft.network.datasync.DataSerializers;
-import net.minecraft.network.datasync.EntityDataManager;
-import net.minecraft.particles.ParticleTypes;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.MoverType;
+import net.minecraft.world.entity.item.ItemEntity;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.entity.player.Inventory;
+import net.minecraft.world.entity.player.ServerPlayer;
+import net.minecraft.world.Container;
+import net.minecraft.world.ContainerChangedListener;
+import net.minecraft.world.SimpleContainer;
+import net.minecraft.world.inventory.AbstractContainerMenu;
+import net.minecraft.world.MenuProvider;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.syncher.DataParameter;
+import net.minecraft.network.syncher.DataSerializers;
+import net.minecraft.network.syncher.EntityDataManager;
+import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.world.level.block.entity.BlockEntity;
-import net.minecraft.util.ActionResultType;
-import net.minecraft.util.Hand;
-import net.minecraft.util.ResourceLocation;
-import net.minecraft.util.SoundCategory;
-import net.minecraft.util.SoundEvent;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.MathHelper;
-import net.minecraft.util.math.RayTraceResult;
-import net.minecraft.util.math.vector.Vector3d;
+import net.minecraft.world.InteractionResult;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.sounds.SoundSource;
+import net.minecraft.sounds.SoundEvent;
+import net.minecraft.core.BlockPos;
+import net.minecraft.util.Mth;
+import net.minecraft.world.phys.HitResult;
+import net.minecraft.world.phys.Vec3;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.level.GameRules;
 import net.minecraft.world.level.Level;
@@ -68,7 +68,7 @@ import net.minecraftforge.fluids.capability.CapabilityFluidHandler;
 import net.minecraftforge.fluids.capability.IFluidHandler;
 import net.minecraftforge.fluids.capability.IFluidHandlerItem;
 import net.minecraftforge.fluids.capability.templates.FluidTank;
-import net.minecraftforge.fml.network.NetworkHooks;
+import net.minecraftforge.network.NetworkHooks;
 import net.minecraftforge.registries.ForgeRegistries;
 
 import javax.annotation.Nullable;
@@ -185,7 +185,7 @@ public abstract class PoweredVehicleEntity extends VehicleEntity implements IInv
         return this.getPoweredProperties().getMaxEnginePitch();
     }
 
-    public void fuelVehicle(PlayerEntity player, Hand hand)
+    public void fuelVehicle(Player player, Hand hand)
     {
         if(SyncedPlayerData.instance().get(player, ModDataKeys.GAS_PUMP).isPresent())
         {
@@ -237,7 +237,7 @@ public abstract class PoweredVehicleEntity extends VehicleEntity implements IInv
     }
 
     @Override
-    public ActionResultType interact(PlayerEntity player, Hand hand)
+    public InteractionResult interact(Player player, Hand hand)
     {
         ItemStack stack = player.getItemInHand(hand);
         if(!level.isClientSide)
@@ -254,12 +254,12 @@ public abstract class PoweredVehicleEntity extends VehicleEntity implements IInv
                 if(!this.owner.equals(player.getUUID()))
                 {
                     CommonUtils.sendInfoMessage(player, "vehicle.status.invalid_owner");
-                    return ActionResultType.FAIL;
+                    return InteractionResult.FAIL;
                 }
 
                 if(this.isLockable())
                 {
-                    CompoundNBT tag = CommonUtils.getOrCreateStackTag(stack);
+                    CompoundTag tag = CommonUtils.getOrCreateStackTag(stack);
                     if(!tag.hasUUID("VehicleId") || this.getUUID().equals(tag.getUUID("VehicleId")))
                     {
                         tag.putUUID("VehicleId", this.getUUID());
@@ -272,13 +272,13 @@ public abstract class PoweredVehicleEntity extends VehicleEntity implements IInv
                         {
                             CommonUtils.sendInfoMessage(player, "vehicle.status.key_created");
                         }
-                        return ActionResultType.SUCCESS;
+                        return InteractionResult.SUCCESS;
                     }
                 }
                 else
                 {
                     CommonUtils.sendInfoMessage(player, "vehicle.status.not_lockable");
-                    return ActionResultType.FAIL;
+                    return InteractionResult.FAIL;
                 }
             }
             else if(stack.getItem() == ModItems.WRENCH.get() && this.getVehicle() instanceof EntityJack)
@@ -291,7 +291,7 @@ public abstract class PoweredVehicleEntity extends VehicleEntity implements IInv
                 {
                     CommonUtils.sendInfoMessage(player, "vehicle.status.invalid_owner");
                 }
-                return ActionResultType.SUCCESS;
+                return InteractionResult.SUCCESS;
             }
         }
         return super.interact(player, hand);
@@ -371,7 +371,7 @@ public abstract class PoweredVehicleEntity extends VehicleEntity implements IInv
         this.checkInsideBlocks();
 
         //TODO improve fuel consumption logic
-        if(this.requiresEnergy() && controllingPassenger instanceof PlayerEntity && !((PlayerEntity) controllingPassenger).isCreative() && this.isEnginePowered())
+        if(this.requiresEnergy() && controllingPassenger instanceof Player && !((Player) controllingPassenger).isCreative() && this.isEnginePowered())
         {
             float currentFuel = this.getCurrentEnergy();
             currentFuel -= this.getEnergyConsumptionPerTick() * Config.SERVER.energyConsumptionFactor.get();
@@ -509,7 +509,7 @@ public abstract class PoweredVehicleEntity extends VehicleEntity implements IInv
     }
 
     @Override
-    protected void readAdditionalSaveData(CompoundNBT compound)
+    protected void readAdditionalSaveData(CompoundTag compound)
     {
         super.readAdditionalSaveData(compound);
         if(compound.contains("Owner", Constants.NBT.TAG_COMPOUND))
@@ -536,7 +536,7 @@ public abstract class PoweredVehicleEntity extends VehicleEntity implements IInv
     }
 
     @Override
-    protected void addAdditionalSaveData(CompoundNBT compound)
+    protected void addAdditionalSaveData(CompoundTag compound)
     {
         super.addAdditionalSaveData(compound);
         if(this.owner != null)
@@ -781,7 +781,7 @@ public abstract class PoweredVehicleEntity extends VehicleEntity implements IInv
         return (!this.canChangeWheels() || this.hasWheelStack()) && this.isEnginePowered();
     }
 
-    public boolean isOwner(PlayerEntity player)
+    public boolean isOwner(Player player)
     {
         return owner == null || player.getUUID().equals(owner);
     }
@@ -834,18 +834,18 @@ public abstract class PoweredVehicleEntity extends VehicleEntity implements IInv
     private boolean isControllingPassengerCreative()
     {
         Entity entity = this.getControllingPassenger();
-        if(entity instanceof PlayerEntity)
+        if(entity instanceof Player)
         {
-            return ((PlayerEntity) entity).isCreative();
+            return ((Player) entity).isCreative();
         }
         return false;
     }
 
-    private void openEditInventory(PlayerEntity player)
+    private void openEditInventory(Player player)
     {
-        if(player instanceof ServerPlayerEntity)
+        if(player instanceof ServerPlayer)
         {
-            NetworkHooks.openGui((ServerPlayerEntity) player, this, buffer -> buffer.writeInt(this.getId()));
+            NetworkHooks.openGui((ServerPlayer) player, this, buffer -> buffer.writeInt(this.getId()));
         }
     }
 
@@ -929,7 +929,7 @@ public abstract class PoweredVehicleEntity extends VehicleEntity implements IInv
     protected void onVehicleDestroyed(LivingEntity entity)
     {
         super.onVehicleDestroyed(entity);
-        boolean isCreativeMode = entity instanceof PlayerEntity && ((PlayerEntity) entity).isCreative();
+        boolean isCreativeMode = entity instanceof Player && ((Player) entity).isCreative();
         if(!isCreativeMode && this.level.getGameRules().getBoolean(GameRules.RULE_DOENTITYDROPS))
         {
             // Spawns the engine if the vehicle has one
@@ -1046,7 +1046,7 @@ public abstract class PoweredVehicleEntity extends VehicleEntity implements IInv
 
     @Nullable
     @Override
-    public Container createMenu(int windowId, PlayerInventory playerInventory, PlayerEntity playerEntity)
+    public AbstractContainerMenu createMenu(int windowId, Inventory playerInventory, Player playerEntity)
     {
         return new EditVehicleContainer(windowId, this.getVehicleInventory(), this, playerEntity, playerInventory);
     }

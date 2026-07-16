@@ -19,27 +19,27 @@ import com.mrcrayfish.vehicle.network.message.MessageInteractCosmetic;
 import com.mrcrayfish.vehicle.network.message.MessageInteractKey;
 import com.mrcrayfish.vehicle.network.message.MessagePickupVehicle;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.renderer.IRenderTypeBuffer;
+import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
-import net.minecraft.client.renderer.model.BakedQuad;
-import net.minecraft.client.renderer.model.IBakedModel;
-import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.EntityType;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.util.Direction;
-import net.minecraft.util.Hand;
-import net.minecraft.util.ResourceLocation;
-import net.minecraft.util.math.AxisAlignedBB;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.BlockRayTraceResult;
+import net.minecraft.client.renderer.block.model.BakedQuad;
+import net.minecraft.client.resources.model.BakedModel;
+import net.minecraft.client.renderer.block.model.BakedQuad;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.core.Direction;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.phys.AABB;
+import net.minecraft.core.BlockPos;
+import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.util.math.EntityRayTraceResult;
-import net.minecraft.util.math.RayTraceResult;
-import net.minecraft.util.math.shapes.VoxelShape;
-import net.minecraft.util.math.vector.Matrix4f;
-import net.minecraft.util.math.vector.Vector3d;
-import net.minecraft.util.math.vector.Vector3f;
-import net.minecraft.util.math.vector.Vector4f;
+import net.minecraft.world.phys.HitResult;
+import net.minecraft.world.phys.shapes.VoxelShape;
+import org.joml.Matrix4f;
+import net.minecraft.world.phys.Vec3;
+import org.joml.Vector3f;
+import org.joml.Vector4f;
 import net.minecraftforge.client.event.ClientPlayerNetworkEvent;
 import net.minecraftforge.client.event.InputEvent;
 import net.minecraftforge.common.MinecraftForge;
@@ -427,7 +427,7 @@ public class EntityRayTracer
     private <T extends VehicleEntity> VehicleRayTraceResult rayTraceEntities(boolean rightClick)
     {
         Minecraft minecraft = Minecraft.getInstance();
-        PlayerEntity player = Objects.requireNonNull(minecraft.player);
+        Player player = Objects.requireNonNull(minecraft.player);
         float reach = Objects.requireNonNull(minecraft.gameMode).getPickRange();
         Vector3d eyeVec = player.getEyePosition(1.0F);
         Vector3d forwardVec = eyeVec.add(player.getViewVector(1.0F).scale(reach));
@@ -843,7 +843,7 @@ public class EntityRayTracer
      * <strong>Note:</strong>
      * <ul>
      *     <li>This must be implemented by all entities that raytraces are to be performed on.</li>
-     *     <li>Only classes that extend {@link net.minecraft.entity.Entity Entity} should implement this interface.</li>
+     *     <li>Only classes that extend {@link net.minecraft.world.entity.Entity Entity} should implement this interface.</li>
      * </ul>
      */
     private boolean processHit(VehicleRayTraceResult result)
@@ -892,7 +892,7 @@ public class EntityRayTracer
         boolean isContinuous = result.getData().getRayTraceFunction() != null;
         if(isContinuous || !(mc.hitResult != null && mc.hitResult.getType() == RayTraceResult.Type.ENTITY && ((EntityRayTraceResult) mc.hitResult).getEntity() == entity))
         {
-            PlayerEntity player = mc.player;
+            Player player = mc.player;
             boolean notRiding = player.getVehicle() != entity;
             if(!rightClick && notRiding)
             {

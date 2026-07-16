@@ -5,13 +5,13 @@ import com.mrcrayfish.vehicle.entity.VehicleEntity;
 import com.mrcrayfish.vehicle.entity.properties.VehicleProperties;
 import com.mrcrayfish.vehicle.network.PacketHandler;
 import com.mrcrayfish.vehicle.network.message.MessageSyncPlayerSeat;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.nbt.CompoundNBT;
-import net.minecraft.nbt.ListNBT;
-import net.minecraft.network.PacketBuffer;
-import net.minecraft.util.math.vector.Vector3d;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.ListTag;
+import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.common.util.Constants;
-import net.minecraftforge.fml.network.PacketDistributor;
+import net.minecraftforge.network.PacketDistributor;
 
 import java.lang.ref.WeakReference;
 import java.util.List;
@@ -112,7 +112,7 @@ public class SeatTracker
         return -1;
     }
 
-    public int getClosestAvailableSeatToPlayer(PlayerEntity player)
+    public int getClosestAvailableSeatToPlayer(Player player)
     {
         VehicleEntity vehicle = this.vehicleRef.get();
         if(vehicle != null && !vehicle.level.isClientSide)
@@ -148,12 +148,12 @@ public class SeatTracker
         return -1;
     }
 
-    public CompoundNBT write()
+    public CompoundTag write()
     {
-        CompoundNBT compound = new CompoundNBT();
-        ListNBT list = new ListNBT();
+        CompoundTag compound = new CompoundTag();
+        ListTag list = new ListTag();
         this.playerSeatMap.forEach((uuid, seatIndex) -> {
-            CompoundNBT seatTag = new CompoundNBT();
+            CompoundTag seatTag = new CompoundTag();
             seatTag.putUUID("UUID", uuid);
             seatTag.putInt("SeatIndex", seatIndex);
             list.add(seatTag);
@@ -162,14 +162,14 @@ public class SeatTracker
         return compound;
     }
 
-    public void read(CompoundNBT compound)
+    public void read(CompoundTag compound)
     {
         if(compound.contains("PlayerSeatMap", Constants.NBT.TAG_LIST))
         {
             this.playerSeatMap.clear();
-            ListNBT list = compound.getList("PlayerSeatMap", Constants.NBT.TAG_COMPOUND);
+            ListTag list = compound.getList("PlayerSeatMap", Constants.NBT.TAG_COMPOUND);
             list.forEach(nbt -> {
-                CompoundNBT seatTag = (CompoundNBT) nbt;
+                CompoundTag seatTag = (CompoundTag) nbt;
                 UUID uuid = seatTag.getUUID("UUID");
                 int seatIndex = seatTag.getInt("SeatIndex");
                 this.playerSeatMap.put(uuid, seatIndex);

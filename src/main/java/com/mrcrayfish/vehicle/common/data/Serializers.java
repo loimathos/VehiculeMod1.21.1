@@ -1,10 +1,10 @@
 package com.mrcrayfish.vehicle.common.data;
 
-import com.mrcrayfish.obfuscate.common.data.IDataSerializer;
-import net.minecraft.nbt.CompoundNBT;
-import net.minecraft.nbt.INBT;
-import net.minecraft.network.PacketBuffer;
-import net.minecraft.util.math.BlockPos;
+//import com.mrcrayfish.obfuscate.common.data.IDataSerializer;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.Tag;
+import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.core.BlockPos;
 
 import java.util.Optional;
 
@@ -33,18 +33,18 @@ public class Serializers
         }
 
         @Override
-        public INBT write(Optional<BlockPos> value)
+        public Tag write(Optional<BlockPos> value)
         {
-            CompoundNBT compound = new CompoundNBT();
+            CompoundTag compound = new CompoundTag();
             compound.putBoolean("Present", value.isPresent());
             value.ifPresent(blockPos -> compound.putLong("BlockPos", value.get().asLong()));
             return compound;
         }
 
         @Override
-        public Optional<BlockPos> read(INBT nbt)
+        public Optional<BlockPos> read(Tag nbt)
         {
-            CompoundNBT compound = (CompoundNBT) nbt;
+            CompoundTag compound = (CompoundTag) nbt;
             if(compound.getBoolean("Present"))
             {
                 BlockPos pos = BlockPos.of(compound.getLong("BlockPos"));

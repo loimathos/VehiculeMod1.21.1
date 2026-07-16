@@ -19,11 +19,33 @@ minecraft {
 }
 
 repositories {
+    mavenLocal()
     mavenCentral()
+    maven {
+        url "https://maven.minecraftforge.net/"
+    }
+    maven {
+        url "https://libraries.minecraft.net/"
+    }
     maven {
         url = "https://www.cursemaven.com"
     }
 }
+
+configurations.all {
+    resolutionStrategy.eachDependency { details ->
+        def notation = details.requested.toString()
+        if (notation.contains(':natives-macos-patch')) {
+            details.useTarget(
+                details.requested.group + ':' +
+                details.requested.name + ':' +
+                details.requested.version + ':natives-macos-arm64'
+            )
+        }
+    }
+}
+
+
 
 
 

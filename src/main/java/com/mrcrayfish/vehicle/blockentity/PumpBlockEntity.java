@@ -10,12 +10,12 @@ import com.mrcrayfish.vehicle.common.FluidNetworkHandler;
 import com.mrcrayfish.vehicle.init.ModBlockEntities;
 import com.mrcrayfish.vehicle.util.FluidUtils;
 import com.mrcrayfish.vehicle.util.BlockEntityUtil;
-import net.minecraft.block.BlockState;
-import net.minecraft.nbt.CompoundNBT;
+import net.minecraft.world.level.block.BlockState;
+import net.minecraft.nbt.CompoundTag;
 
 import net.minecraft.world.level.block.entity.BlockEntity;
-import net.minecraft.util.Direction;
-import net.minecraft.util.math.BlockPos;
+import net.minecraft.core.Direction;
+import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.Level;
 import net.minecraftforge.common.util.Constants;
 import net.minecraftforge.common.util.LazyOptional;
@@ -297,7 +297,7 @@ public class PumpBlockEntity extends PipeBlockEntity implements BlockEntityTicke
         this.powerMode = PowerMode.values()[(this.powerMode.ordinal() + 1) % PowerMode.values().length];
         if(this.level != null && !this.level.isClientSide())
         {
-            CompoundNBT compound = new CompoundNBT();
+            CompoundTag compound = new CompoundTag();
             this.writePowerMode(compound);
             BlockEntityUtil.sendUpdatePacket(this, super.save(compound));
             BlockState state = this.getBlockState();
@@ -307,7 +307,7 @@ public class PumpBlockEntity extends PipeBlockEntity implements BlockEntityTicke
     }
 
     @Override
-    public void load(BlockState state, CompoundNBT compound)
+    public void load(BlockState state, CompoundTag compound)
     {
         super.load(state, compound);
         if(compound.contains("PowerMode", Constants.NBT.TAG_INT))
@@ -317,13 +317,13 @@ public class PumpBlockEntity extends PipeBlockEntity implements BlockEntityTicke
     }
 
     @Override
-    public CompoundNBT save(CompoundNBT compound)
+    public CompoundTag save(CompoundTag compound)
     {
         compound.putInt("PowerMode", this.powerMode.ordinal());
         return super.save(compound);
     }
 
-    private void writePowerMode(CompoundNBT compound)
+    private void writePowerMode(CompoundTag compound)
     {
         compound.putInt("PowerMode", this.powerMode.ordinal());
     }

@@ -1,7 +1,7 @@
 package com.mrcrayfish.vehicle.entity;
 
 import net.minecraft.network.chat.Component;
-import net.minecraft.util.ResourceLocation;
+import net.minecraft.resources.ResourceLocation;
 
 /**
  * Author: MrCrayfish

@@ -1,10 +1,10 @@
 package com.mrcrayfish.vehicle.network.message;
 
 import com.mrcrayfish.vehicle.network.play.ClientPlayHandler;
-import net.minecraft.nbt.CompoundNBT;
-import net.minecraft.network.PacketBuffer;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.FriendlyByteBuf;
 import net.minecraftforge.fluids.FluidStack;
-import net.minecraftforge.fml.network.NetworkEvent;
+import net.minecraftforge.network.NetworkEvent;
 
 import java.util.function.Supplier;
 
@@ -28,7 +28,7 @@ public class MessageEntityFluid implements IMessage<MessageEntityFluid>
     public void encode(MessageEntityFluid message, PacketBuffer buffer)
     {
         buffer.writeInt(message.entityId);
-        buffer.writeNbt(message.stack.writeToNBT(new CompoundNBT()));
+        buffer.writeNbt(message.stack.writeToNBT(new CompoundTag()));
     }
 
     @Override

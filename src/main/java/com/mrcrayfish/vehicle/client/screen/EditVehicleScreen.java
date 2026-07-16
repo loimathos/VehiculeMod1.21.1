@@ -15,21 +15,21 @@ import net.minecraft.client.MainWindow;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screen.inventory.ContainerScreen;
 import net.minecraft.client.renderer.BufferBuilder;
-import net.minecraft.client.renderer.IRenderTypeBuffer;
-import net.minecraft.client.renderer.RenderHelper;
+import net.minecraft.client.renderer.MultiBufferSource;
+//import net.minecraft.client.renderer.RenderHelper; // Removed in 1.21.1
 import net.minecraft.client.renderer.Tessellator;
-import net.minecraft.client.renderer.WorldVertexBufferUploader;
-import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
+import net.minecraft.client.renderer.BufferUploader;
+import net.minecraft.client.renderer.block.model.BakedQuad;
 import net.minecraft.client.resources.I18n;
 import net.minecraft.client.shader.Framebuffer;
-import net.minecraft.entity.player.PlayerInventory;
-import net.minecraft.inventory.IInventory;
-import net.minecraft.util.ResourceLocation;
-import net.minecraft.util.math.vector.Matrix4f;
-import net.minecraft.util.math.vector.Quaternion;
+import net.minecraft.world.entity.player.Inventory;
+import net.minecraft.world.Container;
+import net.minecraft.resources.ResourceLocation;
+import org.joml.Matrix4f;
+import org.joml.Quaternionf;
 import net.minecraft.network.chat.Component;
 
-import net.minecraft.util.text.TextFormatting;
+import net.minecraft.ChatFormatting;
 import org.lwjgl.glfw.GLFW;
 import org.lwjgl.opengl.GL11;
 
@@ -39,11 +39,11 @@ import java.util.Collections;
 /**
  * Author: MrCrayfish
  */
-public class EditVehicleScreen extends ContainerScreen<EditVehicleContainer>
+public class EditVehicleScreen extends AbstractContainerScreen<EditVehicleContainer>
 {
     private static final ResourceLocation GUI_TEXTURES = new ResourceLocation("vehicle:textures/gui/edit_vehicle.png");
 
-    private final PlayerInventory playerInventory;
+    private final Inventory playerInventory;
     private final IInventory vehicleInventory;
     private final CachedVehicle cachedVehicle;
 
@@ -56,7 +56,7 @@ public class EditVehicleScreen extends ContainerScreen<EditVehicleContainer>
     private int mouseGrabbedButton;
     private int mouseClickedX, mouseClickedY;
 
-    public EditVehicleScreen(EditVehicleContainer container, PlayerInventory playerInventory, Component title)
+    public EditVehicleScreen(EditVehicleContainer container, Inventory playerInventory, Component title)
     {
         super(container, playerInventory, title);
         this.playerInventory = playerInventory;
@@ -114,7 +114,7 @@ public class EditVehicleScreen extends ContainerScreen<EditVehicleContainer>
             builder.vertex(pose, startX + 142, startY, this.getBlitOffset()).uv(1, 1).endVertex();
             builder.end();
             RenderSystem.enableAlphaTest();
-            WorldVertexBufferUploader.end(builder);
+            BufferUploader.end(builder);
         }
     }
 

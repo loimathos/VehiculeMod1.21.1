@@ -1,6 +1,6 @@
 package com.mrcrayfish.vehicle.client.raytrace;
 
-import com.mrcrayfish.obfuscate.common.data.SyncedPlayerData;
+//import com.mrcrayfish.obfuscate.common.data.SyncedPlayerData;
 import com.mrcrayfish.vehicle.Config;
 import com.mrcrayfish.vehicle.client.handler.ControllerHandler;
 import com.mrcrayfish.vehicle.entity.PoweredVehicleEntity;
@@ -10,12 +10,12 @@ import com.mrcrayfish.vehicle.network.PacketHandler;
 import com.mrcrayfish.vehicle.network.message.MessageFuelVehicle;
 import com.mrcrayfish.vehicle.blockentity.GasPumpTankBlockEntity;
 import com.mrcrayfish.vehicle.blockentity.GasPumpBlockEntity;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.item.ItemStack;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.entity.BlockEntity;
-import net.minecraft.util.Hand;
-import net.minecraft.util.math.BlockPos;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.core.BlockPos;
 import net.minecraftforge.fluids.FluidStack;
 import net.minecraftforge.fluids.capability.CapabilityFluidHandler;
 import net.minecraftforge.fluids.capability.IFluidHandlerItem;
@@ -30,7 +30,7 @@ import java.util.Optional;
 public interface RayTraceFunction
 {
     @Nullable
-    Hand apply(EntityRayTracer rayTracer, VehicleRayTraceResult result, PlayerEntity player);
+    Hand apply(EntityRayTracer rayTracer, VehicleRayTraceResult result, Player player);
 
     /**
      * Checks if fuel can be transferred from a jerry can to a powered vehicle, and sends a packet to do so every other tick, if it can

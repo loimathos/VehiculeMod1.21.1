@@ -4,15 +4,15 @@ import com.google.gson.JsonDeserializationContext;
 import com.google.gson.JsonObject;
 import com.mrcrayfish.vehicle.init.ModLootFunctions;
 import com.mrcrayfish.vehicle.blockentity.IFluidTankWriter;
-import net.minecraft.block.BlockState;
-import net.minecraft.item.ItemStack;
-import net.minecraft.loot.LootContext;
-import net.minecraft.loot.LootFunction;
-import net.minecraft.loot.LootFunctionType;
-import net.minecraft.loot.LootParameters;
-import net.minecraft.loot.conditions.ILootCondition;
-import net.minecraft.loot.functions.ILootFunction;
-import net.minecraft.nbt.CompoundNBT;
+import net.minecraft.world.level.block.BlockState;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.storage.loot.LootContext;
+import net.minecraft.world.level.storage.loot.LootTable.LootFunction;
+import net.minecraft.world.level.storage.loot.LootFunctionType;
+import net.minecraft.world.level.storage.loot.LootParams;
+import net.minecraft.world.level.storage.loot.predicates.LootItemCondition;
+import net.minecraft.world.level.storage.loot.functions.LootItemFunction;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraftforge.common.util.LazyOptional;
 import net.minecraftforge.fluids.capability.CapabilityFluidHandler;
@@ -39,7 +39,7 @@ public class CopyFluidTanks extends LootFunction
             BlockEntity blockEntity = context.getParamOrNull(LootParameters.BLOCK_ENTITY);
             if(blockEntity != null)
             {
-                CompoundNBT blockEntityTag = new CompoundNBT();
+                CompoundTag blockEntityTag = new CompoundTag();
                 if(blockEntity instanceof TileFluidHandler)
                 {
                     LazyOptional<IFluidHandler> handler = blockEntity.getCapability(CapabilityFluidHandler.FLUID_HANDLER_CAPABILITY);
@@ -63,10 +63,10 @@ public class CopyFluidTanks extends LootFunction
 
                 if(!blockEntityTag.isEmpty())
                 {
-                    CompoundNBT compound = stack.getTag();
+                    CompoundTag compound = stack.getTag();
                     if(compound == null)
                     {
-                        compound = new CompoundNBT();
+                        compound = new CompoundTag();
                     }
                     compound.put("BlockEntityTag", blockEntityTag);
                     stack.setTag(compound);
@@ -96,7 +96,7 @@ public class CopyFluidTanks extends LootFunction
             return this;
         }
 
-        public ILootFunction build()
+        public LootItemFunction build()
         {
             return new CopyFluidTanks(this.getConditions());
         }

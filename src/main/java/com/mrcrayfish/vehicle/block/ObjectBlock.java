@@ -1,13 +1,13 @@
 package com.mrcrayfish.vehicle.block;
 
 import com.mrcrayfish.vehicle.util.RenderUtil;
-import net.minecraft.block.AbstractBlock;
-import net.minecraft.block.Block;
+import net.minecraft.world.level.block.AbstractBlock;
+import net.minecraft.world.level.block.Block;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.util.ITooltipFlag;
-import net.minecraft.item.ItemStack;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.network.chat.Component;
-import net.minecraft.util.text.TextFormatting;
+import net.minecraft.ChatFormatting;
 
 import net.minecraft.world.level.BlockGetter;
 

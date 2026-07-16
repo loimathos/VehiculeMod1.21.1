@@ -1,11 +1,11 @@
 package com.mrcrayfish.vehicle.entity;
 
-import net.minecraft.entity.EntityType;
-import net.minecraft.fluid.FluidState;
+import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.level.material.FluidState;
 import net.minecraft.tags.FluidTags;
-import net.minecraft.util.math.AxisAlignedBB;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.MathHelper;
+import net.minecraft.world.phys.AABB;
+import net.minecraft.core.BlockPos;
+import net.minecraft.util.Mth;
 import net.minecraft.world.level.Level;
 
 import javax.annotation.Nullable;

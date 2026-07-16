@@ -1,13 +1,13 @@
 package com.mrcrayfish.vehicle.util;
 
 import com.mrcrayfish.vehicle.Config;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.entity.player.ServerPlayerEntity;
-import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.CompoundNBT;
-import net.minecraft.util.math.MathHelper;
-import net.minecraft.util.math.vector.Vector3d;
-import net.minecraft.util.math.vector.Vector3f;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.entity.player.ServerPlayer;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.util.Mth;
+import net.minecraft.world.phys.Vec3;
+import org.joml.Vector3f;
 
 import net.minecraftforge.common.util.Constants;
 
@@ -16,24 +16,24 @@ import net.minecraftforge.common.util.Constants;
  */
 public class CommonUtils
 {
-    public static CompoundNBT getOrCreateStackTag(ItemStack stack)
+    public static CompoundTag getOrCreateStackTag(ItemStack stack)
     {
         if(stack.getTag() == null)
         {
-            stack.setTag(new CompoundNBT());
+            stack.setTag(new CompoundTag());
         }
         return stack.getTag();
     }
 
-    public static void writeItemStackToTag(CompoundNBT compound, String key, ItemStack stack)
+    public static void writeItemStackToTag(CompoundTag compound, String key, ItemStack stack)
     {
         if(!stack.isEmpty())
         {
-            compound.put(key, stack.save(new CompoundNBT()));
+            compound.put(key, stack.save(new CompoundTag()));
         }
     }
 
-    public static ItemStack readItemStackFromTag(CompoundNBT compound, String key)
+    public static ItemStack readItemStackFromTag(CompoundTag compound, String key)
     {
         if(compound.contains(key, Constants.NBT.TAG_COMPOUND))
         {
@@ -42,9 +42,9 @@ public class CommonUtils
         return ItemStack.EMPTY;
     }
 
-    public static void sendInfoMessage(PlayerEntity player, String message)
+    public static void sendInfoMessage(Player player, String message)
     {
-        if(player instanceof ServerPlayerEntity)
+        if(player instanceof ServerPlayer)
         {
             player.displayClientMessage(Component.translatable(message), true);
         }

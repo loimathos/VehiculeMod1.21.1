@@ -6,9 +6,9 @@ import com.mrcrayfish.vehicle.crafting.FluidMixerRecipeSerializer;
 import com.mrcrayfish.vehicle.crafting.WorkstationRecipeSerializer;
 import com.mrcrayfish.vehicle.recipe.RecipeColorSprayCan;
 import com.mrcrayfish.vehicle.recipe.RecipeRefillSprayCan;
-import net.minecraft.item.crafting.IRecipeSerializer;
-import net.minecraft.item.crafting.SpecialRecipeSerializer;
-import net.minecraftforge.fml.RegistryObject;
+import net.minecraft.world.item.crafting.RecipeSerializer;
+import net.minecraft.world.item.crafting.SpecialRecipeSerializer;
+import net.minecraftforge.registries.RegistryObject;
 import net.minecraftforge.registries.DeferredRegister;
 import net.minecraftforge.registries.ForgeRegistries;
 
@@ -17,7 +17,7 @@ import net.minecraftforge.registries.ForgeRegistries;
  */
 public class ModRecipeSerializers
 {
-    public static final DeferredRegister<IRecipeSerializer<?>> REGISTER = DeferredRegister.create(ForgeRegistries.RECIPE_SERIALIZERS, Reference.MOD_ID);
+    public static final DeferredRegister<RecipeSerializer<?>> REGISTER = DeferredRegister.create(ForgeRegistries.RECIPE_SERIALIZERS, Reference.MOD_ID);
 
     public static final RegistryObject<SpecialRecipeSerializer<RecipeColorSprayCan>> COLOR_SPRAY_CAN = REGISTER.register("color_spray_can", () -> new SpecialRecipeSerializer<>(RecipeColorSprayCan::new));
     public static final RegistryObject<SpecialRecipeSerializer<RecipeRefillSprayCan>> REFILL_SPRAY_CAN = REGISTER.register("refill_spray_can", () -> new SpecialRecipeSerializer<>(RecipeRefillSprayCan::new));

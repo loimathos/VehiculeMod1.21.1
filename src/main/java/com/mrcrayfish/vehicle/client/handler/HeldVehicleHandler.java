@@ -1,18 +1,18 @@
 package com.mrcrayfish.vehicle.client.handler;
 
-import com.mrcrayfish.obfuscate.client.event.PlayerModelEvent;
+//import com.mrcrayfish.obfuscate.client.event.PlayerModelEvent;
 import com.mrcrayfish.vehicle.client.render.layer.LayerHeldVehicle;
 import com.mrcrayfish.vehicle.common.entity.HeldVehicleDataHandler;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.entity.player.AbstractClientPlayerEntity;
-import net.minecraft.client.renderer.entity.LivingRenderer;
+import net.minecraft.client.entity.player.AbstractClientPlayer;
+import net.minecraft.client.renderer.entity.MobRenderer;
 import net.minecraft.client.renderer.entity.PlayerRenderer;
 import net.minecraft.client.renderer.entity.layers.LayerRenderer;
 import net.minecraft.client.renderer.entity.model.PlayerModel;
-import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.world.entity.player.Player;
 import net.minecraftforge.client.event.RenderPlayerEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.common.ObfuscationReflectionHelper;
+import net.minecraftforge.fml.util.ObfuscationReflectionHelper;
 
 import java.util.HashMap;
 import java.util.List;
@@ -40,7 +40,7 @@ public class HeldVehicleHandler
 
     private void patchPlayerRender(PlayerRenderer player)
     {
-        List<LayerRenderer<AbstractClientPlayerEntity, PlayerModel<AbstractClientPlayerEntity>>> layers = ObfuscationReflectionHelper.getPrivateValue(LivingRenderer.class, player, "field_177097_h");
+        List<LayerRenderer<AbstractClientPlayer, PlayerModel<AbstractClientPlayer>>> layers = ObfuscationReflectionHelper.getPrivateValue(MobRenderer.class, player, "field_177097_h");
         if(layers != null)
         {
             layers.add(new LayerHeldVehicle(player));
@@ -53,7 +53,7 @@ public class HeldVehicleHandler
     public void onSetupAngles(PlayerModelEvent.SetupAngles.Post event)
     {
         PlayerModel model = event.getModelPlayer();
-        PlayerEntity player = event.getPlayer();
+        Player player = event.getPlayer();
 
         boolean holdingVehicle = HeldVehicleDataHandler.isHoldingVehicle(player);
         if(holdingVehicle && !idToCounter.containsKey(player.getUUID()))

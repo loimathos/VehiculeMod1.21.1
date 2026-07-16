@@ -1,11 +1,11 @@
 package com.mrcrayfish.vehicle.init;
 
-import com.mrcrayfish.obfuscate.common.data.Serializers;
-import com.mrcrayfish.obfuscate.common.data.SyncedDataKey;
-import com.mrcrayfish.obfuscate.common.data.SyncedPlayerData;
+//import com.mrcrayfish.obfuscate.common.data.Serializers;
+//import com.mrcrayfish.obfuscate.common.data.SyncedDataKey;
+//import com.mrcrayfish.obfuscate.common.data.SyncedPlayerData;
 import com.mrcrayfish.vehicle.Reference;
-import net.minecraft.util.ResourceLocation;
-import net.minecraft.util.math.BlockPos;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.core.BlockPos;
 
 import java.util.Optional;
 

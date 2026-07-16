@@ -1,17 +1,17 @@
 package com.mrcrayfish.vehicle.common.inventory;
 
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.entity.player.PlayerInventory;
-import net.minecraft.inventory.Inventory;
-import net.minecraft.inventory.container.ChestContainer;
-import net.minecraft.inventory.container.Container;
-import net.minecraft.inventory.container.IContainerProvider;
-import net.minecraft.inventory.container.INamedContainerProvider;
-import net.minecraft.inventory.container.SimpleNamedContainerProvider;
-import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.CompoundNBT;
-import net.minecraft.nbt.ListNBT;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.entity.player.Inventory;
+import net.minecraft.world.SimpleContainer;
+import net.minecraft.world.inventory.ChestMenu;
+import net.minecraft.world.inventory.AbstractContainerMenu;
+import net.minecraft.world.inventory.MenuProvider;
+import net.minecraft.world.MenuProvider;
+import net.minecraft.world.SimpleMenuProvider;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.ListTag;
 import net.minecraft.network.chat.Component;
 
 import javax.annotation.Nullable;
@@ -59,15 +59,15 @@ public class StorageInventory extends Inventory
         return this.itemPredicate.test(stack);
     }
 
-    public ListNBT createTag()
+    public ListTag createTag()
     {
-        ListNBT tagList = new ListNBT();
+        ListTag tagList = new ListTag();
         for(int i = 0; i < this.getContainerSize(); i++)
         {
             ItemStack stack = this.getItem(i);
             if(!stack.isEmpty())
             {
-                CompoundNBT slotTag = new CompoundNBT();
+                CompoundTag slotTag = new CompoundTag();
                 slotTag.putByte("Slot", (byte) i);
                 stack.save(slotTag);
                 tagList.add(slotTag);
@@ -77,12 +77,12 @@ public class StorageInventory extends Inventory
     }
 
     @Override
-    public void fromTag(ListNBT tagList)
+    public void fromTag(ListTag tagList)
     {
         this.clearContent();
         for(int i = 0; i < tagList.size(); i++)
         {
-            CompoundNBT slotTag = tagList.getCompound(i);
+            CompoundTag slotTag = tagList.getCompound(i);
             byte slot = slotTag.getByte("Slot");
             if(slot >= 0 && slot < this.getContainerSize())
             {
@@ -92,7 +92,7 @@ public class StorageInventory extends Inventory
     }
 
     @Override
-    public boolean stillValid(PlayerEntity player)
+    public boolean stillValid(Player player)
     {
         Entity entity = this.entityRef.get();
         return entity != null && entity.isAlive();

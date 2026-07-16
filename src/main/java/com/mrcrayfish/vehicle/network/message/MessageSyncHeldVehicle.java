@@ -1,10 +1,10 @@
 package com.mrcrayfish.vehicle.network.message;
 
 import com.mrcrayfish.vehicle.network.play.ClientPlayHandler;
-import net.minecraft.nbt.CompoundNBT;
-import net.minecraft.network.PacketBuffer;
-import net.minecraftforge.fml.network.NetworkDirection;
-import net.minecraftforge.fml.network.NetworkEvent;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.FriendlyByteBuf;
+import net.minecraftforge.network.NetworkDirection;
+import net.minecraftforge.network.NetworkEvent;
 
 import java.util.function.Supplier;
 
@@ -14,11 +14,11 @@ import java.util.function.Supplier;
 public class MessageSyncHeldVehicle implements IMessage<MessageSyncHeldVehicle>
 {
     private int entityId;
-    private CompoundNBT vehicleTag;
+    private CompoundTag vehicleTag;
 
     public MessageSyncHeldVehicle() {}
 
-    public MessageSyncHeldVehicle(int entityId, CompoundNBT vehicleTag)
+    public MessageSyncHeldVehicle(int entityId, CompoundTag vehicleTag)
     {
         this.entityId = entityId;
         this.vehicleTag = vehicleTag;
@@ -51,7 +51,7 @@ public class MessageSyncHeldVehicle implements IMessage<MessageSyncHeldVehicle>
         return this.entityId;
     }
 
-    public CompoundNBT getVehicleTag()
+    public CompoundTag getVehicleTag()
     {
         return this.vehicleTag;
     }

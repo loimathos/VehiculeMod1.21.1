@@ -1,6 +1,6 @@
 package com.mrcrayfish.vehicle.common.entity;
 
-import net.minecraft.util.math.vector.Vector3d;
+import net.minecraft.world.phys.Vec3;
 
 import java.util.Objects;
 

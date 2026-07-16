@@ -10,8 +10,8 @@ import com.mrcrayfish.vehicle.client.render.model.ChestModel;
 import com.mrcrayfish.vehicle.entity.properties.VehicleProperties;
 import com.mrcrayfish.vehicle.entity.trailer.StorageTrailerEntity;
 import com.mrcrayfish.vehicle.init.ModEntities;
-import net.minecraft.client.renderer.IRenderTypeBuffer;
-import net.minecraft.entity.EntityType;
+import net.minecraft.client.renderer.MultiBufferSource;
+import net.minecraft.world.entity.EntityType;
 import org.apache.commons.lang3.tuple.Pair;
 
 import javax.annotation.Nullable;

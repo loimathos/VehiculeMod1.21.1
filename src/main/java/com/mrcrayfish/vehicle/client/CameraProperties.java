@@ -2,8 +2,8 @@ package com.mrcrayfish.vehicle.client;
 
 import com.google.gson.JsonObject;
 import com.mrcrayfish.vehicle.util.ExtraJSONUtils;
-import net.minecraft.util.JSONUtils;
-import net.minecraft.util.math.vector.Vector3d;
+import net.minecraft.util.GsonHelper;
+import net.minecraft.world.phys.Vec3;
 
 import java.util.stream.Stream;
 

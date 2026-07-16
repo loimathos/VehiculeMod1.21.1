@@ -1,7 +1,7 @@
 package com.mrcrayfish.vehicle.util;
 
-import net.minecraft.util.Direction;
-import net.minecraft.util.math.AxisAlignedBB;
+import net.minecraft.core.Direction;
+import net.minecraft.world.phys.AABB;
 
 /**
  * Author: MrCrayfish

@@ -13,11 +13,11 @@ import com.mrcrayfish.vehicle.entity.properties.PoweredProperties;
 import com.mrcrayfish.vehicle.entity.properties.VehicleProperties;
 import com.mrcrayfish.vehicle.entity.vehicle.MiniBusEntity;
 import com.mrcrayfish.vehicle.init.ModEntities;
-import net.minecraft.client.entity.player.AbstractClientPlayerEntity;
-import net.minecraft.client.renderer.IRenderTypeBuffer;
+import net.minecraft.client.entity.player.AbstractClientPlayer;
+import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.entity.model.PlayerModel;
-import net.minecraft.entity.EntityType;
-import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.player.Player;
 
 import javax.annotation.Nullable;
 
@@ -39,7 +39,7 @@ public class MiniBusRenderer extends AbstractLandVehicleRenderer<MiniBusEntity>
     }
 
     @Override
-    public void applyPlayerModel(MiniBusEntity entity, PlayerEntity player, PlayerModel<AbstractClientPlayerEntity> model, float partialTicks)
+    public void applyPlayerModel(MiniBusEntity entity, Player player, PlayerModel<AbstractClientPlayer> model, float partialTicks)
     {
         if(entity.getControllingPassenger() == player)
         {

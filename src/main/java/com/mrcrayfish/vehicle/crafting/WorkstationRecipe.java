@@ -4,13 +4,13 @@ import com.google.common.collect.ImmutableList;
 import com.mrcrayfish.vehicle.init.ModRecipeSerializers;
 import com.mrcrayfish.vehicle.blockentity.WorkstationBlockEntity;
 import com.mrcrayfish.vehicle.util.InventoryUtil;
-import net.minecraft.entity.EntityType;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.item.ItemStack;
+import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.Recipe;
 import net.minecraft.world.item.crafting.RecipeSerializer;
 import net.minecraft.world.item.crafting.RecipeType;
-import net.minecraft.util.ResourceLocation;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.Level;
 
 /**
@@ -81,7 +81,7 @@ public class WorkstationRecipe implements Recipe<WorkstationBlockEntity>
         return RecipeType.WORKSTATION;
     }
 
-    public boolean hasMaterials(PlayerEntity player)
+    public boolean hasMaterials(Player player)
     {
         for(WorkstationIngredient ingredient : this.getMaterials())
         {
@@ -93,7 +93,7 @@ public class WorkstationRecipe implements Recipe<WorkstationBlockEntity>
         return true;
     }
 
-    public void consumeMaterials(PlayerEntity player)
+    public void consumeMaterials(Player player)
     {
         for(WorkstationIngredient ingredient : this.getMaterials())
         {

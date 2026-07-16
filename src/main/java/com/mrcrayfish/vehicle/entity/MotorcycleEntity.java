@@ -1,8 +1,8 @@
 package com.mrcrayfish.vehicle.entity;
 
 import com.mrcrayfish.vehicle.entity.properties.MotorcycleProperties;
-import net.minecraft.entity.EntityType;
-import net.minecraft.util.math.MathHelper;
+import net.minecraft.world.entity.EntityType;
+import net.minecraft.util.Mth;
 import net.minecraft.world.level.Level;
 
 /**

@@ -1,11 +1,11 @@
 package com.mrcrayfish.vehicle.util;
 
-import net.minecraft.entity.player.ServerPlayerEntity;
-import net.minecraft.nbt.CompoundNBT;
-import net.minecraft.network.play.server.SUpdateBlockEntityPacket;
+import net.minecraft.world.entity.player.ServerPlayer;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.protocol.game.SUpdateBlockEntityPacket;
 import net.minecraft.world.level.block.entity.BlockEntity;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.ChunkPos;
+import net.minecraft.core.BlockPos;
+import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.ServerLevel;
 
@@ -31,11 +31,11 @@ public class BlockEntityUtil
     }
 
     /**
-     * Sends an update packet to clients tracking a block entity with a specific CompoundNBT
+     * Sends an update packet to clients tracking a block entity with a specific CompoundTag
      *
      * @param blockEntity the block entity to update
      */
-    public static void sendUpdatePacket(BlockEntity blockEntity, CompoundNBT compound)
+    public static void sendUpdatePacket(BlockEntity blockEntity, CompoundTag compound)
     {
         SUpdateBlockEntityPacket packet = new SUpdateBlockEntityPacket(tileEntity.getBlockPos(), 0, compound);
         sendUpdatePacket(tileEntity.getLevel(), tileEntity.getBlockPos(), packet);
@@ -49,7 +49,7 @@ public class BlockEntityUtil
      * @param blockEntity the block entity to update
      * @param player the player to send the update to
      */
-    public static void sendUpdatePacket(BlockEntity blockEntity, ServerPlayerEntity player)
+    public static void sendUpdatePacket(BlockEntity blockEntity, ServerPlayer player)
     {
         sendUpdatePacket(tileEntity, tileEntity.getUpdateTag(), player);
     }
@@ -63,7 +63,7 @@ public class BlockEntityUtil
      * @param compound the update tag to send
      * @param player the player to send the update to
      */
-    public static void sendUpdatePacket(BlockEntity blockEntity, CompoundNBT compound, ServerPlayerEntity player)
+    public static void sendUpdatePacket(BlockEntity blockEntity, CompoundTag compound, ServerPlayer player)
     {
         SUpdateBlockEntityPacket packet = new SUpdateBlockEntityPacket(tileEntity.getBlockPos(), 0, compound);
         player.connection.send(packet);
@@ -74,7 +74,7 @@ public class BlockEntityUtil
         if(world instanceof ServerLevel)
         {
             ServerLevel server = (ServerLevel) world;
-            Stream<ServerPlayerEntity> players = server.getChunkSource().chunkMap.getPlayers(new ChunkPos(pos), false);
+            Stream<ServerPlayer> players = server.getChunkSource().chunkMap.getPlayers(new ChunkPos(pos), false);
             players.forEach(player -> player.connection.send(packet));
         }
     }

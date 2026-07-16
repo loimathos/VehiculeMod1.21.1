@@ -3,7 +3,7 @@ package com.mrcrayfish.vehicle.client;
 import com.mrcrayfish.vehicle.entity.VehicleEntity;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.settings.KeyBinding;
-import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.world.entity.player.Player;
 import net.minecraftforge.client.settings.IKeyConflictContext;
 import net.minecraftforge.client.settings.KeyConflictContext;
 import net.minecraftforge.fml.client.registry.ClientRegistry;
@@ -19,7 +19,7 @@ public class KeyBinds
         @Override
         public boolean isActive()
         {
-            PlayerEntity player = Minecraft.getInstance().player;
+            Player player = Minecraft.getInstance().player;
             if(player != null && player.getVehicle() instanceof VehicleEntity)
             {
                 return KeyConflictContext.IN_GAME.isActive();

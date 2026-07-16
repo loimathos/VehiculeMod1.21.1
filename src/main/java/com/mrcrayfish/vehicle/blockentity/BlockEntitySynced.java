@@ -1,9 +1,9 @@
 package com.mrcrayfish.vehicle.blockentity;
 
 import com.mrcrayfish.vehicle.util.BlockEntityUtil;
-import net.minecraft.nbt.CompoundNBT;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.NetworkManager;
-import net.minecraft.network.play.server.SUpdateBlockEntityPacket;
+import net.minecraft.network.protocol.game.SUpdateBlockEntityPacket;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 
@@ -23,9 +23,9 @@ public class BlockEntitySynced extends BlockEntity
     }
 
     @Override
-    public CompoundNBT getUpdateTag()
+    public CompoundTag getUpdateTag()
     {
-        return this.save(new CompoundNBT());
+        return this.save(new CompoundTag());
     }
 
     @Nullable

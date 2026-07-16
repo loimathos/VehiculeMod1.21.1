@@ -6,17 +6,17 @@ import com.mrcrayfish.vehicle.util.RenderUtil;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.resources.I18n;
 import net.minecraft.client.util.ITooltipFlag;
-import net.minecraft.item.Item;
-import net.minecraft.item.ItemGroup;
-import net.minecraft.item.ItemStack;
-import net.minecraft.item.ItemUseContext;
-import net.minecraft.nbt.CompoundNBT;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemGroup;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.ItemUseContext;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.level.block.entity.BlockEntity;
-import net.minecraft.util.ActionResultType;
-import net.minecraft.util.NonNullList;
+import net.minecraft.world.InteractionResult;
+import net.minecraft.core.NonNullList;
 import net.minecraft.network.chat.Component;
 
-import net.minecraft.util.text.TextFormatting;
+import net.minecraft.ChatFormatting;
 
 import net.minecraft.world.level.Level;
 import net.minecraftforge.common.capabilities.ICapabilityProvider;
@@ -85,7 +85,7 @@ public class JerryCanItem extends Item
     }
 
     @Override
-    public ActionResultType onItemUseFirst(ItemStack stack, ItemUseContext context)
+    public InteractionResult onItemUseFirst(ItemStack stack, ItemUseContext context)
     {
         // This is such ugly code
         BlockEntity tileEntity = context.getLevel().getBlockEntity(context.getClickedPos());
@@ -109,7 +109,7 @@ public class JerryCanItem extends Item
                         {
                             FluidUtils.transferFluid(itemOptional.get(), source, this.getFillRate());
                         }
-                        return ActionResultType.SUCCESS;
+                        return InteractionResult.SUCCESS;
                     }
                 }
             }
@@ -164,7 +164,7 @@ public class JerryCanItem extends Item
 
     @Nullable
     @Override
-    public ICapabilityProvider initCapabilities(ItemStack stack, @Nullable CompoundNBT nbt)
+    public ICapabilityProvider initCapabilities(ItemStack stack, @Nullable CompoundTag nbt)
     {
         return new FluidHandlerItemStack(stack, this.capacitySupplier.get());
     }

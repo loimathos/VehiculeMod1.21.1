@@ -12,9 +12,9 @@ import com.mrcrayfish.vehicle.network.message.MessageSyncHeldVehicle;
 import com.mrcrayfish.vehicle.network.message.MessageSyncPlayerSeat;
 import com.mrcrayfish.vehicle.network.message.MessageSyncStorage;
 import net.minecraft.client.Minecraft;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.nbt.CompoundNBT;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.level.Level;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
@@ -42,13 +42,13 @@ public class ClientPlayHandler
 
         IStorage storage = (IStorage) entity;
         String[] keys = message.getKeys();
-        CompoundNBT[] tags = message.getTags();
+        CompoundTag[] tags = message.getTags();
         for(int i = 0; i < keys.length; i++)
         {
             StorageInventory inventory = storage.getStorageInventory(keys[i]);
             if(inventory != null)
             {
-                CompoundNBT tag = tags[i];
+                CompoundTag tag = tags[i];
                 inventory.fromTag(tag.getList("Inventory", Constants.NBT.TAG_COMPOUND));
             }
         }
@@ -77,7 +77,7 @@ public class ClientPlayHandler
 
     public static void handleSyncPlayerSeat(MessageSyncPlayerSeat message)
     {
-        PlayerEntity player = Minecraft.getInstance().player;
+        Player player = Minecraft.getInstance().player;
         if(player != null)
         {
             Entity entity = player.level.getEntity(message.getEntityId());
@@ -87,9 +87,9 @@ public class ClientPlayHandler
                 int oldSeatIndex = vehicle.getSeatTracker().getSeatIndex(message.getUuid());
                 vehicle.getSeatTracker().setSeatIndex(message.getSeatIndex(), message.getUuid());
                 Entity passenger = vehicle.getPassengers().stream().filter(e -> e.getUUID().equals(message.getUuid())).findFirst().orElse(null);
-                if(passenger instanceof PlayerEntity)
+                if(passenger instanceof Player)
                 {
-                    vehicle.onPlayerChangeSeat((PlayerEntity) passenger, oldSeatIndex, message.getSeatIndex());
+                    vehicle.onPlayerChangeSeat((Player) passenger, oldSeatIndex, message.getSeatIndex());
                 }
             }
         }
@@ -101,9 +101,9 @@ public class ClientPlayHandler
         if(world != null)
         {
             Entity entity = world.getEntity(message.getEntityId());
-            if(entity instanceof PlayerEntity)
+            if(entity instanceof Player)
             {
-                HeldVehicleDataHandler.setHeldVehicle((PlayerEntity) entity, message.getVehicleTag());
+                HeldVehicleDataHandler.setHeldVehicle((Player) entity, message.getVehicleTag());
             }
         }
     }

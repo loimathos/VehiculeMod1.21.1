@@ -1,9 +1,9 @@
 package com.mrcrayfish.vehicle.util;
 
-import net.minecraft.util.Direction;
-import net.minecraft.util.math.shapes.IBooleanFunction;
-import net.minecraft.util.math.shapes.VoxelShape;
-import net.minecraft.util.math.shapes.VoxelShapes;
+import net.minecraft.core.Direction;
+import net.minecraft.world.phys.shapes.BooleanFunction;
+import net.minecraft.world.phys.shapes.VoxelShape;
+import net.minecraft.world.phys.shapes.VoxelShapes;
 
 import java.util.Collection;
 import java.util.concurrent.atomic.AtomicReference;
@@ -15,7 +15,7 @@ public class VoxelShapeHelper
         VoxelShape result = VoxelShapes.empty();
         for(VoxelShape shape : shapes)
         {
-            result = VoxelShapes.joinUnoptimized(result, shape, IBooleanFunction.OR);
+            result = VoxelShapes.joinUnoptimized(result, shape, BooleanFunction.OR);
         }
         return result.optimize();
     }
@@ -26,7 +26,7 @@ public class VoxelShapeHelper
         source.forAllBoxes((minX, minY, minZ, maxX, maxY, maxZ) ->
         {
             VoxelShape shape = VoxelShapes.box(minX, minY, minZ, maxX, height, maxZ);
-            result.set(VoxelShapes.joinUnoptimized(result.get(), shape, IBooleanFunction.OR));
+            result.set(VoxelShapes.joinUnoptimized(result.get(), shape, BooleanFunction.OR));
         });
         return result.get().optimize();
     }
@@ -37,7 +37,7 @@ public class VoxelShapeHelper
         source.forAllBoxes((minX, minY, minZ, maxX, maxY, maxZ) ->
         {
             VoxelShape shape = VoxelShapes.box(limit(minX), minY, limit(minZ), limit(maxX), maxY, limit(maxZ));
-            result.set(VoxelShapes.joinUnoptimized(result.get(), shape, IBooleanFunction.OR));
+            result.set(VoxelShapes.joinUnoptimized(result.get(), shape, BooleanFunction.OR));
         });
         return result.get().optimize();
     }

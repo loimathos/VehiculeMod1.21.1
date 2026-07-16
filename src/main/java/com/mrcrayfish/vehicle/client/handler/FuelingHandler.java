@@ -1,9 +1,9 @@
 package com.mrcrayfish.vehicle.client.handler;
 
 import com.mojang.blaze3d.matrix.MatrixStack;
-import com.mrcrayfish.obfuscate.client.event.PlayerModelEvent;
-import com.mrcrayfish.obfuscate.client.event.RenderItemEvent;
-import com.mrcrayfish.obfuscate.common.data.SyncedPlayerData;
+//import com.mrcrayfish.obfuscate.client.event.PlayerModelEvent;
+//import com.mrcrayfish.obfuscate.client.event.RenderItemEvent;
+//import com.mrcrayfish.obfuscate.common.data.SyncedPlayerData;
 import com.mrcrayfish.vehicle.client.model.VehicleModels;
 import com.mrcrayfish.vehicle.client.raytrace.EntityRayTracer;
 import com.mrcrayfish.vehicle.client.raytrace.RayTraceFunction;
@@ -13,16 +13,16 @@ import com.mrcrayfish.vehicle.init.ModDataKeys;
 import com.mrcrayfish.vehicle.init.ModSounds;
 import com.mrcrayfish.vehicle.util.RenderUtil;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.renderer.IRenderTypeBuffer;
+import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.entity.model.PlayerModel;
-import net.minecraft.client.renderer.model.ItemCameraTransforms;
+import net.minecraft.client.resources.model.ItemTransform;
 import net.minecraft.client.renderer.texture.OverlayTexture;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.util.Hand;
-import net.minecraft.util.HandSide;
-import net.minecraft.util.SoundCategory;
-import net.minecraft.util.math.vector.Vector3d;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.InteractionHandSide;
+import net.minecraft.sounds.SoundSource;
+import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.client.event.RenderHandEvent;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
@@ -39,7 +39,7 @@ public class FuelingHandler
     @SubscribeEvent
     public void onClientTick(TickEvent.ClientTickEvent event)
     {
-        PlayerEntity player = Minecraft.getInstance().player;
+        Player player = Minecraft.getInstance().player;
         if(event.phase != TickEvent.Phase.END || player == null)
             return;
 
@@ -68,7 +68,7 @@ public class FuelingHandler
         }
     }
 
-    static void applyFuelingPose(PlayerEntity player, PlayerModel<?> model)
+    static void applyFuelingPose(Player player, PlayerModel<?> model)
     {
         boolean rightHanded = player.getMainArm() == HandSide.RIGHT;
         if(rightHanded)
@@ -96,7 +96,7 @@ public class FuelingHandler
         }*/
 
         Minecraft minecraft = Minecraft.getInstance();
-        PlayerEntity player = minecraft.player;
+        Player player = minecraft.player;
         MatrixStack matrixStack = event.getMatrixStack();
         VehicleRayTraceResult result = EntityRayTracer.instance().getContinuousInteraction();
         if(result != null && result.equalsContinuousInteraction(RayTraceFunction.FUNCTION_FUELING) && event.getHand() == EntityRayTracer.instance().getContinuousInteractionHand())
@@ -142,7 +142,7 @@ public class FuelingHandler
     @SubscribeEvent
     public void onModelRenderPost(PlayerModelEvent.Render.Post event)
     {
-        PlayerEntity player = event.getPlayer();
+        Player player = event.getPlayer();
         if(!SyncedPlayerData.instance().get(player, ModDataKeys.GAS_PUMP).isPresent())
             return;
 
@@ -177,7 +177,7 @@ public class FuelingHandler
     public void onRenderThirdPerson(RenderItemEvent.Held.Pre event)
     {
         Entity entity = event.getEntity();
-        if(entity instanceof PlayerEntity && SyncedPlayerData.instance().get((PlayerEntity) entity, ModDataKeys.GAS_PUMP).isPresent())
+        if(entity instanceof Player && SyncedPlayerData.instance().get((Player) entity, ModDataKeys.GAS_PUMP).isPresent())
         {
             event.setCanceled(true);
         }

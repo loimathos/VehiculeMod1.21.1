@@ -31,20 +31,20 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.audio.SimpleSound;
 import net.minecraft.client.gui.screen.inventory.ContainerScreen;
 import net.minecraft.client.gui.widget.button.Button;
-import net.minecraft.client.renderer.IRenderTypeBuffer;
-import net.minecraft.client.renderer.RenderHelper;
-import net.minecraft.client.renderer.entity.EntityRendererManager;
-import net.minecraft.entity.EntityType;
-import net.minecraft.entity.player.PlayerInventory;
-import net.minecraft.item.DyeItem;
-import net.minecraft.item.ItemStack;
-import net.minecraft.util.NonNullList;
-import net.minecraft.util.ResourceLocation;
-import net.minecraft.util.SoundEvents;
-import net.minecraft.util.math.vector.Quaternion;
+import net.minecraft.client.renderer.MultiBufferSource;
+//import net.minecraft.client.renderer.RenderHelper; // Removed in 1.21.1
+import net.minecraft.client.renderer.entity.EntityRendererProvider;
+import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.player.Inventory;
+import net.minecraft.world.item.DyeItem;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.core.NonNullList;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.sounds.SoundEvents;
+import org.joml.Quaternionf;
 import net.minecraft.network.chat.Component;
 
-import net.minecraft.util.text.TextFormatting;
+import net.minecraft.ChatFormatting;
 
 import net.minecraft.world.level.Level;
 
@@ -59,7 +59,7 @@ import java.util.stream.Stream;
 /**
  * Author: MrCrayfish
  */
-public class WorkstationScreen extends ContainerScreen<WorkstationContainer>
+public class WorkstationScreen extends AbstractContainerScreen<WorkstationContainer>
 {
     private static final ResourceLocation GUI = new ResourceLocation("vehicle:textures/gui/workstation.png");
     private static CachedVehicle cachedVehicle;
@@ -70,7 +70,7 @@ public class WorkstationScreen extends ContainerScreen<WorkstationContainer>
     private final List<EntityType<?>> vehicleTypes;
     private final List<MaterialItem> materials;
     private List<MaterialItem> filteredMaterials;
-    private final PlayerInventory playerInventory;
+    private final Inventory playerInventory;
     private final WorkstationBlockEntity workstation;
     private Button btnCraft;
     private CheckBox checkBoxMaterials;
@@ -79,7 +79,7 @@ public class WorkstationScreen extends ContainerScreen<WorkstationContainer>
     private int vehicleScale = 30;
     private int prevVehicleScale = 30;
 
-    public WorkstationScreen(WorkstationContainer container, PlayerInventory playerInventory, Component title)
+    public WorkstationScreen(WorkstationContainer container, Inventory playerInventory, Component title)
     {
         super(container, playerInventory, title);
         this.playerInventory = playerInventory;
@@ -420,7 +420,7 @@ public class WorkstationScreen extends ContainerScreen<WorkstationContainer>
         matrixStack.mulPose(Axis.POSITIVE_Z.rotationDegrees((float) position.getRotZ()));
         matrixStack.translate(position.getX(), position.getY(), position.getZ());
 
-        EntityRendererManager renderManager = Minecraft.getInstance().getEntityRenderDispatcher();
+        EntityRendererProvider renderManager = Minecraft.getInstance().getEntityRenderDispatcher();
         renderManager.setRenderShadow(false);
         renderManager.overrideCameraOrientation(quaternion);
         IRenderTypeBuffer.Impl renderTypeBuffer = Minecraft.getInstance().renderBuffers().bufferSource();

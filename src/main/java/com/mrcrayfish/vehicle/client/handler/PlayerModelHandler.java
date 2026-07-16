@@ -2,8 +2,8 @@ package com.mrcrayfish.vehicle.client.handler;
 
 import com.mojang.blaze3d.matrix.MatrixStack;
 import com.mojang.blaze3d.vertex.IVertexBuilder;
-import com.mrcrayfish.obfuscate.client.event.PlayerModelEvent;
-import com.mrcrayfish.obfuscate.common.data.SyncedPlayerData;
+//import com.mrcrayfish.obfuscate.client.event.PlayerModelEvent;
+//import com.mrcrayfish.obfuscate.common.data.SyncedPlayerData;
 import com.mrcrayfish.vehicle.client.render.AbstractVehicleRenderer;
 import com.mrcrayfish.vehicle.client.render.VehicleRenderRegistry;
 import com.mrcrayfish.vehicle.common.Seat;
@@ -14,11 +14,11 @@ import com.mrcrayfish.vehicle.init.ModDataKeys;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.entity.model.PlayerModel;
 import net.minecraft.client.settings.PointOfView;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.EntityType;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.util.math.vector.Vector3d;
-import net.minecraft.util.math.vector.Vector3f;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.phys.Vec3;
+import org.joml.Vector3f;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 
 /**
@@ -33,7 +33,7 @@ public class PlayerModelHandler
     @SuppressWarnings("unchecked")
     public void onPreRender(PlayerModelEvent.Render.Pre event)
     {
-        PlayerEntity player = event.getPlayer();
+        Player player = event.getPlayer();
         Entity ridingEntity = player.getVehicle();
         if(ridingEntity instanceof VehicleEntity)
         {
@@ -44,7 +44,7 @@ public class PlayerModelHandler
     }
 
     @SuppressWarnings("unchecked")
-    private void applyPassengerTransformations(VehicleEntity vehicle, PlayerEntity player, MatrixStack matrixStack, IVertexBuilder builder, float partialTicks)
+    private void applyPassengerTransformations(VehicleEntity vehicle, Player player, MatrixStack matrixStack, IVertexBuilder builder, float partialTicks)
     {
         AbstractVehicleRenderer<VehicleEntity> render = (AbstractVehicleRenderer<VehicleEntity>) VehicleRenderRegistry.getRenderer((EntityType<? extends VehicleEntity>) vehicle.getType());
         if(render != null)
@@ -61,7 +61,7 @@ public class PlayerModelHandler
      * @param matrixStack  the current matrix stack
      * @param partialTicks the current partial ticks
      */
-    private void applyWheelieTransformations(VehicleEntity vehicle, PlayerEntity player, MatrixStack matrixStack, float partialTicks)
+    private void applyWheelieTransformations(VehicleEntity vehicle, Player player, MatrixStack matrixStack, float partialTicks)
     {
         if(!(vehicle instanceof LandVehicleEntity))
             return;
@@ -91,7 +91,7 @@ public class PlayerModelHandler
     @SubscribeEvent
     public void onSetupAngles(PlayerModelEvent.SetupAngles.Post event)
     {
-        PlayerEntity player = event.getPlayer();
+        Player player = event.getPlayer();
 
         if(player.equals(Minecraft.getInstance().player) && Minecraft.getInstance().options.getCameraType() == PointOfView.FIRST_PERSON)
             return;
@@ -115,7 +115,7 @@ public class PlayerModelHandler
      * @param partialTicks the current partial ticks
      */
     @SuppressWarnings({"unchecked", "rawtypes"})
-    private void applyPassengerPose(PlayerEntity player, PlayerModel model, float partialTicks)
+    private void applyPassengerPose(Player player, PlayerModel model, float partialTicks)
     {
         Entity ridingEntity = player.getVehicle();
         if(!(ridingEntity instanceof VehicleEntity))

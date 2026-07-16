@@ -9,17 +9,17 @@ import com.mrcrayfish.vehicle.network.PacketHandler;
 import com.mrcrayfish.vehicle.network.datasync.VehicleDataValue;
 import com.mrcrayfish.vehicle.network.message.MessagePlaneInput;
 import com.mrcrayfish.vehicle.util.CommonUtils;
-import net.minecraft.entity.EntityType;
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.nbt.CompoundNBT;
-import net.minecraft.network.PacketBuffer;
-import net.minecraft.network.datasync.DataParameter;
-import net.minecraft.network.datasync.DataSerializers;
-import net.minecraft.network.datasync.EntityDataManager;
-import net.minecraft.util.math.MathHelper;
-import net.minecraft.util.math.vector.Vector3d;
-import net.minecraft.util.math.vector.Vector3f;
+import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.syncher.DataParameter;
+import net.minecraft.network.syncher.DataSerializers;
+import net.minecraft.network.syncher.EntityDataManager;
+import net.minecraft.util.Mth;
+import net.minecraft.world.phys.Vec3;
+import org.joml.Vector3f;
 import net.minecraft.world.level.Level;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
@@ -286,7 +286,7 @@ public abstract class PlaneEntity extends PoweredVehicleEntity
         this.prevElevatorAngle = this.elevatorAngle;
 
         LivingEntity entity = (LivingEntity) this.getControllingPassenger();
-        if(entity instanceof PlayerEntity && ((PlayerEntity) entity).isLocalPlayer())
+        if(entity instanceof Player && ((Player) entity).isLocalPlayer())
         {
             this.setLift(VehicleHelper.getElevator());
             this.setForwardInput(entity.zza);
@@ -312,7 +312,7 @@ public abstract class PlaneEntity extends PoweredVehicleEntity
     }
 
     @Override
-    protected void addAdditionalSaveData(CompoundNBT compound)
+    protected void addAdditionalSaveData(CompoundTag compound)
     {
         super.addAdditionalSaveData(compound);
         compound.putFloat("Lift", this.getLift());
@@ -320,7 +320,7 @@ public abstract class PlaneEntity extends PoweredVehicleEntity
         compound.putFloat("PropellerSpeed", this.propellerSpeed);
         compound.putFloat("FlapAngle", this.flapAngle);
         compound.putFloat("ElevatorAngle", this.elevatorAngle);
-        CompoundNBT velocity = new CompoundNBT();
+        CompoundTag velocity = new CompoundTag();
         velocity.putDouble("X", this.velocity.x);
         velocity.putDouble("Y", this.velocity.y);
         velocity.putDouble("Z", this.velocity.z);
@@ -328,7 +328,7 @@ public abstract class PlaneEntity extends PoweredVehicleEntity
     }
 
     @Override
-    protected void readAdditionalSaveData(CompoundNBT compound)
+    protected void readAdditionalSaveData(CompoundTag compound)
     {
         super.readAdditionalSaveData(compound);
         this.setLift(compound.getFloat("Lift"));
@@ -336,7 +336,7 @@ public abstract class PlaneEntity extends PoweredVehicleEntity
         this.propellerSpeed = compound.getFloat("PropellerSpeed");
         this.flapAngle = compound.getFloat("FlapAngle");
         this.elevatorAngle = compound.getFloat("ElevatorAngle");
-        CompoundNBT velocity = compound.getCompound("Velocity");
+        CompoundTag velocity = compound.getCompound("Velocity");
         this.velocity = new Vector3d(velocity.getDouble("X"), velocity.getDouble("Y"), velocity.getDouble("Z"));
     }
 

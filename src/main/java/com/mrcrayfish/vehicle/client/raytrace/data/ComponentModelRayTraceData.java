@@ -10,9 +10,9 @@ import com.mrcrayfish.vehicle.client.raytrace.Triangle;
 import com.mrcrayfish.vehicle.client.render.complex.ComplexModel;
 import com.mrcrayfish.vehicle.client.render.complex.transforms.Transform;
 import com.mrcrayfish.vehicle.entity.VehicleEntity;
-import net.minecraft.client.renderer.model.IBakedModel;
-import net.minecraft.entity.Entity;
-import net.minecraft.util.math.vector.Matrix4f;
+import net.minecraft.client.resources.model.BakedModel;
+import net.minecraft.world.entity.Entity;
+import org.joml.Matrix4f;
 import org.apache.commons.lang3.tuple.Pair;
 
 import javax.annotation.Nullable;

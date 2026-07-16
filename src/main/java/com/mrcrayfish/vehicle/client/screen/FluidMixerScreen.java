@@ -10,12 +10,12 @@ import com.mrcrayfish.vehicle.blockentity.FluidMixerBlockEntity;
 import com.mrcrayfish.vehicle.util.FluidUtils;
 import com.mrcrayfish.vehicle.util.RenderUtil;
 import net.minecraft.client.gui.screen.inventory.ContainerScreen;
-import net.minecraft.entity.player.PlayerInventory;
-import net.minecraft.util.ResourceLocation;
-import net.minecraft.util.math.MathHelper;
+import net.minecraft.world.entity.player.Inventory;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.util.Mth;
 import net.minecraft.network.chat.Component;
 
-import net.minecraft.util.text.TextFormatting;
+import net.minecraft.ChatFormatting;
 import net.minecraftforge.fluids.FluidStack;
 
 import java.util.Arrays;
@@ -24,14 +24,14 @@ import java.util.Collections;
 /**
  * Author: MrCrayfish
  */
-public class FluidMixerScreen extends ContainerScreen<FluidMixerContainer>
+public class FluidMixerScreen extends AbstractContainerScreen<FluidMixerContainer>
 {
     private static final ResourceLocation GUI = new ResourceLocation("vehicle:textures/gui/fluid_mixer.png");
 
-    private PlayerInventory playerInventory;
+    private Inventory playerInventory;
     private FluidMixerBlockEntity fluidMixerTileEntity;
 
-    public FluidMixerScreen(FluidMixerContainer container, PlayerInventory playerInventory, Component title)
+    public FluidMixerScreen(FluidMixerContainer container, Inventory playerInventory, Component title)
     {
         super(container, playerInventory, title);
         this.playerInventory = playerInventory;

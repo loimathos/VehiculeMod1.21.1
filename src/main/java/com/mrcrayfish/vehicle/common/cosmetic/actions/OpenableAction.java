@@ -7,13 +7,13 @@ import com.mrcrayfish.vehicle.entity.VehicleEntity;
 import com.mrcrayfish.vehicle.util.Axis;
 import com.mrcrayfish.vehicle.util.EasingHelper;
 import net.minecraft.client.Minecraft;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.nbt.CompoundNBT;
-import net.minecraft.util.ResourceLocation;
-import net.minecraft.util.SoundCategory;
-import net.minecraft.util.SoundEvent;
-import net.minecraft.util.math.MathHelper;
-import net.minecraft.util.math.vector.Vector3d;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.sounds.SoundSource;
+import net.minecraft.sounds.SoundEvent;
+import net.minecraft.util.Mth;
+import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.registries.ForgeRegistries;
@@ -48,14 +48,14 @@ public class OpenableAction extends Action
     }
 
     @Override
-    public void onInteract(VehicleEntity vehicle, PlayerEntity player)
+    public void onInteract(VehicleEntity vehicle, Player player)
     {
         this.state = !this.state;
         this.setDirty();
     }
 
     @Override
-    public void load(CompoundNBT tag, boolean sync)
+    public void load(CompoundTag tag, boolean sync)
     {
         this.state = tag.getBoolean("Open");
         if(!sync && this.state)
@@ -65,9 +65,9 @@ public class OpenableAction extends Action
     }
 
     @Override
-    public CompoundNBT save(boolean sync)
+    public CompoundTag save(boolean sync)
     {
-        CompoundNBT tag = new CompoundNBT();
+        CompoundTag tag = new CompoundTag();
         tag.putBoolean("Open", this.state);
         return tag;
     }

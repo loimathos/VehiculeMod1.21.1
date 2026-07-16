@@ -1,9 +1,9 @@
 package com.mrcrayfish.vehicle.util;
 
 import com.mrcrayfish.vehicle.block.RotatedObjectBlock;
-import net.minecraft.block.Block;
-import net.minecraft.util.Direction;
-import net.minecraft.util.math.BlockPos;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.core.Direction;
+import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.LevelReader;
 
 public class StateHelper

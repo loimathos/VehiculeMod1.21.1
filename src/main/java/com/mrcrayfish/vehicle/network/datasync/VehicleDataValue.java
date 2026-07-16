@@ -1,9 +1,9 @@
 package com.mrcrayfish.vehicle.network.datasync;
 
 import com.mrcrayfish.vehicle.entity.VehicleEntity;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.network.datasync.DataParameter;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.network.syncher.DataParameter;
 
 /**
  * A wrapper class for data parameters that are registered on vehicles. The returned value depends
@@ -43,7 +43,7 @@ public class VehicleDataValue<T>
     private boolean isLocalPlayerDriving(VehicleEntity vehicle)
     {
         Entity entity = vehicle.getControllingPassenger();
-        return entity instanceof PlayerEntity && ((PlayerEntity) entity).isLocalPlayer();
+        return entity instanceof Player && ((Player) entity).isLocalPlayer();
     }
 
     public DataParameter<T> getKey()

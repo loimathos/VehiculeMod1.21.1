@@ -4,11 +4,11 @@ import com.mojang.blaze3d.matrix.MatrixStack;
 import com.mrcrayfish.vehicle.block.FluidExtractorBlock;
 import com.mrcrayfish.vehicle.blockentity.FluidExtractorBlockEntity;
 import com.mrcrayfish.vehicle.util.FluidUtils;
-import net.minecraft.client.renderer.IRenderTypeBuffer;
+import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.blockentity.BlockEntityRenderer;
 import net.minecraft.client.renderer.blockentity.BlockEntityRendererDispatcher;
-import net.minecraft.util.Direction;
-import net.minecraft.util.math.vector.Vector3f;
+import net.minecraft.core.Direction;
+import org.joml.Vector3f;
 import net.minecraftforge.fluids.capability.templates.FluidTank;
 
 /**

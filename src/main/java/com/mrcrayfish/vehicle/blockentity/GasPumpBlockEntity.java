@@ -1,20 +1,20 @@
 package com.mrcrayfish.vehicle.blockentity;
 
-import com.mrcrayfish.obfuscate.common.data.SyncedPlayerData;
+//import com.mrcrayfish.obfuscate.common.data.SyncedPlayerData;
 import com.mrcrayfish.vehicle.Config;
 import com.mrcrayfish.vehicle.client.util.HermiteInterpolator;
 import com.mrcrayfish.vehicle.init.ModDataKeys;
 import com.mrcrayfish.vehicle.init.ModBlockEntities;
 import com.mrcrayfish.vehicle.util.BlockEntityUtil;
-import net.minecraft.block.BlockState;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.nbt.CompoundNBT;
+import net.minecraft.world.level.block.BlockState;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.nbt.CompoundTag;
 
 import net.minecraft.world.level.block.entity.BlockEntity;
-import net.minecraft.util.SoundCategory;
-import net.minecraft.util.SoundEvents;
-import net.minecraft.util.math.AxisAlignedBB;
+import net.minecraft.sounds.SoundSource;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.world.phys.AABB;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.common.util.Constants;
@@ -29,7 +29,7 @@ import java.util.Optional;
 public class GasPumpBlockEntity extends BlockEntity
 {
     private int fuelingEntityId;
-    private PlayerEntity fuelingEntity;
+    private Player fuelingEntity;
 
     private HermiteInterpolator cachedSpline;
     private boolean recentlyUsed;
@@ -70,12 +70,12 @@ public class GasPumpBlockEntity extends BlockEntity
         return null;
     }
 
-    public PlayerEntity getFuelingEntity()
+    public Player getFuelingEntity()
     {
         return this.fuelingEntity;
     }
 
-    public void setFuelingEntity(@Nullable PlayerEntity entity)
+    public void setFuelingEntity(@Nullable Player entity)
     {
         if(!this.level.isClientSide)
         {
@@ -102,9 +102,9 @@ public class GasPumpBlockEntity extends BlockEntity
             if(this.fuelingEntity == null)
             {
                 Entity entity = this.level.getEntity(this.fuelingEntityId);
-                if(entity instanceof PlayerEntity)
+                if(entity instanceof Player)
                 {
-                    this.fuelingEntity = (PlayerEntity) entity;
+                    this.fuelingEntity = (Player) entity;
                 }
                 else if(!this.level.isClientSide)
                 {
@@ -135,7 +135,7 @@ public class GasPumpBlockEntity extends BlockEntity
     }
 
     @Override
-    public void load(BlockState state, CompoundNBT compound)
+    public void load(BlockState state, CompoundTag compound)
     {
         super.load(state, compound);
         if(compound.contains("FuelingEntity", Constants.NBT.TAG_INT))
@@ -145,7 +145,7 @@ public class GasPumpBlockEntity extends BlockEntity
     }
 
     @Override
-    public CompoundNBT save(CompoundNBT compound)
+    public CompoundTag save(CompoundTag compound)
     {
         compound.putInt("FuelingEntity", this.fuelingEntityId);
         return super.save(compound);
@@ -153,7 +153,7 @@ public class GasPumpBlockEntity extends BlockEntity
 
     private void syncFuelingEntity()
     {
-        CompoundNBT compound = new CompoundNBT();
+        CompoundTag compound = new CompoundTag();
         compound.putInt("FuelingEntity", this.fuelingEntityId);
         BlockEntityUtil.sendUpdatePacket(this, super.save(compound));
     }

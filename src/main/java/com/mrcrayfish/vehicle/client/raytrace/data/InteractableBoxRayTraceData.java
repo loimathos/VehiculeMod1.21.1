@@ -1,7 +1,7 @@
 package com.mrcrayfish.vehicle.client.raytrace.data;
 
 import com.mrcrayfish.vehicle.client.raytrace.InteractableBox;
-import net.minecraft.util.math.AxisAlignedBB;
+import net.minecraft.world.phys.AABB;
 
 /**
  * Author: MrCrayfish

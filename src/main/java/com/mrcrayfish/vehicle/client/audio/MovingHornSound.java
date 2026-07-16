@@ -2,9 +2,9 @@ package com.mrcrayfish.vehicle.client.audio;
 
 import com.mrcrayfish.vehicle.entity.PoweredVehicleEntity;
 import net.minecraft.client.audio.TickableSound;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.util.SoundCategory;
-import net.minecraft.util.math.MathHelper;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.sounds.SoundSource;
+import net.minecraft.util.Mth;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 
@@ -16,10 +16,10 @@ import java.lang.ref.WeakReference;
 @OnlyIn(Dist.CLIENT)
 public class MovingHornSound extends TickableSound
 {
-    private final WeakReference<PlayerEntity> playerRef;
+    private final WeakReference<Player> playerRef;
     private final WeakReference<PoweredVehicleEntity> vehicleRef;
 
-    public MovingHornSound(PlayerEntity player, PoweredVehicleEntity vehicle)
+    public MovingHornSound(Player player, PoweredVehicleEntity vehicle)
     {
         super(vehicle.getHornSound(), SoundCategory.NEUTRAL);
         this.playerRef = new WeakReference<>(player);
@@ -43,7 +43,7 @@ public class MovingHornSound extends TickableSound
             return;
 
         PoweredVehicleEntity vehicle = this.vehicleRef.get();
-        PlayerEntity player = this.playerRef.get();
+        Player player = this.playerRef.get();
         if(vehicle == null || player == null || (!vehicle.getHorn() && this.volume <= 0.05F) || !vehicle.isAlive() || vehicle.getPassengers().isEmpty())
         {
             this.stop();

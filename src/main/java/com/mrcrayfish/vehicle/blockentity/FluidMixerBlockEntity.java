@@ -10,21 +10,21 @@ import com.mrcrayfish.vehicle.init.ModFluids;
 import com.mrcrayfish.vehicle.init.ModBlockEntities;
 import com.mrcrayfish.vehicle.inventory.container.FluidMixerContainer;
 import com.mrcrayfish.vehicle.util.InventoryUtil;
-import net.minecraft.block.BlockState;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.entity.player.PlayerInventory;
-import net.minecraft.fluid.Fluid;
-import net.minecraft.fluid.Fluids;
-import net.minecraft.inventory.IInventory;
-import net.minecraft.inventory.ItemStackHelper;
-import net.minecraft.inventory.container.Container;
-import net.minecraft.inventory.container.INamedContainerProvider;
-import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.CompoundNBT;
+import net.minecraft.world.level.block.BlockState;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.entity.player.Inventory;
+import net.minecraft.world.level.material.Fluid;
+import net.minecraft.world.level.material.Fluids;
+import net.minecraft.world.Container;
+import net.minecraft.world.ContainerHelper;
+import net.minecraft.world.inventory.AbstractContainerMenu;
+import net.minecraft.world.MenuProvider;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.nbt.CompoundTag;
 
-import net.minecraft.util.Direction;
+import net.minecraft.core.Direction;
 import net.minecraft.util.IIntArray;
-import net.minecraft.util.NonNullList;
+import net.minecraft.core.NonNullList;
 import net.minecraft.network.chat.Component;
 
 
@@ -204,7 +204,7 @@ public class FluidMixerBlockEntity extends BlockEntity implements IInventory, IN
     }
 
     @Override
-    public boolean stillValid(PlayerEntity player)
+    public boolean stillValid(Player player)
     {
         return this.level.getBlockEntity(this.worldPosition) == this && player.distanceToSqr((double) this.worldPosition.getX() + 0.5D, (double) this.worldPosition.getY() + 0.5D, (double) this.worldPosition.getZ() + 0.5D) <= 64.0D;
     }
@@ -351,7 +351,7 @@ public class FluidMixerBlockEntity extends BlockEntity implements IInventory, IN
     }
 
     @Override
-    public void load(BlockState state, CompoundNBT compound)
+    public void load(BlockState state, CompoundTag compound)
     {
         super.load(state, compound);
         if(compound.contains("Items", Constants.NBT.TAG_LIST))
@@ -365,19 +365,19 @@ public class FluidMixerBlockEntity extends BlockEntity implements IInventory, IN
         }
         if(compound.contains("TankBlaze", Constants.NBT.TAG_COMPOUND))
         {
-            CompoundNBT tagCompound = compound.getCompound("TankBlaze");
+            CompoundTag tagCompound = compound.getCompound("TankBlaze");
             //FluidUtils.fixEmptyTag(tagCompound); //TODO might not need
             this.tankBlaze.readFromNBT(tagCompound);
         }
         if(compound.contains("TankEnderSap", Constants.NBT.TAG_COMPOUND))
         {
-            CompoundNBT tagCompound = compound.getCompound("TankEnderSap");
+            CompoundTag tagCompound = compound.getCompound("TankEnderSap");
             //FluidUtils.fixEmptyTag(tagCompound);
             this.tankEnderSap.readFromNBT(tagCompound);
         }
         if(compound.contains("TankFuelium", Constants.NBT.TAG_COMPOUND))
         {
-            CompoundNBT tagCompound = compound.getCompound("TankFuelium");
+            CompoundTag tagCompound = compound.getCompound("TankFuelium");
             //FluidUtils.fixEmptyTag(tagCompound);
             this.tankFuelium.readFromNBT(tagCompound);
         }
@@ -396,7 +396,7 @@ public class FluidMixerBlockEntity extends BlockEntity implements IInventory, IN
     }
 
     @Override
-    public CompoundNBT save(CompoundNBT compound)
+    public CompoundTag save(CompoundTag compound)
     {
         super.save(compound);
 
@@ -416,25 +416,25 @@ public class FluidMixerBlockEntity extends BlockEntity implements IInventory, IN
     }
 
     @Override
-    public CompoundNBT getUpdateTag()
+    public CompoundTag getUpdateTag()
     {
-        CompoundNBT tag = super.save(new CompoundNBT());
+        CompoundTag tag = super.save(new CompoundTag());
         this.writeTanks(tag);
         return tag;
     }
 
     @Override
-    public void writeTanks(CompoundNBT compound)
+    public void writeTanks(CompoundTag compound)
     {
-        CompoundNBT tagTankBlaze = new CompoundNBT();
+        CompoundTag tagTankBlaze = new CompoundTag();
         this.tankBlaze.writeToNBT(tagTankBlaze);
         compound.put("TankBlaze", tagTankBlaze);
 
-        CompoundNBT tagTankEnderSap = new CompoundNBT();
+        CompoundTag tagTankEnderSap = new CompoundTag();
         this.tankEnderSap.writeToNBT(tagTankEnderSap);
         compound.put("TankEnderSap", tagTankEnderSap);
 
-        CompoundNBT tagTankFuelium = new CompoundNBT();
+        CompoundTag tagTankFuelium = new CompoundTag();
         this.tankFuelium.writeToNBT(tagTankFuelium);
         compound.put("TankFuelium", tagTankFuelium);
     }
@@ -511,7 +511,7 @@ public class FluidMixerBlockEntity extends BlockEntity implements IInventory, IN
 
     @Nullable
     @Override
-    public Container createMenu(int windowId, PlayerInventory playerInventory, PlayerEntity playerEntity)
+    public AbstractContainerMenu createMenu(int windowId, Inventory playerInventory, Player playerEntity)
     {
         return new FluidMixerContainer(windowId, playerInventory, this);
     }

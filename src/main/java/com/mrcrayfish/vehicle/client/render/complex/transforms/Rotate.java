@@ -11,8 +11,8 @@ import com.mrcrayfish.vehicle.client.render.complex.value.Dynamic;
 import com.mrcrayfish.vehicle.client.render.complex.value.IValue;
 import com.mrcrayfish.vehicle.client.render.complex.value.Static;
 import com.mrcrayfish.vehicle.entity.VehicleEntity;
-import net.minecraft.util.math.vector.Quaternion;
-import net.minecraft.util.math.vector.Vector3f;
+import org.joml.Quaternionf;
+import org.joml.Vector3f;
 
 import java.lang.reflect.Type;
 
