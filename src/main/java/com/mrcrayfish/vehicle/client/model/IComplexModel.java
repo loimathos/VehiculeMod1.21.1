@@ -13,7 +13,7 @@ public interface IComplexModel
 {
     ResourceLocation getModelLocation();
 
-    IBakedModel getBaseModel();
+    BakedModel getBaseModel();
 
     @Nullable
     ComplexModel getComplexModel();

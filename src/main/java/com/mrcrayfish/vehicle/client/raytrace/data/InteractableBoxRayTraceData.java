@@ -22,7 +22,7 @@ public class InteractableBoxRayTraceData extends BoxRayTraceData
     }
 
     @Override
-    public AxisAlignedBB getBox()
+    public AABB getBox()
     {
         return this.interactableBox.getBoxSupplier().get();
     }

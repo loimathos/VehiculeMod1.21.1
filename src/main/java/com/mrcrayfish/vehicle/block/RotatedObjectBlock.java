@@ -1,31 +1,31 @@
 package com.mrcrayfish.vehicle.block;
 
-import net.minecraft.world.level.block.AbstractBlock;
+import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.Block;
-import net.minecraft.world.level.block.BlockState;
-import net.minecraft.world.level.block.HorizontalBlock;
-import net.minecraft.world.item.BlockItemUseContext;
-import net.minecraft.world.level.block.state.DirectionProperty;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.block.HorizontalDirectionalBlock;
+import net.minecraft.world.item.context.BlockPlaceContext;
+import net.minecraft.world.level.block.state.properties.DirectionProperty;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.core.Direction;
-import net.minecraft.util.Mirror;
-import net.minecraft.util.Rotation;
+import net.minecraft.world.level.block.Mirror;
+import net.minecraft.world.level.block.Rotation;
 
 /**
  * Author: MrCrayfish
  */
 public abstract class RotatedObjectBlock extends ObjectBlock
 {
-    public static final DirectionProperty DIRECTION = HorizontalBlock.FACING;
+    public static final DirectionProperty DIRECTION = HorizontalDirectionalBlock.FACING;
 
-    public RotatedObjectBlock(AbstractBlock.Properties properties)
+    public RotatedObjectBlock(BlockBehaviour.Properties properties)
     {
         super(properties);
         this.registerDefaultState(this.getStateDefinition().any().setValue(DIRECTION, Direction.NORTH));
     }
 
     @Override
-    public BlockState getStateForPlacement(BlockItemUseContext context)
+    public BlockState getStateForPlacement(BlockPlaceContext context)
     {
         return super.getStateForPlacement(context).setValue(DIRECTION, context.getHorizontalDirection());
     }

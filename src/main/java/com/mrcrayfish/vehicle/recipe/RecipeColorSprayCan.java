@@ -3,34 +3,35 @@ package com.mrcrayfish.vehicle.recipe;
 import com.google.common.collect.Lists;
 import com.mrcrayfish.vehicle.init.ModRecipeSerializers;
 import com.mrcrayfish.vehicle.item.IDyeable;
-import net.minecraft.world.inventory.CraftingContainer;
+import net.minecraft.core.HolderLookup;
+import net.minecraft.world.item.crafting.CraftingBookCategory;
+import net.minecraft.world.item.crafting.CraftingInput;
 import net.minecraft.world.item.DyeItem;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.RecipeSerializer;
-import net.minecraft.world.item.crafting.SpecialRecipe;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.item.crafting.CustomRecipe;
+import net.minecraft.tags.ItemTags;
 import net.minecraft.world.level.Level;
-import net.minecraftforge.common.Tags;
 
 import java.util.List;
 
 /**
  * Author: MrCrayfish
  */
-public class RecipeColorSprayCan extends SpecialRecipe
+public class RecipeColorSprayCan extends CustomRecipe
 {
-    public RecipeColorSprayCan(ResourceLocation id)
+    public RecipeColorSprayCan(CraftingBookCategory category)
     {
-        super(id);
+        super(category);
     }
 
     @Override
-    public boolean matches(CraftingInventory inventory, Level worldIn)
+    public boolean matches(CraftingInput inventory, Level worldIn)
     {
         ItemStack dyeableItem = ItemStack.EMPTY;
         List<ItemStack> dyes = Lists.newArrayList();
 
-        for(int i = 0; i < inventory.getContainerSize(); ++i)
+        for(int i = 0; i < inventory.size(); ++i)
         {
             ItemStack stack = inventory.getItem(i);
             if(!stack.isEmpty())
@@ -45,7 +46,7 @@ public class RecipeColorSprayCan extends SpecialRecipe
                 }
                 else
                 {
-                    if(!stack.getItem().is(Tags.Items.DYES))
+                    if(!(stack.getItem() instanceof net.minecraft.world.item.DyeItem))
                     {
                         return false;
                     }
@@ -58,12 +59,12 @@ public class RecipeColorSprayCan extends SpecialRecipe
     }
 
     @Override
-    public ItemStack assemble(CraftingInventory inventory)
+    public ItemStack assemble(CraftingInput inventory, HolderLookup.Provider provider)
     {
         ItemStack dyeableItem = ItemStack.EMPTY;
         List<DyeItem> dyes = Lists.newArrayList();
 
-        for(int i = 0; i < inventory.getContainerSize(); ++i)
+        for(int i = 0; i < inventory.size(); ++i)
         {
             ItemStack stack = inventory.getItem(i);
             if(!stack.isEmpty())

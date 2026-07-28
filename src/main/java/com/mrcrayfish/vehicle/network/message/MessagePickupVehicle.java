@@ -2,9 +2,9 @@ package com.mrcrayfish.vehicle.network.message;
 
 import com.mrcrayfish.vehicle.network.play.ServerPlayHandler;
 import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.player.ServerPlayer;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.network.FriendlyByteBuf;
-import net.minecraftforge.network.NetworkEvent;
+import net.minecraftforge.event.network.CustomPayloadEvent;
 
 import java.util.function.Supplier;
 
@@ -30,19 +30,19 @@ public class MessagePickupVehicle implements IMessage<MessagePickupVehicle>
     }
 
     @Override
-    public void encode(MessagePickupVehicle message, PacketBuffer buffer)
+    public void encode(MessagePickupVehicle message, FriendlyByteBuf buffer)
     {
         buffer.writeInt(message.entityId);
     }
 
     @Override
-    public MessagePickupVehicle decode(PacketBuffer buffer)
+    public MessagePickupVehicle decode(FriendlyByteBuf buffer)
     {
         return new MessagePickupVehicle(buffer.readInt());
     }
 
     @Override
-    public void handle(MessagePickupVehicle message, Supplier<NetworkEvent.Context> supplier)
+    public void handle(MessagePickupVehicle message, Supplier<CustomPayloadEvent.Context> supplier)
     {
         supplier.get().enqueueWork(() ->
         {

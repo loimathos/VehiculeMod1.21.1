@@ -1,6 +1,6 @@
 package com.mrcrayfish.vehicle.client.raytrace;
 
-import com.mojang.blaze3d.matrix.MatrixStack;
+import com.mojang.blaze3d.vertex.PoseStack;
 import org.joml.Matrix4f;
 import org.joml.Quaternionf;
 
@@ -14,7 +14,7 @@ public abstract class MatrixTransform
         return new Translate(x, y, z);
     }
 
-    public static MatrixTransform rotate(Quaternion quaternion)
+    public static MatrixTransform rotate(Quaternionf quaternion)
     {
         return new Rotation(quaternion);
     }
@@ -50,17 +50,17 @@ public abstract class MatrixTransform
         @Override
         public void transform(Matrix4f matrix)
         {
-            MatrixStack matrixStack = new MatrixStack();
+            PoseStack matrixStack = new PoseStack();
             matrixStack.translate(this.x, this.y, this.z);
-            matrix.multiply(matrixStack.last().pose());
+            matrix.mul(matrixStack.last().pose());
         }
     }
 
     public static class Rotation extends MatrixTransform
     {
-        private final Quaternion quaternion;
+        private final Quaternionf quaternion;
 
-        public Rotation(Quaternion quaternion)
+        public Rotation(Quaternionf quaternion)
         {
             this.quaternion = quaternion;
         }
@@ -68,9 +68,9 @@ public abstract class MatrixTransform
         @Override
         public void transform(Matrix4f matrix)
         {
-            MatrixStack matrixStack = new MatrixStack();
+            PoseStack matrixStack = new PoseStack();
             matrixStack.mulPose(this.quaternion);
-            matrix.multiply(matrixStack.last().pose());
+            matrix.mul(matrixStack.last().pose());
         }
     }
 
@@ -95,9 +95,9 @@ public abstract class MatrixTransform
         @Override
         public void transform(Matrix4f matrix)
         {
-            MatrixStack matrixStack = new MatrixStack();
+            PoseStack matrixStack = new PoseStack();
             matrixStack.scale(this.x, this.y, this.z);
-            matrix.multiply(matrixStack.last().pose());
+            matrix.mul(matrixStack.last().pose());
         }
     }
 }

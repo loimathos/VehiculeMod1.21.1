@@ -1,5 +1,7 @@
 package com.mrcrayfish.vehicle.client.raytrace;
 
+
+import com.mojang.math.Axis;
 import com.google.common.collect.Lists;
 import com.mrcrayfish.vehicle.client.model.ComponentModel;
 import com.mrcrayfish.vehicle.client.model.IComplexModel;
@@ -7,7 +9,6 @@ import com.mrcrayfish.vehicle.client.model.VehicleModels;
 import com.mrcrayfish.vehicle.client.raytrace.data.ItemStackRayTraceData;
 import com.mrcrayfish.vehicle.client.raytrace.data.RayTraceData;
 import com.mrcrayfish.vehicle.client.raytrace.data.ComponentModelRayTraceData;
-import com.mrcrayfish.vehicle.client.render.Axis;
 import com.mrcrayfish.vehicle.common.entity.Transform;
 import com.mrcrayfish.vehicle.entity.VehicleEntity;
 import com.mrcrayfish.vehicle.entity.properties.PoweredProperties;
@@ -46,9 +47,9 @@ public class TransformHelper
         transforms.add(MatrixTransform.translate(0.0F, 0.5F, 0.0F));
         transforms.add(MatrixTransform.translate(0.0F, properties.getAxleOffset() * 0.0625F, 0.0F));
         transforms.add(MatrixTransform.translate(0.0F, properties.getWheelOffset() * 0.0625F, 0.0F));
-        transforms.add(MatrixTransform.rotate(Axis.POSITIVE_X.rotationDegrees((float) bodyPosition.getRotX())));
-        transforms.add(MatrixTransform.rotate(Axis.POSITIVE_Y.rotationDegrees((float) bodyPosition.getRotY())));
-        transforms.add(MatrixTransform.rotate(Axis.POSITIVE_Z.rotationDegrees((float) bodyPosition.getRotZ())));
+        transforms.add(MatrixTransform.rotate(Axis.XP.rotationDegrees((float) bodyPosition.getRotX())));
+        transforms.add(MatrixTransform.rotate(Axis.YP.rotationDegrees((float) bodyPosition.getRotY())));
+        transforms.add(MatrixTransform.rotate(Axis.ZP.rotationDegrees((float) bodyPosition.getRotZ())));
         transforms.add(MatrixTransform.translate(0.5F, 0.5F, 0.5F));
     }
 
@@ -56,9 +57,9 @@ public class TransformHelper
     {
         transforms.add(MatrixTransform.scale((float) transform.getScale()));
         transforms.add(MatrixTransform.translate((float) transform.getX() * 0.0625F, (float) transform.getY() * 0.0625F, (float) transform.getZ() * 0.0625F));
-        transforms.add(MatrixTransform.rotate(Axis.POSITIVE_X.rotationDegrees((float) transform.getRotX())));
-        transforms.add(MatrixTransform.rotate(Axis.POSITIVE_Y.rotationDegrees((float) transform.getRotY())));
-        transforms.add(MatrixTransform.rotate(Axis.POSITIVE_Z.rotationDegrees((float) transform.getRotZ())));
+        transforms.add(MatrixTransform.rotate(Axis.XP.rotationDegrees((float) transform.getRotX())));
+        transforms.add(MatrixTransform.rotate(Axis.YP.rotationDegrees((float) transform.getRotY())));
+        transforms.add(MatrixTransform.rotate(Axis.ZP.rotationDegrees((float) transform.getRotZ())));
     }
 
     public static void createPartTransforms(ComponentModel model, Transform transform, HashMap<RayTraceData, List<MatrixTransform>> parts, List<MatrixTransform> globalTransforms, @Nullable RayTraceFunction function)
@@ -71,16 +72,16 @@ public class TransformHelper
         createPartTransforms(new ItemStackRayTraceData(new ItemStack(part), function), transform.getTranslate(), transform.getRotation(), (float) transform.getScale(), parts, globalTransforms);
     }
 
-    public static void createPartTransforms(RayTraceData data, Vector3d offset, Vector3d rotation, float scale, HashMap<RayTraceData, List<MatrixTransform>> parts, List<MatrixTransform> transformsGlobal)
+    public static void createPartTransforms(RayTraceData data, Vec3 offset, Vec3 rotation, float scale, HashMap<RayTraceData, List<MatrixTransform>> parts, List<MatrixTransform> transformsGlobal)
     {
         List<MatrixTransform> transforms = Lists.newArrayList();
         transforms.addAll(transformsGlobal);
         transforms.add(MatrixTransform.translate((float) offset.x * 0.0625F, (float) offset.y * 0.0625F, (float) offset.z * 0.0625F));
         transforms.add(MatrixTransform.translate(0.0F, -0.5F, 0.0F));
         transforms.add(MatrixTransform.scale(scale));
-        transforms.add(MatrixTransform.rotate(Axis.POSITIVE_X.rotationDegrees((float) rotation.x)));
-        transforms.add(MatrixTransform.rotate(Axis.POSITIVE_Y.rotationDegrees((float) rotation.y)));
-        transforms.add(MatrixTransform.rotate(Axis.POSITIVE_Z.rotationDegrees((float) rotation.z)));
+        transforms.add(MatrixTransform.rotate(Axis.XP.rotationDegrees((float) rotation.x)));
+        transforms.add(MatrixTransform.rotate(Axis.YP.rotationDegrees((float) rotation.y)));
+        transforms.add(MatrixTransform.rotate(Axis.ZP.rotationDegrees((float) rotation.z)));
         createTransformListForPart(data, parts, transforms);
     }
 
@@ -134,11 +135,11 @@ public class TransformHelper
         VehicleProperties properties = VehicleProperties.get(entityType);
         double bodyScale = properties.getBodyTransform().getScale();
         List<MatrixTransform> transforms = new ArrayList<>();
-        transforms.add(MatrixTransform.rotate(Vector3f.YP.rotationDegrees(180F)));
+        transforms.add(MatrixTransform.rotate(Axis.YP.rotationDegrees(180F)));
         transforms.add(MatrixTransform.translate(0.0F, 0.5F, 0.0F));
         transforms.add(MatrixTransform.translate(0.0F, 0.5F, 0.0F)); // Need extra translate to prevent translation in #createPartTransforms call
-        Vector3d towBarOffset = properties.getTowBarOffset().scale(bodyScale).multiply(1, 1, -1);
-        createPartTransforms(new ComponentModelRayTraceData(model), towBarOffset, Vector3d.ZERO, 1.0F, parts, transforms);
+        Vec3 towBarOffset = properties.getTowBarOffset().scale(bodyScale).multiply(1, 1, -1);
+        createPartTransforms(new ComponentModelRayTraceData(model), towBarOffset, Vec3.ZERO, 1.0F, parts, transforms);
     }
 
     /**
@@ -174,7 +175,7 @@ public class TransformHelper
     public static Matrix4f createMatrixFromTransforms(List<MatrixTransform> transforms, float xOffset, float yOffset, float zOffset)
     {
         Matrix4f matrix = new Matrix4f();
-        matrix.setIdentity();
+        matrix.identity();
         transforms.forEach(t -> t.transform(matrix));
         MatrixTransform.translate(xOffset, yOffset, zOffset).transform(matrix);
         return matrix;

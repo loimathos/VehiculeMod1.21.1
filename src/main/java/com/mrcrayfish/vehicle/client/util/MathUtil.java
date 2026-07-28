@@ -8,13 +8,13 @@ public class MathUtil
     /**
      * Spherically interpolates between two quaternions with a weight
      * Source taken from Bones framework for JPCT, see <a href="https://github.com/raftAtGit/Bones">...</a>
-     * Code has been adapted to work with Quaternion from Minecraft's math package.
+     * Code has been adapted to work with Quaternionf from Minecraft's math package.
      *
      * @param start the starting quaternion
      * @param end the destination quaternion
      * @param t the weight of the interpolation in the range of [0, 1]
      */
-    public static Quaternion slerp(Quaternion start, Quaternion end, float t)
+    public static Quaternionf slerp(Quaternionf start, Quaternionf end, float t)
     {
         // Skip operation if equal
         if(start.equals(end))
@@ -22,10 +22,10 @@ public class MathUtil
             return start;
         }
 
-        float dot = start.i() * end.i() + start.j() * end.j() + start.k() * end.k() + start.r() * end.r();
+        float dot = start.x() * end.x() + start.y() * end.y() + start.z() * end.z() + start.w() * end.w();
         if(dot < 0.0F)
         {
-            end = new Quaternion(-end.i(), -end.j(), -end.k(), -end.r());
+            end = new Quaternionf(-end.x(), -end.y(), -end.z(), -end.w());
             dot = -dot;
         }
 
@@ -36,16 +36,16 @@ public class MathUtil
         if((1.0F - dot) > 0.1F)
         {
             float theta = (float) Math.acos(dot);
-            float invSinTheta = 1.0F / MathHelper.sin(theta);
-            scale0 = MathHelper.sin((1.0F - t) * theta) * invSinTheta;
-            scale1 = MathHelper.sin((t * theta)) * invSinTheta;
+            float invSinTheta = 1.0F / Mth.sin(theta);
+            scale0 = Mth.sin((1.0F - t) * theta) * invSinTheta;
+            scale1 = Mth.sin((t * theta)) * invSinTheta;
         }
 
         // Calculate new quaternion. Interpolation is linear unless above calculations are run.
-        float i = (scale0 * start.i()) + (scale1 * end.i());
-        float j = (scale0 * start.j()) + (scale1 * end.j());
-        float k = (scale0 * start.k()) + (scale1 * end.k());
-        float r = (scale0 * start.r()) + (scale1 * end.r());
-        return new Quaternion(i, j, k, r);
+        float i = (scale0 * start.x()) + (scale1 * end.x());
+        float j = (scale0 * start.y()) + (scale1 * end.y());
+        float k = (scale0 * start.z()) + (scale1 * end.z());
+        float r = (scale0 * start.w()) + (scale1 * end.w());
+        return new Quaternionf(i, j, k, r);
     }
 }

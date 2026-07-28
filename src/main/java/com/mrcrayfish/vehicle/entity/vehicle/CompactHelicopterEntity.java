@@ -1,10 +1,12 @@
 package com.mrcrayfish.vehicle.entity.vehicle;
 
+
+import com.mojang.math.Axis;
 import com.mrcrayfish.vehicle.common.entity.Transform;
 import com.mrcrayfish.vehicle.entity.HelicopterEntity;
 import com.mrcrayfish.vehicle.entity.properties.VehicleProperties;
 import com.mrcrayfish.vehicle.init.ModParticleTypes;
-import net.minecraft.world.level.block.BlockState;
+import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.core.particles.ParticleOptions;
 import net.minecraft.core.particles.ParticleTypes;
@@ -13,12 +15,12 @@ import net.minecraft.tags.FluidTags;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.level.ClipContext;
 import net.minecraft.world.phys.HitResult;
+import net.minecraft.world.phys.shapes.CollisionContext;
 import org.joml.Matrix4f;
 import net.minecraft.world.phys.Vec3;
 import org.joml.Vector3f;
 import org.joml.Vector4f;
 import net.minecraft.world.level.Level;
-import net.minecraftforge.common.Tags;
 
 /**
  * Author: MrCrayfish
@@ -37,10 +39,10 @@ public class CompactHelicopterEntity extends HelicopterEntity
 
         if(this.canDrive() && this.tickCount % 2 == 0)
         {
-            Vector3d exhaust = this.getExhaustFumesPosition().scale(0.0625);
-            Vector4f fumePosition = new Vector4f(new Vector3f(exhaust));
-            fumePosition.transform(this.getTransformMatrix(0F));
-            this.level.addParticle(ParticleTypes.LARGE_SMOKE, this.getX() + fumePosition.x(), this.getY() + fumePosition.y(), this.getZ() + fumePosition.z(), -this.getDeltaMovement().x, 0.0D, -this.getDeltaMovement().z);
+            Vec3 exhaust = this.getExhaustFumesPosition().scale(0.0625);
+            Vector4f fumePosition = new Vector4f((float) exhaust.x, (float) exhaust.y, (float) exhaust.z, 1.0f);
+            fumePosition.mul(this.getTransformMatrix(0F));
+            this.level().addParticle(ParticleTypes.LARGE_SMOKE, this.getX() + fumePosition.x(), this.getY() + fumePosition.y(), this.getZ() + fumePosition.z(), -this.getDeltaMovement().x, 0.0D, -this.getDeltaMovement().z);
         }
 
         if(this.bladeSpeed > 30.0F)
@@ -53,23 +55,23 @@ public class CompactHelicopterEntity extends HelicopterEntity
             double posZ = this.getZ() + randZ;
             double downDistance = Math.min(12.0, this.bladeSpeed / 15.0);
             downDistance = (downDistance * 0.5) + (downDistance * 0.5) * this.random.nextDouble();
-            Vector3d start = new Vector3d(posX, this.getY() + 3.0, posZ);
-            Vector3d end = start.subtract(0, downDistance, 0);
-            BlockRayTraceResult result = this.level.clip(new RayTraceContext(start, end, RayTraceContext.BlockMode.COLLIDER, RayTraceContext.FluidMode.SOURCE_ONLY, null));
-            if(result.getType() != RayTraceResult.Type.MISS)
+            Vec3 start = new Vec3(posX, this.getY() + 3.0, posZ);
+            Vec3 end = start.subtract(0, downDistance, 0);
+            BlockHitResult result = this.level().clip(new ClipContext(start, end, ClipContext.Block.COLLIDER, ClipContext.Fluid.SOURCE_ONLY, CollisionContext.empty()));
+            if(result.getType() != HitResult.Type.MISS)
             {
-                Vector3d loc = result.getLocation();
+                Vec3 loc = result.getLocation();
                 double distanceScale = (downDistance - start.distanceTo(loc)) / downDistance;
-                BlockState state = this.level.getBlockState(result.getBlockPos());
-                if(state.is(Tags.Blocks.DIRT) || state.is(Tags.Blocks.GRAVEL) || state.is(Tags.Blocks.SAND))
+                BlockState state = this.level().getBlockState(result.getBlockPos());
+                if(state.getFluidState().is(FluidTags.WATER))
                 {
-                    this.level.addParticle(ModParticleTypes.DUST.get(), loc.x, loc.y, loc.z, randX * bladeScale * distanceScale, 0.02, randZ * bladeScale * distanceScale);
+                    this.level().addParticle(ParticleTypes.SPLASH, loc.x, loc.y, loc.z, randX * bladeScale * distanceScale, 0.02, randZ * bladeScale * distanceScale);
+                    this.level().addParticle(ParticleTypes.BUBBLE, loc.x, loc.y, loc.z, randX * bladeScale * distanceScale, 0.02, randZ * bladeScale * distanceScale);
+                    this.level().addParticle(ParticleTypes.CLOUD, loc.x, loc.y, loc.z, 0, 0, 0);
                 }
-                else if(state.getFluidState().is(FluidTags.WATER))
+                else
                 {
-                    this.level.addParticle(ParticleTypes.SPLASH, loc.x, loc.y, loc.z, randX * bladeScale * distanceScale, 0.02, randZ * bladeScale * distanceScale);
-                    this.level.addParticle(ParticleTypes.BUBBLE, loc.x, loc.y, loc.z, randX * bladeScale * distanceScale, 0.02, randZ * bladeScale * distanceScale);
-                    this.level.addParticle(ParticleTypes.CLOUD, loc.x, loc.y, loc.z, 0, 0, 0);
+                    this.level().addParticle(ModParticleTypes.DUST.get(), loc.x, loc.y, loc.z, randX * bladeScale * distanceScale, 0.02, randZ * bladeScale * distanceScale);
                 }
             }
         }
@@ -79,19 +81,19 @@ public class CompactHelicopterEntity extends HelicopterEntity
     private Matrix4f getTransformMatrix(float partialTicks)
     {
         Matrix4f matrix = new Matrix4f();
-        matrix.setIdentity();
-        matrix.multiply(Vector3f.YP.rotationDegrees(-this.getBodyRotationYaw(partialTicks)));
-        matrix.multiply(Vector3f.XP.rotationDegrees(this.getBodyRotationPitch(partialTicks)));
-        matrix.multiply(Vector3f.ZP.rotationDegrees(this.getBodyRotationRoll(partialTicks)));
+        matrix.identity();
+        matrix.rotate(Axis.YP.rotationDegrees(-this.getBodyRotationYaw(partialTicks)));
+        matrix.rotate(Axis.XP.rotationDegrees(this.getBodyRotationPitch(partialTicks)));
+        matrix.rotate(Axis.ZP.rotationDegrees(this.getBodyRotationRoll(partialTicks)));
         VehicleProperties properties = this.getProperties();
         Transform bodyPosition = properties.getBodyTransform();
-        matrix.multiply((Matrix4f.createScaleMatrix((float) bodyPosition.getScale(), (float) bodyPosition.getScale(), (float) bodyPosition.getScale())));
+        matrix.scale((float) bodyPosition.getScale(), (float) bodyPosition.getScale(), (float) bodyPosition.getScale());
         Vector3f translate = new Vector3f();
         translate.add((float) bodyPosition.getX() * 0.0625F, (float) bodyPosition.getY() * 0.0625F, (float) bodyPosition.getZ() * 0.0625F);
         translate.add(0.0F, 0.5F, 0.0F);
         translate.add(0.0F, properties.getAxleOffset() * 0.0625F, 0.0F);
         translate.add(0.0F, properties.getWheelOffset() * 0.0625F, 0.0F);
-        matrix.multiply(Matrix4f.createTranslateMatrix(translate.x(), translate.y(), translate.z()));
+        matrix.translate(translate.x(), translate.y(), translate.z());
         return matrix;
     }
 }

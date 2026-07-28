@@ -10,7 +10,7 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.world.phys.Vec3;
-import net.minecraftforge.common.util.Constants;
+import net.minecraft.nbt.Tag;
 import net.minecraftforge.network.PacketDistributor;
 
 import java.lang.ref.WeakReference;
@@ -62,9 +62,9 @@ public class SeatTracker
             return;
         this.playerSeatMap.forcePut(uuid, index);
         VehicleEntity vehicle = this.vehicleRef.get();
-        if(vehicle != null && !vehicle.level.isClientSide)
+        if(vehicle != null && !vehicle.level().isClientSide())
         {
-            PacketHandler.getPlayChannel().send(PacketDistributor.TRACKING_ENTITY.with(() -> vehicle), new MessageSyncPlayerSeat(vehicle.getId(), index, uuid));
+            PacketHandler.getPlayChannel().send(new MessageSyncPlayerSeat(vehicle.getId(), index, uuid), PacketDistributor.TRACKING_ENTITY.with(vehicle));
         }
     }
 
@@ -91,7 +91,7 @@ public class SeatTracker
     public int getNextAvailableSeat()
     {
         VehicleEntity vehicle = this.vehicleRef.get();
-        if(vehicle != null && !vehicle.level.isClientSide)
+        if(vehicle != null && !vehicle.level().isClientSide())
         {
             VehicleProperties properties = vehicle.getProperties();
             List<Seat> seats = properties.getSeats();
@@ -115,7 +115,7 @@ public class SeatTracker
     public int getClosestAvailableSeatToPlayer(Player player)
     {
         VehicleEntity vehicle = this.vehicleRef.get();
-        if(vehicle != null && !vehicle.level.isClientSide)
+        if(vehicle != null && !vehicle.level().isClientSide())
         {
             VehicleProperties properties = vehicle.getProperties();
             List<Seat> seats = properties.getSeats();
@@ -133,8 +133,9 @@ public class SeatTracker
 
                 /* Get the real world distance to the seat and check if it's the closest */
                 Seat seat = seats.get(i);
-                Vector3d seatVec = seat.getPosition().add(0, properties.getAxleOffset() + properties.getWheelOffset(), 0).scale(properties.getBodyTransform().getScale()).multiply(-1, 1, 1).scale(0.0625);
-                seatVec = seatVec.yRot(-(vehicle.yRot) * 0.017453292F);
+                Vec3 seatVec = seat.getPosition().add(0, properties.getAxleOffset() + properties.getWheelOffset(), 0).scale(properties.getBodyTransform().getScale()).multiply(-1, 1, 1).scale(0.0625);
+                float yawRadians = -(vehicle.getYRot()) * ((float) Math.PI / 180F);
+                seatVec = new Vec3(seatVec.x * Math.cos(yawRadians) + seatVec.z * Math.sin(yawRadians), seatVec.y, seatVec.z * Math.cos(yawRadians) - seatVec.x * Math.sin(yawRadians));
                 seatVec = seatVec.add(vehicle.position());
                 double distance = player.distanceToSqr(seatVec.x, seatVec.y - player.getBbHeight() / 2F, seatVec.z);
                 if(closestSeatIndex == -1 || distance < closestDistance)
@@ -164,10 +165,10 @@ public class SeatTracker
 
     public void read(CompoundTag compound)
     {
-        if(compound.contains("PlayerSeatMap", Constants.NBT.TAG_LIST))
+        if(compound.contains("PlayerSeatMap", Tag.TAG_LIST))
         {
             this.playerSeatMap.clear();
-            ListTag list = compound.getList("PlayerSeatMap", Constants.NBT.TAG_COMPOUND);
+            ListTag list = compound.getList("PlayerSeatMap", Tag.TAG_COMPOUND);
             list.forEach(nbt -> {
                 CompoundTag seatTag = (CompoundTag) nbt;
                 UUID uuid = seatTag.getUUID("UUID");
@@ -177,7 +178,7 @@ public class SeatTracker
         }
     }
 
-    public void write(PacketBuffer buffer)
+    public void write(FriendlyByteBuf buffer)
     {
         buffer.writeVarInt(this.playerSeatMap.size());
         this.playerSeatMap.forEach((uuid, seatIndex) -> {
@@ -186,7 +187,7 @@ public class SeatTracker
         });
     }
 
-    public void read(PacketBuffer buffer)
+    public void read(FriendlyByteBuf buffer)
     {
         this.playerSeatMap.clear();
         int size = buffer.readVarInt();

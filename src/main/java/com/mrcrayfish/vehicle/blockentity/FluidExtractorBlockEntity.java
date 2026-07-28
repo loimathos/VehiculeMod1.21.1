@@ -1,5 +1,13 @@
 package com.mrcrayfish.vehicle.blockentity;
 
+
+
+import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.core.BlockPos;
+import net.minecraft.world.level.block.Block;
+
+import net.minecraft.nbt.Tag;
+
 import com.mrcrayfish.vehicle.Config;
 import com.mrcrayfish.vehicle.block.FluidMixerBlock;
 import com.mrcrayfish.vehicle.crafting.FluidExtractorRecipe;
@@ -7,7 +15,7 @@ import com.mrcrayfish.vehicle.crafting.RecipeType;
 import com.mrcrayfish.vehicle.init.ModBlockEntities;
 import com.mrcrayfish.vehicle.inventory.container.FluidExtractorContainer;
 import com.mrcrayfish.vehicle.util.InventoryUtil;
-import net.minecraft.world.level.block.BlockState;
+import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.level.material.Fluid;
@@ -17,11 +25,13 @@ import net.minecraft.world.ContainerHelper;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.MenuProvider;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.crafting.RecipeHolder;
+import net.minecraft.world.item.crafting.RecipeInput;
 import net.minecraft.nbt.CompoundTag;
 
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.world.inventory.ContainerData;
 import net.minecraft.core.Direction;
-import net.minecraft.util.IIntArray;
-import net.minecraft.util.INameable;
 import net.minecraft.core.NonNullList;
 import net.minecraft.network.chat.Component;
 
@@ -30,7 +40,6 @@ import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.common.ForgeHooks;
 import net.minecraftforge.common.capabilities.Capability;
-import net.minecraftforge.common.util.Constants;
 import net.minecraftforge.common.util.LazyOptional;
 import net.minecraftforge.fluids.FluidStack;
 import net.minecraftforge.fluids.capability.IFluidHandler;
@@ -39,14 +48,13 @@ import net.minecraftforge.registries.ForgeRegistries;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
+import net.minecraft.core.HolderLookup;
 
 /**
  * Author: MrCrayfish
  */
-public class FluidExtractorBlockEntity extends BlockEntity implements IInventory, INamedContainerProvider, INameable
+public class FluidExtractorBlockEntity extends BlockFluidHandlerSynced implements Container, MenuProvider, RecipeInput
 {
     private NonNullList<ItemStack> inventory = NonNullList.withSize(7, ItemStack.EMPTY);
 
@@ -62,8 +70,9 @@ public class FluidExtractorBlockEntity extends BlockEntity implements IInventory
 
     private String customName;
 
-    protected final IIntArray fluidExtractorData = new IIntArray()
+    protected final ContainerData fluidExtractorData = new ContainerData()
     {
+        @Override
         public int get(int index)
         {
             switch(index)
@@ -75,13 +84,14 @@ public class FluidExtractorBlockEntity extends BlockEntity implements IInventory
                 case 2:
                     return fuelMaxProgress;
                 case 3:
-                    return tank.getFluid().getFluid().getRegistryName().hashCode();
+                    return BuiltInRegistries.FLUID.getKey(tank.getFluid().getFluid()).hashCode();
                 case 4:
                     return tank.getFluidAmount();
             }
             return 0;
         }
 
+        @Override
         public void set(int index, int value)
         {
             switch(index)
@@ -99,7 +109,7 @@ public class FluidExtractorBlockEntity extends BlockEntity implements IInventory
                     updateFluid(tank, value);
                     break;
                 case 4:
-                    if(!tank.isEmpty() || tank.getFluid().getRawFluid() != Fluids.EMPTY)
+                    if(!tank.isEmpty() || tank.getFluid().getFluid() != Fluids.EMPTY)
                     {
                         tank.getFluid().setAmount(value);
                     }
@@ -108,19 +118,19 @@ public class FluidExtractorBlockEntity extends BlockEntity implements IInventory
 
         }
 
+        @Override
         public int getCount()
         {
             return 5;
         }
     };
 
-    public FluidExtractorBlockEntity()
+    public FluidExtractorBlockEntity(BlockPos pos, BlockState state)
     {
-        super(ModBlockEntities.FLUID_EXTRACTOR.get(), Config.SERVER.extractorCapacity.get(), stack -> true);
+        super(ModBlockEntities.FLUID_EXTRACTOR.get(), pos, state, Config.SERVER.extractorCapacity.get());
         this.capacity = Config.SERVER.extractorCapacity.get();
     }
 
-    @Override
     public void tick()
     {
         if(this.level != null && !this.level.isClientSide())
@@ -176,7 +186,7 @@ public class FluidExtractorBlockEntity extends BlockEntity implements IInventory
     {
         if(!fuel.isEmpty() && this.remainingFuel == 0 && this.canFillWithFluid(source))
         {
-            this.fuelMaxProgress = ForgeHooks.getBurnTime(fuel);
+            this.fuelMaxProgress = ForgeHooks.getBurnTime(fuel, null);
             this.remainingFuel = this.fuelMaxProgress;
             this.shrinkItem(SLOT_FUEL_SOURCE);
         }
@@ -228,6 +238,12 @@ public class FluidExtractorBlockEntity extends BlockEntity implements IInventory
     }
 
     @Override
+    public int size()
+    {
+        return this.getContainerSize();
+    }
+
+    @Override
     public boolean isEmpty()
     {
         for(ItemStack stack : this.inventory)
@@ -249,7 +265,7 @@ public class FluidExtractorBlockEntity extends BlockEntity implements IInventory
     @Override
     public ItemStack removeItem(int index, int count)
     {
-        ItemStack stack = ItemStackHelper.removeItem(this.inventory, index, count);
+        ItemStack stack = ContainerHelper.removeItem(this.inventory, index, count);
         if(!stack.isEmpty())
         {
             this.setChanged();
@@ -260,7 +276,7 @@ public class FluidExtractorBlockEntity extends BlockEntity implements IInventory
     @Override
     public ItemStack removeItemNoUpdate(int index)
     {
-        return ItemStackHelper.takeItem(this.inventory, index);
+        return ContainerHelper.takeItem(this.inventory, index);
     }
 
     @Override
@@ -285,7 +301,7 @@ public class FluidExtractorBlockEntity extends BlockEntity implements IInventory
     {
         if(index == 0)
         {
-            return ForgeHooks.getBurnTime(stack) > 0;
+            return ForgeHooks.getBurnTime(stack, null) > 0;
         }
         else if(index == 1)
         {
@@ -321,51 +337,48 @@ public class FluidExtractorBlockEntity extends BlockEntity implements IInventory
     }
 
     @Override
-    public void load(BlockState state, CompoundTag compound)
+    protected void loadAdditional(CompoundTag compound, HolderLookup.Provider registries)
     {
-        super.load(state, compound);
-        if(compound.contains("ExtractionProgress", Constants.NBT.TAG_INT))
+        super.loadAdditional(compound, registries);
+        if(compound.contains("ExtractionProgress", Tag.TAG_INT))
         {
             this.extractionProgress = compound.getInt("ExtractionProgress");
         }
-        if(compound.contains("RemainingFuel", Constants.NBT.TAG_INT))
+        if(compound.contains("RemainingFuel", Tag.TAG_INT))
         {
             this.remainingFuel = compound.getInt("RemainingFuel");
         }
-        if(compound.contains("FuelMaxProgress", Constants.NBT.TAG_INT))
+        if(compound.contains("FuelMaxProgress", Tag.TAG_INT))
         {
             this.fuelMaxProgress = compound.getInt("FuelMaxProgress");
         }
-        if(compound.contains("Items", Constants.NBT.TAG_LIST))
+        if(compound.contains("Items", Tag.TAG_LIST))
         {
             this.inventory = NonNullList.withSize(this.getContainerSize(), ItemStack.EMPTY);
-            ItemStackHelper.loadAllItems(compound, this.inventory);
+            ContainerHelper.loadAllItems(compound, this.inventory, registries);
         }
-        if(compound.contains("CustomName", Constants.NBT.TAG_STRING))
+        if(compound.contains("CustomName", Tag.TAG_STRING))
         {
             this.customName = compound.getString("CustomName");
         }
     }
 
     @Override
-    public CompoundTag save(CompoundTag compound)
+    protected void saveAdditional(CompoundTag compound, HolderLookup.Provider registries)
     {
-        super.save(compound);
+        super.saveAdditional(compound, registries);
         compound.putInt("ExtractionProgress", this.extractionProgress);
         compound.putInt("RemainingFuel", this.remainingFuel);
         compound.putInt("FuelMaxProgress", this.fuelMaxProgress);
 
-        ItemStackHelper.saveAllItems(compound, this.inventory);
+        ContainerHelper.saveAllItems(compound, this.inventory, registries);
 
         if(this.hasCustomName())
         {
             compound.putString("CustomName", this.customName);
         }
-
-        return compound;
     }
 
-    @Override
     public Component getName()
     {
         return this.getDisplayName();
@@ -400,26 +413,30 @@ public class FluidExtractorBlockEntity extends BlockEntity implements IInventory
         return new FluidExtractorContainer(windowId, playerInventory, this);
     }
 
-    public IIntArray getFluidExtractorData()
+    public ContainerData getFluidExtractorData()
     {
         return fluidExtractorData;
     }
 
     public void updateFluid(FluidTank tank, int fluidHash)
     {
-        Optional<Fluid> optional = ForgeRegistries.FLUIDS.getValues().stream().filter(fluid -> fluid.getRegistryName().hashCode() == fluidHash).findFirst();
+        Optional<Fluid> optional = ForgeRegistries.FLUIDS.getValues().stream().filter(fluid -> BuiltInRegistries.FLUID.getKey(fluid).hashCode() == fluidHash).findFirst();
         optional.ifPresent(fluid -> tank.setFluid(new FluidStack(fluid, tank.getFluidAmount())));
     }
 
     public Optional<FluidExtractorRecipe> getRecipe()
     {
-        return this.level.getRecipeManager().getRecipeFor(RecipeType.FLUID_EXTRACTOR, this, this.level);
+        if(this.level == null) return Optional.empty();
+        ItemStack stack = this.getItem(1);
+        return this.level.getRecipeManager().getAllRecipesFor(RecipeType.FLUID_EXTRACTOR.get()).stream()
+                .map(RecipeHolder::value)
+                .filter(recipe -> InventoryUtil.areItemStacksEqualIgnoreCount(stack, recipe.getIngredient()))
+                .findFirst();
     }
 
     public boolean isValidIngredient(ItemStack ingredient)
     {
-        List<FluidExtractorRecipe> recipes = this.level.getRecipeManager().getRecipes().stream().filter(recipe -> recipe.getType() == RecipeType.FLUID_EXTRACTOR).map(recipe -> (FluidExtractorRecipe) recipe).collect(Collectors.toList());
-        return recipes.stream().anyMatch(recipe -> InventoryUtil.areItemStacksEqualIgnoreCount(ingredient, recipe.getIngredient()));
+        return this.level.getRecipeManager().getAllRecipesFor(RecipeType.FLUID_EXTRACTOR.get()).stream().anyMatch(holder -> InventoryUtil.areItemStacksEqualIgnoreCount(ingredient, holder.value().getIngredient()));
     }
 
     private final net.minecraftforge.common.util.LazyOptional<?> itemHandler = net.minecraftforge.common.util.LazyOptional.of(this::createUnSidedHandler);
@@ -434,7 +451,7 @@ public class FluidExtractorBlockEntity extends BlockEntity implements IInventory
     @Override
     public <T> LazyOptional<T> getCapability(@Nonnull Capability<T> cap, @Nullable Direction side)
     {
-        if (!this.remove && cap == net.minecraftforge.items.CapabilityItemHandler.ITEM_HANDLER_CAPABILITY )
+        if (!this.remove && cap == null /* TODO: Capabilities removed in 1.21.1, use IItemHandler attachment */ )
             return this.itemHandler.cast();
         return super.getCapability(cap, side);
     }
@@ -444,7 +461,7 @@ public class FluidExtractorBlockEntity extends BlockEntity implements IInventory
         if(this.extracting != state)
         {
             this.extracting = state;
-            this.level.setBlock(this.worldPosition, this.getBlockState().setValue(FluidMixerBlock.ENABLED, state), Constants.BlockFlags.DEFAULT);
+            this.level.setBlock(this.worldPosition, this.getBlockState().setValue(FluidMixerBlock.ENABLED, state), Block.UPDATE_ALL);
         }
     }
 }

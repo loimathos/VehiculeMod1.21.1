@@ -1,5 +1,7 @@
 package com.mrcrayfish.vehicle.network.play;
 
+import net.minecraft.nbt.Tag;
+
 import com.mrcrayfish.vehicle.common.CosmeticTracker;
 import com.mrcrayfish.vehicle.common.entity.HeldVehicleDataHandler;
 import com.mrcrayfish.vehicle.common.inventory.IStorage;
@@ -18,9 +20,8 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.level.Level;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
-import net.minecraftforge.common.util.Constants;
 import net.minecraftforge.common.util.LazyOptional;
-import net.minecraftforge.fluids.capability.CapabilityFluidHandler;
+import net.minecraftforge.common.capabilities.ForgeCapabilities;
 import net.minecraftforge.fluids.capability.IFluidHandler;
 import net.minecraftforge.fluids.capability.templates.FluidTank;
 
@@ -49,7 +50,7 @@ public class ClientPlayHandler
             if(inventory != null)
             {
                 CompoundTag tag = tags[i];
-                inventory.fromTag(tag.getList("Inventory", Constants.NBT.TAG_COMPOUND));
+                inventory.fromTag(tag.getList("Inventory", Tag.TAG_COMPOUND));
             }
         }
     }
@@ -64,7 +65,7 @@ public class ClientPlayHandler
         if(entity == null)
             return;
 
-        LazyOptional<IFluidHandler> optional = entity.getCapability(CapabilityFluidHandler.FLUID_HANDLER_CAPABILITY);
+        LazyOptional<IFluidHandler> optional = entity.getCapability(ForgeCapabilities.FLUID_HANDLER);
         optional.ifPresent(handler ->
         {
             if(handler instanceof FluidTank)
@@ -80,7 +81,7 @@ public class ClientPlayHandler
         Player player = Minecraft.getInstance().player;
         if(player != null)
         {
-            Entity entity = player.level.getEntity(message.getEntityId());
+            Entity entity = player.level().getEntity(message.getEntityId());
             if(entity instanceof VehicleEntity)
             {
                 VehicleEntity vehicle = (VehicleEntity) entity;

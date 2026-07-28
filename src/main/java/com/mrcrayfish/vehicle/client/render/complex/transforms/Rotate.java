@@ -1,11 +1,13 @@
 package com.mrcrayfish.vehicle.client.render.complex.transforms;
 
+
+import com.mojang.math.Axis;
 import com.google.gson.JsonDeserializationContext;
 import com.google.gson.JsonDeserializer;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParseException;
-import com.mojang.blaze3d.matrix.MatrixStack;
+import com.mojang.blaze3d.vertex.PoseStack;
 import com.mrcrayfish.vehicle.client.raytrace.MatrixTransform;
 import com.mrcrayfish.vehicle.client.render.complex.value.Dynamic;
 import com.mrcrayfish.vehicle.client.render.complex.value.IValue;
@@ -31,17 +33,21 @@ public class Rotate implements Transform
     }
 
     @Override
-    public void apply(VehicleEntity entity, MatrixStack stack, float partialTicks)
+    public void apply(VehicleEntity entity, PoseStack stack, float partialTicks)
     {
-        stack.mulPose(Vector3f.XP.rotationDegrees((float) this.x.getValue(entity, partialTicks)));
-        stack.mulPose(Vector3f.YP.rotationDegrees((float) this.y.getValue(entity, partialTicks)));
-        stack.mulPose(Vector3f.ZP.rotationDegrees((float) this.z.getValue(entity, partialTicks)));
+        stack.mulPose(Axis.XP.rotationDegrees((float) this.x.getValue(entity, partialTicks)));
+        stack.mulPose(Axis.YP.rotationDegrees((float) this.y.getValue(entity, partialTicks)));
+        stack.mulPose(Axis.ZP.rotationDegrees((float) this.z.getValue(entity, partialTicks)));
     }
 
     @Override
     public MatrixTransform create(VehicleEntity entity, float partialTicks)
     {
-        return MatrixTransform.rotate(new Quaternion((float) this.x.getValue(entity, partialTicks), (float) this.y.getValue(entity, partialTicks), (float) this.z.getValue(entity, partialTicks), true));
+        float xDeg = (float) this.x.getValue(entity, partialTicks);
+        float yDeg = (float) this.y.getValue(entity, partialTicks);
+        float zDeg = (float) this.z.getValue(entity, partialTicks);
+        Quaternionf quat = new Quaternionf().rotationX((float) Math.toRadians(xDeg)).rotateY((float) Math.toRadians(yDeg)).rotateZ((float) Math.toRadians(zDeg));
+        return MatrixTransform.rotate(quat);
     }
 
     public static class Deserializer implements JsonDeserializer<Rotate>

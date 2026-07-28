@@ -1,15 +1,17 @@
 package com.mrcrayfish.vehicle.client.model;
 
-import com.mojang.blaze3d.matrix.MatrixStack;
+import com.mojang.blaze3d.vertex.PoseStack;
 import com.mrcrayfish.vehicle.client.render.complex.ComplexModel;
 import com.mrcrayfish.vehicle.entity.VehicleEntity;
 import com.mrcrayfish.vehicle.util.RenderUtil;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.resources.model.BakedModel;
-import net.minecraft.client.resources.model.ItemTransform;
+import net.minecraft.client.renderer.block.model.ItemTransform;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.item.ItemDisplayContext;
+import net.minecraft.client.resources.model.ModelResourceLocation;
 
 import javax.annotation.Nullable;
 
@@ -20,7 +22,7 @@ public class ComponentModel implements IComplexModel
 {
     private final ResourceLocation modelLocation;
     @Nullable
-    private IBakedModel cachedModel;
+    private BakedModel cachedModel;
     @Nullable
     private ComplexModel complexModel;
 
@@ -36,11 +38,11 @@ public class ComponentModel implements IComplexModel
     }
 
     @Override
-    public IBakedModel getBaseModel()
+    public BakedModel getBaseModel()
     {
         if(this.cachedModel == null)
         {
-            this.cachedModel = Minecraft.getInstance().getModelManager().getModel(this.modelLocation);
+            this.cachedModel = Minecraft.getInstance().getModelManager().getModel(new ModelResourceLocation(this.modelLocation, "inventory"));
         }
         return this.cachedModel;
     }
@@ -62,7 +64,7 @@ public class ComponentModel implements IComplexModel
         return this.complexModel;
     }
 
-    public void render(VehicleEntity entity, MatrixStack matrixStack, IRenderTypeBuffer renderTypeBuffer, int color, int light, float partialTicks)
+    public void render(VehicleEntity entity, PoseStack matrixStack, MultiBufferSource renderTypeBuffer, int color, int light, float partialTicks)
     {
         if(this.complexModel != null)
         {
@@ -70,7 +72,7 @@ public class ComponentModel implements IComplexModel
         }
         else
         {
-            RenderUtil.renderColoredModel(this.getBaseModel(), ItemCameraTransforms.TransformType.NONE, false, matrixStack, renderTypeBuffer, color, light, OverlayTexture.NO_OVERLAY);
+            RenderUtil.renderColoredModel(this.getBaseModel(), ItemDisplayContext.NONE, false, matrixStack, renderTypeBuffer, color, light, OverlayTexture.NO_OVERLAY);
         }
     }
 }

@@ -1,14 +1,13 @@
 package com.mrcrayfish.vehicle.client.screen.toolbar.widget;
 
-import com.mojang.blaze3d.matrix.MatrixStack;
-import net.minecraft.client.gui.AbstractGui;
-import net.minecraft.client.gui.widget.Widget;
-
+import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.components.AbstractWidget;
+import net.minecraft.network.chat.Component;
 
 /**
  * Author: MrCrayfish
  */
-public class Spacer extends Widget
+public class Spacer extends AbstractWidget
 {
     public Spacer(int widthIn)
     {
@@ -21,9 +20,9 @@ public class Spacer extends Widget
     }
 
     @Override
-    public void renderButton(MatrixStack matrixStack, int mouseX, int mouseY, float partialTicks)
+    public void renderWidget(GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTicks)
     {
-        AbstractGui.fill(matrixStack, this.x + this.width / 2, this.y, this.x + this.width / 2 + 1, this.y + this.height, 0xFF888888);
+        guiGraphics.fill(this.getX() + this.getWidth() / 2, this.getY(), this.getX() + this.getWidth() / 2 + 1, this.getY() + this.getHeight(), 0xFF888888);
     }
 
     @Override
@@ -37,4 +36,7 @@ public class Spacer extends Widget
     {
         return false;
     }
+
+    @Override
+    protected void updateWidgetNarration(net.minecraft.client.gui.narration.NarrationElementOutput narrationElementOutput) {}
 }

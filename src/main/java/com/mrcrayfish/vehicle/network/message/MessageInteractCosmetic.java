@@ -2,10 +2,10 @@ package com.mrcrayfish.vehicle.network.message;
 
 import com.mrcrayfish.vehicle.network.play.ServerPlayHandler;
 import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.player.ServerPlayer;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraftforge.network.NetworkEvent;
+import net.minecraftforge.event.network.CustomPayloadEvent;
 
 import java.util.function.Supplier;
 
@@ -26,21 +26,21 @@ public class MessageInteractCosmetic implements IMessage<MessageInteractCosmetic
     }
 
     @Override
-    public void encode(MessageInteractCosmetic message, PacketBuffer buffer)
+    public void encode(MessageInteractCosmetic message, FriendlyByteBuf buffer)
     {
         buffer.writeInt(message.entityId);
         buffer.writeResourceLocation(message.cosmeticId);
     }
 
     @Override
-    public MessageInteractCosmetic decode(PacketBuffer buffer)
+    public MessageInteractCosmetic decode(FriendlyByteBuf buffer)
     {
         return new MessageInteractCosmetic(buffer.readInt(), buffer.readResourceLocation());
     }
 
     @Override
     @SuppressWarnings("ConstantConditions")
-    public void handle(MessageInteractCosmetic message, Supplier<NetworkEvent.Context> supplier)
+    public void handle(MessageInteractCosmetic message, Supplier<CustomPayloadEvent.Context> supplier)
     {
         supplier.get().enqueueWork(() ->
         {

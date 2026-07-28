@@ -1,16 +1,20 @@
 package com.mrcrayfish.vehicle.blockentity;
 
+
+import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.nbt.Tag;
+
 import com.mrcrayfish.vehicle.init.ModBlockEntities;
 import com.mrcrayfish.vehicle.util.BlockEntityUtil;
-import net.minecraft.world.level.block.BlockState;
+import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.core.Direction;
 import net.minecraft.core.BlockPos;
-import net.minecraftforge.common.util.Constants;
 
 import java.util.HashSet;
 import java.util.Set;
+import net.minecraft.core.HolderLookup;
 
 /**
  * Author: MrCrayfish
@@ -20,14 +24,14 @@ public class PipeBlockEntity extends BlockEntitySynced
     protected Set<BlockPos> pumps = new HashSet<>();
     protected boolean[] disabledConnections = new boolean[Direction.values().length];
 
-    public PipeBlockEntity()
+    public PipeBlockEntity(BlockPos pos, BlockState state)
     {
-        super(ModBlockEntities.FLUID_PIPE.get());
+        super(ModBlockEntities.FLUID_PIPE.get(), pos, state);
     }
 
-    public PipeBlockEntity(BlockEntityType<?> tileEntityType)
+    public PipeBlockEntity(BlockEntityType<?> tileEntityType, BlockPos pos, BlockState state)
     {
-        super(tileEntityType);
+        super(tileEntityType, pos, state);
     }
 
     public void addPump(BlockPos pos)
@@ -67,15 +71,15 @@ public class PipeBlockEntity extends BlockEntitySynced
         {
             CompoundTag compound = new CompoundTag();
             this.writeConnections(compound);
-            BlockEntityUtil.sendUpdatePacket(this, super.save(compound));
+            BlockEntityUtil.sendUpdatePacket(this, this.saveWithoutMetadata(this.level.registryAccess()));
         }
     }
 
     @Override
-    public void load(BlockState state, CompoundTag compound)
+    protected void loadAdditional(CompoundTag compound, HolderLookup.Provider registries)
     {
-        super.load(state, compound);
-        if(compound.contains("DisabledConnections", Constants.NBT.TAG_BYTE_ARRAY))
+        super.loadAdditional(compound, registries);
+        if(compound.contains("DisabledConnections", Tag.TAG_BYTE_ARRAY))
         {
             byte[] connections = compound.getByteArray("DisabledConnections");
             for(int i = 0; i < connections.length; i++)
@@ -86,10 +90,10 @@ public class PipeBlockEntity extends BlockEntitySynced
     }
 
     @Override
-    public CompoundTag save(CompoundTag compound)
+    protected void saveAdditional(CompoundTag compound, HolderLookup.Provider registries)
     {
+        super.saveAdditional(compound, registries);
         this.writeConnections(compound);
-        return super.save(compound);
     }
 
     private void writeConnections(CompoundTag compound)

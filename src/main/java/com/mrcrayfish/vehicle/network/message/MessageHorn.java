@@ -1,9 +1,9 @@
 package com.mrcrayfish.vehicle.network.message;
 
 import com.mrcrayfish.vehicle.network.play.ServerPlayHandler;
-import net.minecraft.world.entity.player.ServerPlayer;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.network.FriendlyByteBuf;
-import net.minecraftforge.network.NetworkEvent;
+import net.minecraftforge.event.network.CustomPayloadEvent;
 
 import java.util.function.Supplier;
 
@@ -19,19 +19,19 @@ public class MessageHorn implements IMessage<MessageHorn>
 	}
 
 	@Override
-	public void encode(MessageHorn message, PacketBuffer buffer)
+	public void encode(MessageHorn message, FriendlyByteBuf buffer)
 	{
 		buffer.writeBoolean(message.horn);
 	}
 
 	@Override
-	public MessageHorn decode(PacketBuffer buffer)
+	public MessageHorn decode(FriendlyByteBuf buffer)
 	{
 		return new MessageHorn(buffer.readBoolean());
 	}
 
 	@Override
-	public void handle(MessageHorn message, Supplier<NetworkEvent.Context> supplier)
+	public void handle(MessageHorn message, Supplier<CustomPayloadEvent.Context> supplier)
 	{
 		supplier.get().enqueueWork(() ->
 		{

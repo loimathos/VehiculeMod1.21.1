@@ -9,9 +9,9 @@ import java.util.Arrays;
  */
 public enum Axis
 {
-    X(Vector3f.XP, "x"),
-    Y(Vector3f.YP, "y"),
-    Z(Vector3f.ZP, "z");
+    X(new Vector3f(1, 0, 0), "x"),
+    Y(new Vector3f(0, 1, 0), "y"),
+    Z(new Vector3f(0, 0, 1), "z");
 
     private final Vector3f axis;
     private final String key;
@@ -30,6 +30,15 @@ public enum Axis
     public String getKey()
     {
         return this.key;
+    }
+
+    public com.mojang.math.Axis getMojangAxis()
+    {
+        return switch(this) {
+            case X -> com.mojang.math.Axis.XP;
+            case Y -> com.mojang.math.Axis.YP;
+            case Z -> com.mojang.math.Axis.ZP;
+        };
     }
 
     public static Axis fromKey(String key)

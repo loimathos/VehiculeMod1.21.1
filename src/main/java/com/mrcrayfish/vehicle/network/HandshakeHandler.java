@@ -3,13 +3,14 @@ package com.mrcrayfish.vehicle.network;
 import com.mrcrayfish.vehicle.VehicleMod;
 import com.mrcrayfish.vehicle.entity.properties.VehicleProperties;
 
-import net.minecraftforge.network.NetworkEvent;
+import net.minecraftforge.event.network.CustomPayloadEvent;
 import org.apache.logging.log4j.Marker;
 import org.apache.logging.log4j.MarkerManager;
 
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Supplier;
+import net.minecraft.network.chat.Component;
 
 /**
  * Author: MrCrayfish
@@ -18,13 +19,13 @@ public class HandshakeHandler
 {
     private static final Marker VEHICLE_HANDSHAKE = MarkerManager.getMarker("VEHICLE_HANDSHAKE");
 
-    static void handleAcknowledge(HandshakeMessages.C2SAcknowledge message, Supplier<NetworkEvent.Context> c)
+    static void handleAcknowledge(HandshakeMessages.C2SAcknowledge message, Supplier<CustomPayloadEvent.Context> c)
     {
         VehicleMod.LOGGER.debug(VEHICLE_HANDSHAKE, "Received acknowledgement from client");
         c.get().setPacketHandled(true);
     }
 
-    static void handleVehicleProperties(HandshakeMessages.S2CVehicleProperties message, Supplier<NetworkEvent.Context> c)
+    static void handleVehicleProperties(HandshakeMessages.S2CVehicleProperties message, Supplier<CustomPayloadEvent.Context> c)
     {
         VehicleMod.LOGGER.debug(VEHICLE_HANDSHAKE, "Received vehicle properties from server");
 
@@ -55,7 +56,7 @@ public class HandshakeHandler
         else
         {
             VehicleMod.LOGGER.error("Failed to synchronize vehicle properties from server");
-            c.get().getNetworkManager().disconnect(Component.literal("Connection closed - [MrCrayfish's Vehicle Mod] Failed to synchronize vehicle properties from server"));
+            c.get().getConnection().disconnect(Component.literal("Connection closed - [MrCrayfish's Vehicle Mod] Failed to synchronize vehicle properties from server"));
         }
     }
 }

@@ -8,11 +8,11 @@ public class ModelSteepRamp
     /*@Override
     public Collection<ResourceLocation> getTextures()
     {
-        return ImmutableSet.of(new ResourceLocation("minecraft", "blocks/concrete_gray"), new ResourceLocation("vehicle", "blocks/boost_pad"));
+        return ImmutableSet.of(ResourceLocation.fromNamespaceAndPath("minecraft", "blocks/concrete_gray"), ResourceLocation.fromNamespaceAndPath("vehicle", "blocks/boost_pad"));
     }
 
     @Override
-    public IBakedModel bake(IModelState state, VertexFormat format, Function<ResourceLocation, TextureAtlasSprite> bakedTextureGetter)
+    public BakedModel bake(IModelState state, VertexFormat format, Function<ResourceLocation, TextureAtlasSprite> bakedTextureGetter)
     {
         return new BakedModelSteepRamp(format, bakedTextureGetter);
     }*/

@@ -7,9 +7,9 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.MoverType;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.network.syncher.DataParameter;
-import net.minecraft.network.syncher.DataSerializers;
-import net.minecraft.network.syncher.EntityDataManager;
+import net.minecraft.network.syncher.EntityDataAccessor;
+import net.minecraft.network.syncher.EntityDataSerializers;
+import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.world.phys.Vec3;
@@ -24,7 +24,7 @@ import javax.annotation.Nullable;
  */
 public abstract class TrailerEntity extends VehicleEntity
 {
-    public static final DataParameter<Integer> PULLING_ENTITY = EntityDataManager.defineId(TrailerEntity.class, DataSerializers.INT);
+    public static final EntityDataAccessor<Integer> PULLING_ENTITY = SynchedEntityData.defineId(TrailerEntity.class, EntityDataSerializers.INT);
 
     @Nullable
     private Entity pullingEntity;
@@ -37,28 +37,28 @@ public abstract class TrailerEntity extends VehicleEntity
     public TrailerEntity(EntityType<?> entityType, Level worldIn)
     {
         super(entityType, worldIn);
-        this.maxUpStep = 1.0F;
+        /* maxUpStep is now a getter-only method in 1.21.1; set via EntityType registration */
     }
 
     @Override
-    protected void defineSynchedData()
+    protected void defineSynchedData(SynchedEntityData.Builder builder)
     {
-        super.defineSynchedData();
-        this.entityData.define(PULLING_ENTITY, -1);
+        super.defineSynchedData(builder);
+        builder.define(PULLING_ENTITY, -1);
     }
 
     @Override
     public void onUpdateVehicle()
     {
-        Vector3d motion = this.getDeltaMovement();
+        Vec3 motion = this.getDeltaMovement();
         this.setDeltaMovement(motion.x(), motion.y() - 0.08, motion.z());
 
-        if(this.level.isClientSide())
+        if(this.level().isClientSide())
         {
             int entityId = this.entityData.get(PULLING_ENTITY);
             if(entityId != -1)
             {
-                Entity entity = this.level.getEntity(this.entityData.get(PULLING_ENTITY));
+                Entity entity = this.level().getEntity(this.entityData.get(PULLING_ENTITY));
                 if(entity instanceof Player || (entity instanceof VehicleEntity && ((VehicleEntity) entity).canTowTrailers()))
                 {
                     this.pullingEntity = entity;
@@ -74,12 +74,12 @@ public abstract class TrailerEntity extends VehicleEntity
             }
         }
 
-        if(this.pullingEntity != null && !this.level.isClientSide())
+        if(this.pullingEntity != null && !this.level().isClientSide())
         {
             double threshold = Config.SERVER.trailerDetachThreshold.get() + Math.abs(this.getHitchOffset() / 16.0) * this.getProperties().getBodyTransform().getScale();
             if(this.pullingEntity.distanceTo(this) > threshold)
             {
-                this.level.playSound(null, this.pullingEntity.blockPosition(), SoundEvents.ITEM_BREAK, SoundCategory.PLAYERS, 1.0F, 1.0F);
+                this.level().playSound(null, this.pullingEntity.blockPosition(), SoundEvents.ITEM_BREAK, SoundSource.PLAYERS, 1.0F, 1.0F);
                 this.pullingEntity = null;
                 return;
             }
@@ -94,10 +94,10 @@ public abstract class TrailerEntity extends VehicleEntity
             }
             this.updatePullingMotion();
         }
-        else if(!this.level.isClientSide())
+        else if(!this.level().isClientSide())
         {
             motion = this.getDeltaMovement();
-            this.move(MoverType.SELF, new Vector3d(motion.x() * 0.75, motion.y(), motion.z() * 0.75));
+            this.move(MoverType.SELF, new Vec3(motion.x() * 0.75, motion.y(), motion.z() * 0.75));
         }
 
         this.checkInsideBlocks();
@@ -105,19 +105,19 @@ public abstract class TrailerEntity extends VehicleEntity
 
     private void updatePullingMotion()
     {
-        Vector3d towBar = this.pullingEntity.position();
+        Vec3 towBar = this.pullingEntity.position();
         if(this.pullingEntity instanceof VehicleEntity)
         {
             VehicleEntity vehicle = (VehicleEntity) this.pullingEntity;
-            Vector3d towBarVec = vehicle.getProperties().getTowBarOffset();
-            towBarVec = new Vector3d(towBarVec.x, towBarVec.y, towBarVec.z).scale(0.0625);
+            Vec3 towBarVec = vehicle.getProperties().getTowBarOffset();
+            towBarVec = new Vec3(towBarVec.x, towBarVec.y, towBarVec.z).scale(0.0625);
             towBarVec = towBarVec.scale(vehicle.getProperties().getBodyTransform().getScale());
             towBarVec = towBarVec.add(0, 0, vehicle.getProperties().getBodyTransform().getZ());
-            towBar = towBar.add(towBarVec.yRot((float) Math.toRadians(-vehicle.yRot)));
+            towBar = towBar.add(towBarVec.yRot((float) Math.toRadians(-vehicle.getYRot())));
         }
 
-        this.yRot = (float) Math.toDegrees(Math.atan2(towBar.z - this.getZ(), towBar.x - this.getX()) - Math.toRadians(90F));
-        double deltaRot = this.yRotO - this.yRot;
+        this.setYRot((float) Math.toDegrees(Math.atan2(towBar.z - this.getZ(), towBar.x - this.getX()) - Math.toRadians(90F)));
+        double deltaRot = this.yRotO - this.getYRot();
         if (deltaRot < -180.0D)
         {
             this.yRotO += 360.0F;
@@ -128,17 +128,12 @@ public abstract class TrailerEntity extends VehicleEntity
         }
 
         double bodyScale = this.getProperties().getBodyTransform().getScale();
-        Vector3d vec = new Vector3d(0, 0, this.getHitchOffset() * bodyScale * 0.0625).yRot((float) Math.toRadians(-this.yRot)).add(towBar);
-        Vector3d motion = this.getDeltaMovement();
+        Vec3 vec = new Vec3(0, 0, this.getHitchOffset() * bodyScale * 0.0625).yRot((float) Math.toRadians(-this.getYRot())).add(towBar);
+        Vec3 motion = this.getDeltaMovement();
         this.setDeltaMovement(vec.x - this.getX(), motion.y(), vec.z - this.getZ());
         this.move(MoverType.SELF, this.getDeltaMovement());
     }
 
-    @Override
-    public double getPassengersRidingOffset()
-    {
-        return 0.0;
-    }
 
     public boolean setPullingEntity(Entity pullingEntity)
     {
@@ -164,7 +159,7 @@ public abstract class TrailerEntity extends VehicleEntity
 
     @Override
     @OnlyIn(Dist.CLIENT)
-    public void lerpTo(double x, double y, double z, float yaw, float pitch, int posRotationIncrements, boolean teleport)
+    public void lerpTo(double x, double y, double z, float yaw, float pitch, int posRotationIncrements)
     {
         this.lerpX = x;
         this.lerpY = y;
@@ -197,8 +192,8 @@ public abstract class TrailerEntity extends VehicleEntity
         this.prevWheelRotation = this.wheelRotation;
 
         VehicleProperties properties = this.getProperties();
-        Vector3d forward = Vector3d.directionFromRotation(this.getRotationVector());
-        Vector3d motion = new Vector3d(this.getX() - this.xo, 0, this.getZ() - this.zo);
+        Vec3 forward = Vec3.directionFromRotation(this.getRotationVector());
+        Vec3 motion = new Vec3(this.getX() - this.xo, 0, this.getZ() - this.zo);
         double direction = forward.dot(motion.normalize());
         float speed = (float) motion.length() * 20;
         double vehicleScale = properties.getBodyTransform().getScale();

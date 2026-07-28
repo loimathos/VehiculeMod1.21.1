@@ -14,6 +14,7 @@ import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.level.Level;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
+import net.minecraftforge.network.PacketDistributor;
 
 /**
  * Author: MrCrayfish
@@ -25,11 +26,7 @@ public class VehicleTrailerEntity extends TrailerEntity
         super(type, worldIn);
     }
 
-    @Override
-    public double getPassengersRidingOffset()
-    {
-        return 8 * 0.0625;
-    }
+
 
     @Override
     protected boolean canRide(Entity entityIn)
@@ -38,14 +35,14 @@ public class VehicleTrailerEntity extends TrailerEntity
     }
 
     @Override
-    public void positionRider(Entity passenger)
+    public void positionRider(Entity passenger, Entity.MoveFunction moveFunction)
     {
         if(passenger instanceof VehicleEntity)
         {
-            Vector3d offset = ((VehicleEntity) passenger).getProperties().getTrailerOffset().yRot((float) Math.toRadians(-this.yRot));
-            passenger.setPos(this.getX() + offset.x, this.getY() + getPassengersRidingOffset() + offset.y, this.getZ() + offset.z);
+            Vec3 offset = ((VehicleEntity) passenger).getProperties().getTrailerOffset().yRot((float) Math.toRadians(-this.getYRot()));
+            moveFunction.accept(passenger, this.getX() + offset.x, this.getY() + 0.5D + offset.y, this.getZ() + offset.z);
             passenger.yRotO = this.yRotO;
-            passenger.yRot = this.yRot;
+            passenger.setYRot(this.getYRot());
         }
     }
 
@@ -62,8 +59,8 @@ public class VehicleTrailerEntity extends TrailerEntity
             return createScaledBoundingBox(-7.0, -0.5, 14.0, 7.0, 3.5, 24.0, 0.0625);
         }, (entity, rightClick) -> {
             if(rightClick) {
-                PacketHandler.getPlayChannel().sendToServer(new MessageAttachTrailer(entity.getId()));
-                Minecraft.getInstance().player.swing(Hand.MAIN_HAND);
+                PacketHandler.getPlayChannel().send(new MessageAttachTrailer(entity.getId()), PacketDistributor.SERVER.noArg());
+                Minecraft.getInstance().player.swing(InteractionHand.MAIN_HAND);
             }
         }, entity -> true);
     }

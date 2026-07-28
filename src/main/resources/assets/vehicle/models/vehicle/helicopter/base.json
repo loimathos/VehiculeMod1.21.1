@@ -1,6 +1,6 @@
 {
 	"credit": "Model by MrCrayfish (https://twitter.com/MrCrayfish) using Blockbench. All Rights Reserved.",
-	"loader": "framework:open_model",
+	"loader": "vehicle:open_model",
 	"textures": {
 		"base": "vehicle:vehicle/helicopter/base"
 	},

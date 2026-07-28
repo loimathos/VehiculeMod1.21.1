@@ -1,10 +1,10 @@
 package com.mrcrayfish.vehicle.client.handler;
 
-import com.mojang.blaze3d.matrix.MatrixStack;
 import com.mrcrayfish.vehicle.Config;
 import com.mrcrayfish.vehicle.entity.LandVehicleEntity;
 import com.mrcrayfish.vehicle.entity.PoweredVehicleEntity;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.phys.Vec3;
@@ -67,7 +67,7 @@ public class OverlayHandler
                 String traction = format.format(landVehicle.getTraction());
                 this.addStat("Traction", traction);
 
-                Vector3d forward = Vector3d.directionFromRotation(landVehicle.getRotationVector());
+                Vec3 forward = Vec3.directionFromRotation(landVehicle.getRotationVector());
                 float side = (float) landVehicle.getVelocity().normalize().cross(forward.normalize()).length();
                 String sideString = format.format(side);
                 this.addStat("Side", sideString);
@@ -77,7 +77,7 @@ public class OverlayHandler
 
     private void addStat(String label, String value)
     {
-        this.stats.add(Component.literal(label + ": ").withStyle(TextFormatting.BOLD).withStyle(TextFormatting.RESET).append(Component.literal(value).withStyle(TextFormatting.YELLOW)));
+        this.stats.add(Component.literal(label + ": ").withStyle(ChatFormatting.BOLD).withStyle(ChatFormatting.RESET).append(Component.literal(value).withStyle(ChatFormatting.YELLOW)));
     }
 
     @SubscribeEvent
@@ -86,11 +86,11 @@ public class OverlayHandler
         if(event.phase != TickEvent.Phase.END)
             return;
 
-        MatrixStack stack = new MatrixStack();
         Minecraft mc = Minecraft.getInstance();
+        GuiGraphics gui = new GuiGraphics(mc, mc.renderBuffers().bufferSource());
         for(int i = 0; i < this.stats.size(); i++)
         {
-            mc.font.drawShadow(stack, this.stats.get(i), 10, 10 + 15 * i, 0xFFFFFF);
+            gui.drawString(mc.font, this.stats.get(i), 10, 10 + 15 * i, 0xFFFFFF);
         }
     }
 }

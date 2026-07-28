@@ -1,62 +1,60 @@
 package com.mrcrayfish.vehicle.client.render.blockentity;
 
-import com.mojang.blaze3d.matrix.MatrixStack;
-import com.mojang.blaze3d.vertex.IVertexBuilder;
+import com.mojang.blaze3d.systems.RenderSystem;
+import com.mojang.blaze3d.vertex.PoseStack;
+import com.mojang.blaze3d.vertex.VertexConsumer;
+import com.mojang.blaze3d.vertex.DefaultVertexFormat;
+import com.mojang.blaze3d.vertex.VertexFormat;
 import com.mrcrayfish.vehicle.blockentity.FuelDrumBlockEntity;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.client.renderer.MultiBufferSource;
-import net.minecraft.client.renderer.RenderState;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.texture.TextureAtlas;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.renderer.blockentity.BlockEntityRenderer;
-import net.minecraft.client.renderer.blockentity.BlockEntityRendererDispatcher;
-import net.minecraft.client.renderer.block.model.BakedQuad;
-import net.minecraft.client.player.AbstractClientPlayer;
+import net.minecraft.client.renderer.blockentity.BlockEntityRendererProvider;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
 import org.joml.Matrix4f;
+import net.minecraft.client.gui.Font;
+import net.minecraftforge.client.extensions.common.IClientFluidTypeExtensions;
 import net.minecraftforge.fluids.FluidStack;
 import net.minecraftforge.fluids.capability.templates.FluidTank;
-import org.lwjgl.opengl.GL11;
 
 /**
  * Author: MrCrayfish
  */
-public class FuelDrumRenderer extends BlockEntityRenderer<FuelDrumBlockEntity>
+public class FuelDrumRenderer implements BlockEntityRenderer<FuelDrumBlockEntity>
 {
-    public static final RenderType LABEL_BACKGROUND = RenderType.create("vehicle:fuel_drum_label_background", DefaultVertexFormats.POSITION_COLOR, GL11.GL_QUADS, 256, RenderType.State.builder().createCompositeState(false));
-    public static final RenderType LABEL_FLUID = RenderType.create("vehicle:fuel_drum_label_fluid", DefaultVertexFormats.POSITION_TEX, GL11.GL_QUADS, 256, RenderType.State.builder().setTextureState(new RenderState.TextureState(PlayerContainer.BLOCK_ATLAS, false, true)).createCompositeState(false));
+    // In 1.21.1, use built-in render types instead of custom lambda-based ones
+    public static final RenderType LABEL_BACKGROUND = RenderType.gui();
+    public static final RenderType LABEL_FLUID = RenderType.entityTranslucent(TextureAtlas.LOCATION_BLOCKS);
 
-    public FuelDrumRenderer(TileEntityRendererDispatcher dispatcher)
-    {
-        super(dispatcher);
-    }
+    public FuelDrumRenderer(BlockEntityRendererProvider.Context context) {}
 
     @Override
-    public void render(FuelDrumBlockEntity fuelDrumTileEntity, float partialTicks, MatrixStack matrixStack, IRenderTypeBuffer renderTypeBuffer, int lightTexture, int overlayTexture)
+    public void render(FuelDrumBlockEntity fuelDrumTileEntity, float partialTicks, PoseStack matrixStack, MultiBufferSource renderTypeBuffer, int lightTexture, int overlayTexture)
     {
         if(Minecraft.getInstance().player.isCrouching())
         {
-            if(fuelDrumTileEntity.hasFluid() && this.renderer.cameraHitResult != null && this.renderer.cameraHitResult.getType() == RayTraceResult.Type.BLOCK)
+            if(fuelDrumTileEntity.hasFluid() && Minecraft.getInstance().hitResult != null && Minecraft.getInstance().hitResult.getType() == HitResult.Type.BLOCK)
             {
-                BlockRayTraceResult result = (BlockRayTraceResult) this.renderer.cameraHitResult;
+                BlockHitResult result = (BlockHitResult) Minecraft.getInstance().hitResult;
                 if(result.getBlockPos().equals(fuelDrumTileEntity.getBlockPos()))
                 {
-                    this.drawFluidLabel(this.renderer.font, fuelDrumTileEntity.getFluidTank(), matrixStack, renderTypeBuffer);
+                    this.drawFluidLabel(Minecraft.getInstance().font, fuelDrumTileEntity.getFluidTank(), matrixStack, renderTypeBuffer);
                 }
             }
         }
     }
 
-    private void drawFluidLabel(FontRenderer fontRendererIn, FluidTank tank, MatrixStack matrixStack, IRenderTypeBuffer renderTypeBuffer)
+    private void drawFluidLabel(Font fontRendererIn, FluidTank tank, PoseStack matrixStack, MultiBufferSource renderTypeBuffer)
     {
         if(tank.getFluid().isEmpty())
             return;
 
         FluidStack stack = tank.getFluid();
-        TextureAtlasSprite sprite = Minecraft.getInstance().getTextureAtlas(AtlasTexture.LOCATION_BLOCKS).apply(tank.getFluid().getFluid().getAttributes().getStillTexture());
+        TextureAtlasSprite sprite = Minecraft.getInstance().getModelManager().getAtlas(TextureAtlas.LOCATION_BLOCKS).getSprite(IClientFluidTypeExtensions.of(tank.getFluid().getFluid()).getStillTexture(tank.getFluid()));
         if(sprite != null)
         {
             float level = tank.getFluidAmount() / (float) tank.getCapacity();
@@ -67,26 +65,26 @@ public class FuelDrumRenderer extends BlockEntityRenderer<FuelDrumBlockEntity>
 
             matrixStack.pushPose();
             matrixStack.translate(0.5, 1.25, 0.5);
-            matrixStack.mulPose(this.renderer.camera.rotation());
+            matrixStack.mulPose(Minecraft.getInstance().gameRenderer.getMainCamera().rotation());
             matrixStack.scale(-0.025F, -0.025F, 0.025F);
 
-            IVertexBuilder backgroundBuilder = renderTypeBuffer.getBuffer(LABEL_BACKGROUND);
+            VertexConsumer backgroundBuilder = renderTypeBuffer.getBuffer(LABEL_BACKGROUND);
 
             /* Background */
             Matrix4f matrix = matrixStack.last().pose();
-            backgroundBuilder.vertex(matrix, -offsetWidth - 1.0F, -2.0F, -0.01F).color(0.5F, 0.5F, 0.5F, 1.0F).endVertex();
-            backgroundBuilder.vertex(matrix, -offsetWidth - 1.0F, 5.0F, -0.01F).color(0.5F, 0.5F, 0.5F, 1.0F).endVertex();
-            backgroundBuilder.vertex(matrix, -offsetWidth + width + 1.0F, 5.0F, -0.01F).color(0.5F, 0.5F, 0.5F, 1.0F).endVertex();
-            backgroundBuilder.vertex(matrix, -offsetWidth + width + 1.0F, -2.0F, -0.01F).color(0.5F, 0.5F, 0.5F, 1.0F).endVertex();
+            backgroundBuilder.addVertex(matrix, -offsetWidth - 1.0F, -2.0F, -0.01F).setColor(0.5F, 0.5F, 0.5F, 1.0F);
+            backgroundBuilder.addVertex(matrix, -offsetWidth - 1.0F, 5.0F, -0.01F).setColor(0.5F, 0.5F, 0.5F, 1.0F);
+            backgroundBuilder.addVertex(matrix, -offsetWidth + width + 1.0F, 5.0F, -0.01F).setColor(0.5F, 0.5F, 0.5F, 1.0F);
+            backgroundBuilder.addVertex(matrix, -offsetWidth + width + 1.0F, -2.0F, -0.01F).setColor(0.5F, 0.5F, 0.5F, 1.0F);
 
             matrixStack.translate(0, 0, -0.05);
 
             /* Remaining */
             matrix = matrixStack.last().pose();
-            backgroundBuilder.vertex(matrix, -offsetWidth + fuelWidth, -1.0F, 0.0F).color(0.4F, 0.4F, 0.4F, 1.0F).endVertex();
-            backgroundBuilder.vertex(matrix, -offsetWidth + fuelWidth, 4.0F, 0.0F).color(0.4F, 0.4F, 0.4F, 1.0F).endVertex();
-            backgroundBuilder.vertex(matrix, -offsetWidth + fuelWidth + remainingWidth, 4.0F, 0.0F).color(0.4F, 0.4F, 0.4F, 1.0F).endVertex();
-            backgroundBuilder.vertex(matrix, -offsetWidth + fuelWidth + remainingWidth, -1.0F, 0.0F).color(0.4F, 0.4F, 0.4F, 1.0F).endVertex();
+            backgroundBuilder.addVertex(matrix, -offsetWidth + fuelWidth, -1.0F, 0.0F).setColor(0.4F, 0.4F, 0.4F, 1.0F);
+            backgroundBuilder.addVertex(matrix, -offsetWidth + fuelWidth, 4.0F, 0.0F).setColor(0.4F, 0.4F, 0.4F, 1.0F);
+            backgroundBuilder.addVertex(matrix, -offsetWidth + fuelWidth + remainingWidth, 4.0F, 0.0F).setColor(0.4F, 0.4F, 0.4F, 1.0F);
+            backgroundBuilder.addVertex(matrix, -offsetWidth + fuelWidth + remainingWidth, -1.0F, 0.0F).setColor(0.4F, 0.4F, 0.4F, 1.0F);
 
             float minU = sprite.getU0();
             float maxU = minU + (sprite.getU1() - minU) * level;
@@ -94,17 +92,17 @@ public class FuelDrumRenderer extends BlockEntityRenderer<FuelDrumBlockEntity>
             float maxV = minV + (sprite.getV1() - minV) * 4 * 0.0625F;
 
             /* Fluid Texture */
-            IVertexBuilder fluidBuilder = renderTypeBuffer.getBuffer(LABEL_FLUID);
-            fluidBuilder.vertex(matrix, -offsetWidth, -1.0F, 0.0F).uv(minU, maxV).endVertex();
-            fluidBuilder.vertex(matrix, -offsetWidth, 4.0F, 0.0F).uv(minU, minV).endVertex();
-            fluidBuilder.vertex(matrix, -offsetWidth + fuelWidth, 4.0F, 0.0F).uv(maxU, minV).endVertex();
-            fluidBuilder.vertex(matrix, -offsetWidth + fuelWidth, -1.0F, 0.0F).uv(maxU, maxV).endVertex();
+            VertexConsumer fluidBuilder = renderTypeBuffer.getBuffer(LABEL_FLUID);
+            fluidBuilder.addVertex(matrix, -offsetWidth, -1.0F, 0.0F).setUv(minU, maxV);
+            fluidBuilder.addVertex(matrix, -offsetWidth, 4.0F, 0.0F).setUv(minU, minV);
+            fluidBuilder.addVertex(matrix, -offsetWidth + fuelWidth, 4.0F, 0.0F).setUv(maxU, minV);
+            fluidBuilder.addVertex(matrix, -offsetWidth + fuelWidth, -1.0F, 0.0F).setUv(maxU, maxV);
 
             /* Fluid Name */
             matrixStack.scale(0.5F, 0.5F, 0.5F);
             String name = stack.getDisplayName().getString();
             int nameWidth = fontRendererIn.width(name) / 2;
-            fontRendererIn.draw(matrixStack, name, -nameWidth, -14, -1);
+            fontRendererIn.drawInBatch(name, -nameWidth, -14, -1, false, matrixStack.last().pose(), renderTypeBuffer, Font.DisplayMode.NORMAL, 0, 15728880);
 
             matrixStack.popPose();
         }

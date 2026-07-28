@@ -1,17 +1,19 @@
 package com.mrcrayfish.vehicle.block;
 
+
+import net.minecraft.world.level.block.EntityBlock;
 import com.mrcrayfish.vehicle.blockentity.FluidMixerBlockEntity;
 import com.mrcrayfish.vehicle.util.BlockEntityUtil;
-import net.minecraft.world.level.block.AbstractBlock;
+import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.Block;
-import net.minecraft.world.level.block.BlockState;
-//import net.minecraft.world.level.block.material.Material; // Removed in 1.21.1
+import net.minecraft.world.level.block.state.BlockState;
+// // Removed in 1.21.1
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.entity.player.ServerPlayer;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.Container;
 import net.minecraft.world.ContainerHelper;
 import net.minecraft.world.MenuProvider;
-import net.minecraft.world.level.block.state.BooleanProperty;
+import net.minecraft.world.level.block.state.properties.BooleanProperty;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.block.entity.BlockEntity;
@@ -23,38 +25,50 @@ import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
 import net.minecraftforge.fluids.FluidUtil;
-import net.minecraftforge.network.NetworkHooks;
+import net.minecraft.world.Containers;
+import net.minecraft.world.ItemInteractionResult;
 
 import javax.annotation.Nullable;
+import net.minecraft.world.item.ItemStack;
 
 /**
  * Author: MrCrayfish
  */
-public class FluidMixerBlock extends RotatedObjectBlock
+public class FluidMixerBlock extends RotatedObjectBlock implements EntityBlock
 {
     public static final BooleanProperty ENABLED = BlockStateProperties.ENABLED;
 
     public FluidMixerBlock()
     {
-        super(AbstractBlock.Properties.of(Material.HEAVY_METAL).strength(1.0F));
+        super(BlockBehaviour.Properties.of().strength(1.0F));
         this.registerDefaultState(this.getStateDefinition().any().setValue(DIRECTION, Direction.NORTH).setValue(ENABLED, false));
     }
 
     @Override
-    public InteractionResult use(BlockState state, Level world, BlockPos pos, Player playerEntity, Hand hand, BlockRayTraceResult result)
+    protected ItemInteractionResult useItemOn(ItemStack stack, BlockState state, Level world, BlockPos pos, Player playerEntity, InteractionHand hand, BlockHitResult result)
     {
         if(!world.isClientSide)
         {
-            if(!FluidUtil.interactWithFluidHandler(playerEntity, hand, world, pos, result.getDirection()))
+            if(FluidUtil.interactWithFluidHandler(playerEntity, hand, world, pos, result.getDirection()))
             {
-                BlockEntity tileEntity = world.getBlockEntity(pos);
-                if(tileEntity instanceof INamedContainerProvider)
-                {
-                    BlockEntityUtil.sendUpdatePacket(tileEntity, (ServerPlayer) playerEntity);
-                    NetworkHooks.openGui((ServerPlayer) playerEntity, (INamedContainerProvider) tileEntity, pos);
-                }
+                return ItemInteractionResult.sidedSuccess(world.isClientSide);
             }
-            return InteractionResult.SUCCESS;
+        }
+        return ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
+    }
+
+    @Override
+    protected InteractionResult useWithoutItem(BlockState state, Level world, BlockPos pos, Player playerEntity, BlockHitResult result)
+    {
+        if(!world.isClientSide)
+        {
+            BlockEntity tileEntity = world.getBlockEntity(pos);
+            if(tileEntity instanceof MenuProvider)
+            {
+                BlockEntityUtil.sendUpdatePacket(tileEntity, (ServerPlayer) playerEntity);
+                playerEntity.openMenu((MenuProvider) tileEntity);
+                return InteractionResult.SUCCESS;
+            }
         }
         return InteractionResult.SUCCESS;
     }
@@ -65,26 +79,19 @@ public class FluidMixerBlock extends RotatedObjectBlock
         if(state.getBlock() != newState.getBlock())
         {
             BlockEntity tileentity = worldIn.getBlockEntity(pos);
-            if(tileentity instanceof IInventory)
+            if(tileentity instanceof Container)
             {
-                InventoryHelper.dropContents(worldIn, pos, (IInventory) tileentity);
+                Containers.dropContents(worldIn, pos, (Container) tileentity);
                 worldIn.updateNeighbourForOutputSignal(pos, this);
             }
             super.onRemove(state, worldIn, pos, newState, isMoving);
         }
     }
-
-    @Override
-    public boolean hasTileEntity(BlockState state)
-    {
-        return true;
-    }
-
     @Nullable
     @Override
     public BlockEntity newBlockEntity(BlockPos pos, BlockState state)
     {
-        return new FluidMixerBlockEntity();
+        return new FluidMixerBlockEntity(pos, state);
     }
 
     @Override

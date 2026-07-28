@@ -1,14 +1,16 @@
 package com.mrcrayfish.vehicle.client.handler;
 
-//import com.mrcrayfish.obfuscate.client.event.PlayerModelEvent;
+import com.mrcrayfish.obfuscate.client.event.PlayerModelEvent;
 import com.mrcrayfish.vehicle.client.render.layer.LayerHeldVehicle;
 import com.mrcrayfish.vehicle.common.entity.HeldVehicleDataHandler;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.entity.player.AbstractClientPlayer;
-import net.minecraft.client.renderer.entity.MobRenderer;
-import net.minecraft.client.renderer.entity.PlayerRenderer;
-import net.minecraft.client.renderer.entity.layers.LayerRenderer;
-import net.minecraft.client.renderer.entity.model.PlayerModel;
+import net.minecraft.client.player.AbstractClientPlayer;
+import net.minecraft.client.renderer.entity.LivingEntityRenderer;
+import net.minecraft.client.renderer.entity.EntityRenderer;
+import net.minecraft.client.renderer.entity.player.PlayerRenderer;
+import net.minecraft.client.resources.PlayerSkin;
+import net.minecraft.client.renderer.entity.layers.RenderLayer;
+import net.minecraft.client.model.PlayerModel;
 import net.minecraft.world.entity.player.Player;
 import net.minecraftforge.client.event.RenderPlayerEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
@@ -31,16 +33,16 @@ public class HeldVehicleHandler
     {
         if(!setupExtraLayers)
         {
-            Map<String, PlayerRenderer> skinMap = Minecraft.getInstance().getEntityRenderDispatcher().getSkinMap();
-            this.patchPlayerRender(skinMap.get("default"));
-            this.patchPlayerRender(skinMap.get("slim"));
+            Map<PlayerSkin.Model, EntityRenderer<? extends Player>> skinMap = Minecraft.getInstance().getEntityRenderDispatcher().getSkinMap();
+            this.patchPlayerRender((PlayerRenderer) skinMap.get(PlayerSkin.Model.WIDE));
+            this.patchPlayerRender((PlayerRenderer) skinMap.get(PlayerSkin.Model.SLIM));
             setupExtraLayers = true;
         }
     }
 
     private void patchPlayerRender(PlayerRenderer player)
     {
-        List<LayerRenderer<AbstractClientPlayer, PlayerModel<AbstractClientPlayer>>> layers = ObfuscationReflectionHelper.getPrivateValue(MobRenderer.class, player, "field_177097_h");
+        List<RenderLayer<AbstractClientPlayer, PlayerModel<AbstractClientPlayer>>> layers = ObfuscationReflectionHelper.getPrivateValue(LivingEntityRenderer.class, player, "layers");
         if(layers != null)
         {
             layers.add(new LayerHeldVehicle(player));
@@ -52,7 +54,7 @@ public class HeldVehicleHandler
     @SubscribeEvent
     public void onSetupAngles(PlayerModelEvent.SetupAngles.Post event)
     {
-        PlayerModel model = event.getModelPlayer();
+        PlayerModel model = event.getModel();
         Player player = event.getPlayer();
 
         boolean holdingVehicle = HeldVehicleDataHandler.isHoldingVehicle(player);
@@ -62,7 +64,8 @@ public class HeldVehicleHandler
         }
         else if(idToCounter.containsKey(player.getUUID()))
         {
-            if(idToCounter.get(player.getUUID()).getProgress(event.getPartialTicks()) == 0F)
+            float partialTicks = Minecraft.getInstance().getTimer().getGameTimeDeltaPartialTick(true);
+            if(idToCounter.get(player.getUUID()).getProgress(partialTicks) == 0F)
             {
                 idToCounter.remove(player.getUUID());
                 return;
@@ -70,7 +73,7 @@ public class HeldVehicleHandler
             if(!holdingVehicle)
             {
                 AnimationCounter counter = idToCounter.get(player.getUUID());
-                player.yBodyRot = player.getYHeadRot() - (player.getYHeadRot() - player.yBodyRotO) * counter.getProgress(event.getPartialTicks());
+                player.yBodyRot = player.getYHeadRot() - (player.getYHeadRot() - player.yBodyRotO) * counter.getProgress(partialTicks);
             }
         }
         else
@@ -80,7 +83,8 @@ public class HeldVehicleHandler
 
         AnimationCounter counter = idToCounter.get(player.getUUID());
         counter.update(holdingVehicle);
-        float progress = counter.getProgress(event.getPartialTicks());
+        float partialTicks = Minecraft.getInstance().getTimer().getGameTimeDeltaPartialTick(true);
+        float progress = counter.getProgress(partialTicks);
         model.rightArm.xRot = (float) Math.toRadians(-180F * progress);
         model.rightArm.zRot = (float) Math.toRadians(-5F * progress);
         model.rightArm.y = (player.isCrouching() ? 3.0F : -0.5F) * progress;

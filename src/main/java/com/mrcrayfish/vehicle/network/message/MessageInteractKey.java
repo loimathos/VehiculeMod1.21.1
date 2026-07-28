@@ -2,9 +2,9 @@ package com.mrcrayfish.vehicle.network.message;
 
 import com.mrcrayfish.vehicle.network.play.ServerPlayHandler;
 import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.player.ServerPlayer;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.network.FriendlyByteBuf;
-import net.minecraftforge.network.NetworkEvent;
+import net.minecraftforge.event.network.CustomPayloadEvent;
 
 import java.util.function.Supplier;
 
@@ -30,20 +30,20 @@ public class MessageInteractKey implements IMessage<MessageInteractKey>
     }
 
     @Override
-    public void encode(MessageInteractKey message, PacketBuffer buffer)
+    public void encode(MessageInteractKey message, FriendlyByteBuf buffer)
     {
         buffer.writeInt(message.entityId);
     }
 
     @Override
-    public MessageInteractKey decode(PacketBuffer buffer)
+    public MessageInteractKey decode(FriendlyByteBuf buffer)
     {
         return new MessageInteractKey(buffer.readInt());
     }
 
     @SuppressWarnings("ConstantConditions")
     @Override
-    public void handle(MessageInteractKey message, Supplier<NetworkEvent.Context> supplier)
+    public void handle(MessageInteractKey message, Supplier<CustomPayloadEvent.Context> supplier)
     {
         supplier.get().enqueueWork(() ->
         {

@@ -1,0 +1,19 @@
+{
+    "sources": [
+        {
+            "type": "minecraft:directory",
+            "source": "model",
+            "prefix": "model/"
+        },
+        {
+            "type": "minecraft:directory",
+            "source": "vehicle",
+            "prefix": "vehicle/"
+        },
+        {
+            "type": "minecraft:directory",
+            "source": "vehicles",
+            "prefix": "vehicles/"
+        }
+    ]
+}

@@ -1,5 +1,9 @@
 package com.mrcrayfish.vehicle.blockentity;
 
+import net.minecraft.world.level.block.Block;
+
+import net.minecraft.nbt.Tag;
+
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableMap;
 import com.mrcrayfish.vehicle.Config;
@@ -10,16 +14,16 @@ import com.mrcrayfish.vehicle.common.FluidNetworkHandler;
 import com.mrcrayfish.vehicle.init.ModBlockEntities;
 import com.mrcrayfish.vehicle.util.FluidUtils;
 import com.mrcrayfish.vehicle.util.BlockEntityUtil;
-import net.minecraft.world.level.block.BlockState;
+import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.nbt.CompoundTag;
 
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.core.Direction;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.Level;
-import net.minecraftforge.common.util.Constants;
 import net.minecraftforge.common.util.LazyOptional;
-import net.minecraftforge.fluids.capability.CapabilityFluidHandler;
+import net.minecraftforge.common.capabilities.ForgeCapabilities;
 import net.minecraftforge.fluids.capability.IFluidHandler;
 import org.apache.commons.lang3.tuple.Pair;
 
@@ -27,11 +31,12 @@ import javax.annotation.Nullable;
 import java.lang.ref.WeakReference;
 import java.util.*;
 import java.util.function.Function;
+import net.minecraft.core.HolderLookup;
 
 /**
  * Author: MrCrayfish
  */
-public class PumpBlockEntity extends PipeBlockEntity implements BlockEntityTicker
+public class PumpBlockEntity extends PipeBlockEntity
 {
     private int lastHandlerIndex;
     private boolean validatedNetwork;
@@ -39,12 +44,11 @@ public class PumpBlockEntity extends PipeBlockEntity implements BlockEntityTicke
     private List<Pair<BlockPos, Direction>> fluidHandlers = new ArrayList<>();
     private PowerMode powerMode = PowerMode.ALWAYS_ACTIVE;
 
-    public PumpBlockEntity()
+    public PumpBlockEntity(BlockPos pos, BlockState state)
     {
-        super(ModBlockEntities.FLUID_PUMP.get());
+        super(ModBlockEntities.FLUID_PUMP.get(), pos, state);
     }
 
-    @Override
     public void tick()
     {
         if(this.level != null && !this.level.isClientSide())
@@ -104,7 +108,7 @@ public class PumpBlockEntity extends PipeBlockEntity implements BlockEntityTicke
                 if(transferredAmount < splitAmount)
                 {
                     it.remove();
-                }
+}
             }
         }
 
@@ -218,7 +222,7 @@ public class PumpBlockEntity extends PipeBlockEntity implements BlockEntityTicke
 
                     BlockPos relativePos = pos.relative(direction);
                     BlockEntity relativeTileEntity = this.level.getBlockEntity(relativePos);
-                    if(relativeTileEntity != null && relativeTileEntity.getCapability(CapabilityFluidHandler.FLUID_HANDLER_CAPABILITY, direction.getOpposite()).isPresent())
+                    if(relativeTileEntity != null && relativeTileEntity.getCapability(ForgeCapabilities.FLUID_HANDLER, direction.getOpposite()).isPresent())
                     {
                         this.fluidHandlers.add(Pair.of(relativePos, direction.getOpposite()));
                     }
@@ -235,7 +239,7 @@ public class PumpBlockEntity extends PipeBlockEntity implements BlockEntityTicke
 
             BlockPos relativePos = this.worldPosition.relative(direction);
             BlockEntity relativeTileEntity = this.level.getBlockEntity(relativePos);
-            if(relativeTileEntity != null && relativeTileEntity.getCapability(CapabilityFluidHandler.FLUID_HANDLER_CAPABILITY, direction.getOpposite()).isPresent())
+            if(relativeTileEntity != null && relativeTileEntity.getCapability(ForgeCapabilities.FLUID_HANDLER, direction.getOpposite()).isPresent())
             {
                 this.fluidHandlers.add(Pair.of(relativePos, direction.getOpposite()));
             }
@@ -265,7 +269,7 @@ public class PumpBlockEntity extends PipeBlockEntity implements BlockEntityTicke
                 BlockEntity tileEntity = world.getBlockEntity(pair.getLeft());
                 if(tileEntity != null)
                 {
-                    LazyOptional<IFluidHandler> lazyOptional = tileEntity.getCapability(CapabilityFluidHandler.FLUID_HANDLER_CAPABILITY, pair.getRight());
+                    LazyOptional<IFluidHandler> lazyOptional = tileEntity.getCapability(ForgeCapabilities.FLUID_HANDLER, pair.getRight());
                     if(lazyOptional.isPresent())
                     {
                         Optional<IFluidHandler> handler = lazyOptional.resolve();
@@ -283,7 +287,7 @@ public class PumpBlockEntity extends PipeBlockEntity implements BlockEntityTicke
         BlockEntity tileEntity = world.getBlockEntity(this.worldPosition.relative(direction.getOpposite()));
         if(tileEntity != null)
         {
-            LazyOptional<IFluidHandler> lazyOptional = tileEntity.getCapability(CapabilityFluidHandler.FLUID_HANDLER_CAPABILITY, direction);
+            LazyOptional<IFluidHandler> lazyOptional = tileEntity.getCapability(ForgeCapabilities.FLUID_HANDLER, direction);
             if(lazyOptional.isPresent())
             {
                 return lazyOptional.resolve();
@@ -299,28 +303,28 @@ public class PumpBlockEntity extends PipeBlockEntity implements BlockEntityTicke
         {
             CompoundTag compound = new CompoundTag();
             this.writePowerMode(compound);
-            BlockEntityUtil.sendUpdatePacket(this, super.save(compound));
+            BlockEntityUtil.sendUpdatePacket(this, super.saveWithoutMetadata(this.level.registryAccess()));
             BlockState state = this.getBlockState();
             state = ((FluidPumpBlock) state.getBlock()).getDisabledState(state, this.level, this.worldPosition);
-            this.level.setBlock(this.worldPosition, state, Constants.BlockFlags.BLOCK_UPDATE | Constants.BlockFlags.RERENDER_MAIN_THREAD);
+            this.level.setBlock(this.worldPosition, state, Block.UPDATE_ALL);
         }
     }
 
     @Override
-    public void load(BlockState state, CompoundTag compound)
+    protected void loadAdditional(CompoundTag compound, HolderLookup.Provider registries)
     {
-        super.load(state, compound);
-        if(compound.contains("PowerMode", Constants.NBT.TAG_INT))
+        super.loadAdditional(compound, registries);
+        if(compound.contains("PowerMode", Tag.TAG_INT))
         {
             this.powerMode = PowerMode.fromOrdinal(compound.getInt("PowerMode"));
         }
     }
 
     @Override
-    public CompoundTag save(CompoundTag compound)
+    protected void saveAdditional(CompoundTag compound, HolderLookup.Provider registries)
     {
         compound.putInt("PowerMode", this.powerMode.ordinal());
-        return super.save(compound);
+        super.saveAdditional(compound, registries);
     }
 
     private void writePowerMode(CompoundTag compound)

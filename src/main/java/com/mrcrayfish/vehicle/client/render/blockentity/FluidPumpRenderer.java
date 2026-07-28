@@ -1,17 +1,20 @@
 package com.mrcrayfish.vehicle.client.render.blockentity;
 
-import com.mojang.blaze3d.matrix.MatrixStack;
-import com.mojang.blaze3d.vertex.IVertexBuilder;
+import net.minecraft.client.Minecraft;
+
+import com.mojang.blaze3d.vertex.PoseStack;
+import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mrcrayfish.vehicle.block.FluidPumpBlock;
 import com.mrcrayfish.vehicle.client.raytrace.EntityRayTracer;
 import com.mrcrayfish.vehicle.init.ModItems;
 import com.mrcrayfish.vehicle.blockentity.PumpBlockEntity;
-import net.minecraft.world.level.block.BlockState;
-import net.minecraft.client.gui.FontRenderer;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.client.gui.Font;
+import net.minecraft.client.gui.Font.DisplayMode;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.blockentity.BlockEntityRenderer;
-import net.minecraft.client.renderer.blockentity.BlockEntityRendererDispatcher;
+import net.minecraft.client.renderer.blockentity.BlockEntityRendererProvider;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.core.Direction;
@@ -26,17 +29,14 @@ import net.minecraft.network.chat.Component;
 /**
  * Author: MrCrayfish
  */
-public class FluidPumpRenderer extends BlockEntityRenderer<PumpBlockEntity>
+public class FluidPumpRenderer implements BlockEntityRenderer<PumpBlockEntity>
 {
-    public FluidPumpRenderer(TileEntityRendererDispatcher dispatcher)
-    {
-        super(dispatcher);
-    }
+    public FluidPumpRenderer(BlockEntityRendererProvider.Context context) {}
 
     @Override
-    public void render(PumpBlockEntity tileEntity, float partialTicks, MatrixStack matrixStack, IRenderTypeBuffer renderTypeBuffer, int light, int overlay)
+    public void render(PumpBlockEntity tileEntity, float partialTicks, PoseStack matrixStack, MultiBufferSource renderTypeBuffer, int light, int overlay)
     {
-        Entity entity = this.renderer.camera.getEntity();
+        Entity entity = Minecraft.getInstance().gameRenderer.getMainCamera().getEntity();
         if(!(entity instanceof Player))
             return;
 
@@ -46,17 +46,17 @@ public class FluidPumpRenderer extends BlockEntityRenderer<PumpBlockEntity>
 
         this.renderInteractableBox(tileEntity, matrixStack, renderTypeBuffer);
 
-        if(this.renderer.cameraHitResult == null || this.renderer.cameraHitResult.getType() != RayTraceResult.Type.BLOCK)
+        if(Minecraft.getInstance().hitResult == null || Minecraft.getInstance().hitResult.getType() != HitResult.Type.BLOCK)
             return;
 
-        BlockRayTraceResult result = (BlockRayTraceResult) this.renderer.cameraHitResult;
+        BlockHitResult result = (BlockHitResult) Minecraft.getInstance().hitResult;
         if(!result.getBlockPos().equals(tileEntity.getBlockPos()))
             return;
 
         BlockPos pos = tileEntity.getBlockPos();
         BlockState state = tileEntity.getBlockState();
         FluidPumpBlock fluidPumpBlock = (FluidPumpBlock) state.getBlock();
-        if(!fluidPumpBlock.isLookingAtHousing(state, this.renderer.cameraHitResult.getLocation().add(-pos.getX(), -pos.getY(), -pos.getZ())))
+        if(!fluidPumpBlock.isLookingAtHousing(state, Minecraft.getInstance().hitResult.getLocation().add(-pos.getX(), -pos.getY(), -pos.getZ())))
             return;
 
         matrixStack.pushPose();
@@ -65,27 +65,27 @@ public class FluidPumpRenderer extends BlockEntityRenderer<PumpBlockEntity>
         Direction direction = state.getValue(FluidPumpBlock.DIRECTION);
         matrixStack.translate(-direction.getStepX() * 0.35, -direction.getStepY() * 0.35, -direction.getStepZ() * 0.35);
 
-        matrixStack.mulPose(this.renderer.camera.rotation());
+        matrixStack.mulPose(Minecraft.getInstance().gameRenderer.getMainCamera().rotation());
         matrixStack.scale(-0.015F, -0.015F, 0.015F);
         Matrix4f matrix4f = matrixStack.last().pose();
-        FontRenderer fontRenderer = this.renderer.font;
+        Font fontRenderer = Minecraft.getInstance().font;
         Component text = Component.translatable(tileEntity.getPowerMode().getKey());
         float x = (float)(-fontRenderer.width(text) / 2);
-        fontRenderer.drawInBatch(text, x, 0, -1, true, matrix4f, renderTypeBuffer, true, 0, 15728880);
+        fontRenderer.drawInBatch(text, x, 0, -1, true, matrix4f, renderTypeBuffer, DisplayMode.SEE_THROUGH, 0, 15728880);
         matrixStack.popPose();
     }
 
-    private void renderInteractableBox(PumpBlockEntity tileEntity, MatrixStack matrixStack, IRenderTypeBuffer renderTypeBuffer)
+    private void renderInteractableBox(PumpBlockEntity tileEntity, PoseStack matrixStack, MultiBufferSource renderTypeBuffer)
     {
-        if(this.renderer.cameraHitResult != null && this.renderer.cameraHitResult.getType() == RayTraceResult.Type.BLOCK)
+        if(Minecraft.getInstance().hitResult != null && Minecraft.getInstance().hitResult.getType() == HitResult.Type.BLOCK)
         {
-            BlockRayTraceResult result = (BlockRayTraceResult) this.renderer.cameraHitResult;
+            BlockHitResult result = (BlockHitResult) Minecraft.getInstance().hitResult;
             if(result.getBlockPos().equals(tileEntity.getBlockPos()))
             {
                 BlockPos pos = tileEntity.getBlockPos();
                 BlockState state = tileEntity.getBlockState();
                 FluidPumpBlock fluidPumpBlock = (FluidPumpBlock) state.getBlock();
-                if(fluidPumpBlock.isLookingAtHousing(state, this.renderer.cameraHitResult.getLocation().add(-pos.getX(), -pos.getY(), -pos.getZ())))
+                if(fluidPumpBlock.isLookingAtHousing(state, Minecraft.getInstance().hitResult.getLocation().add(-pos.getX(), -pos.getY(), -pos.getZ())))
                 {
                     return;
                 }
@@ -94,7 +94,7 @@ public class FluidPumpRenderer extends BlockEntityRenderer<PumpBlockEntity>
 
         BlockState state = tileEntity.getBlockState();
         VoxelShape shape = FluidPumpBlock.PUMP_BOX[state.getValue(FluidPumpBlock.DIRECTION).getOpposite().get3DDataValue()];
-        IVertexBuilder builder = renderTypeBuffer.getBuffer(RenderType.lines());
+        VertexConsumer builder = renderTypeBuffer.getBuffer(RenderType.lines());
         EntityRayTracer.renderShape(matrixStack, builder, shape, 1.0F, 0.77F, 0.29F, 1.0F);
     }
 }

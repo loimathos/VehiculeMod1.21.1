@@ -1,13 +1,14 @@
 package com.mrcrayfish.vehicle.client.screen.toolbar.widget;
 
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.widget.TextFieldWidget;
+import net.minecraft.client.gui.components.EditBox;
+import net.minecraft.network.chat.Component;
 
 
 /**
  * Author: MrCrayfish
  */
-public class NumberWidget extends TextFieldWidget
+public class NumberWidget extends EditBox
 {
     private int min = Integer.MIN_VALUE;
     private int max = Integer.MAX_VALUE;

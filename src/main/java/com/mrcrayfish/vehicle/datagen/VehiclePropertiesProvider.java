@@ -8,8 +8,10 @@ import com.google.gson.JsonObject;
 import com.mrcrayfish.vehicle.entity.VehicleEntity;
 import com.mrcrayfish.vehicle.entity.properties.VehicleProperties;
 import net.minecraft.data.DataGenerator;
-import net.minecraft.data.DirectoryCache;
-import net.minecraft.data.IDataProvider;
+import net.minecraft.data.CachedOutput;
+import net.minecraft.data.DataProvider;
+import java.util.concurrent.CompletableFuture;
+import java.util.ArrayList;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.resources.ResourceLocation;
 import org.apache.logging.log4j.LogManager;
@@ -24,12 +26,12 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
+import net.minecraft.core.registries.BuiltInRegistries;
 
 /**
  * Author: MrCrayfish
  */
-public abstract class VehiclePropertiesProvider implements IDataProvider
+public abstract class VehiclePropertiesProvider implements DataProvider
 {
     private static final Logger LOGGER = LogManager.getLogger();
     private static final Gson GSON = new GsonBuilder().registerTypeAdapter(VehicleProperties.class, new VehicleProperties.Serializer()).create();
@@ -43,14 +45,19 @@ public abstract class VehiclePropertiesProvider implements IDataProvider
         this.generator = generator;
     }
 
-    public void setScaleWheels(boolean scaleWheels)
+    protected final void scaleWheels()
     {
-        this.scaleWheels = scaleWheels;
+        this.scaleWheels = true;
+    }
+
+    public final void setScaleWheels(boolean scale)
+    {
+        this.scaleWheels = scale;
     }
 
     protected final void add(EntityType<? extends VehicleEntity> type, VehicleProperties.Builder builder)
     {
-        this.add(type.getRegistryName(), builder);
+        this.add(BuiltInRegistries.ENTITY_TYPE.getKey(type), builder);
     }
 
     protected final void add(ResourceLocation id, VehicleProperties.Builder builder)
@@ -66,83 +73,55 @@ public abstract class VehiclePropertiesProvider implements IDataProvider
     public abstract void registerProperties();
 
     @Override
-    public void run(DirectoryCache cache) throws IOException
+    public CompletableFuture<?> run(CachedOutput cache)
     {
         this.vehiclePropertiesMap.clear();
         this.registerProperties();
+        
+        List<CompletableFuture<?>> futures = new ArrayList<>();
+        
         this.vehiclePropertiesMap.forEach((id, properties) ->
         {
             String modId = id.getNamespace();
             String vehicleId = id.getPath();
-            Path path = this.generator.getOutputFolder().resolve("data/" + modId + "/vehicles/properties/" + vehicleId + ".json");
-            try
-            {
-                String rawJson = GSON.toJson(properties);
-                String hash = SHA1.hashUnencodedChars(rawJson).toString();
-                if(!Objects.equals(cache.getHash(path), hash) || !Files.exists(path))
-                {
-                    Files.createDirectories(path.getParent());
-                    try(BufferedWriter writer = Files.newBufferedWriter(path))
-                    {
-                        writer.write(rawJson);
-                    }
-                }
-                cache.putNew(path, hash);
-            }
-            catch(IOException e)
-            {
-                LOGGER.error("Couldn't save vehicle properties to {}", path, e);
-            }
+            Path path = this.generator.getPackOutput().getOutputFolder().resolve("data/" + modId + "/vehicles/properties/" + vehicleId + ".json");
+            JsonObject json = (JsonObject) GSON.toJsonTree(properties);
+            futures.add(DataProvider.saveStable(cache, json, path));
 
             if(properties.getCosmetics().isEmpty())
                 return;
 
-            path = this.generator.getOutputFolder().resolve("data/" + modId + "/vehicles/cosmetics/" + vehicleId + ".json");
-            try
+            Path cosmeticsPath = this.generator.getPackOutput().getOutputFolder().resolve("data/" + modId + "/vehicles/cosmetics/" + vehicleId + ".json");
+            JsonObject object = new JsonObject();
+            object.addProperty("replace", false);
+            JsonObject validModels = new JsonObject();
+            properties.getCosmetics().forEach((cosmeticId, cosmeticProperties) ->
             {
-                JsonObject object = new JsonObject();
-                object.addProperty("replace", false);
-                JsonObject validModels = new JsonObject();
-                properties.getCosmetics().forEach((cosmeticId, cosmeticProperties) ->
+                JsonArray array = new JsonArray();
+                cosmeticProperties.getModelLocations().forEach(location ->
                 {
-                    JsonArray array = new JsonArray();
-                    cosmeticProperties.getModelLocations().forEach(location ->
+                    List<ResourceLocation> disabledCosmetics = cosmeticProperties.getDisabledCosmetics().getOrDefault(location, Collections.emptyList());
+                    if(disabledCosmetics.isEmpty())
                     {
-                        List<ResourceLocation> disabledCosmetics = cosmeticProperties.getDisabledCosmetics().getOrDefault(location, Collections.emptyList());
-                        if(disabledCosmetics.isEmpty())
-                        {
-                            array.add(location.toString());
-                        }
-                        else
-                        {
-                            JsonObject modelObject = new JsonObject();
-                            modelObject.addProperty("model", location.toString());
-                            JsonArray disables = new JsonArray();
-                            disabledCosmetics.forEach(disabledCosmeticId -> disables.add(disabledCosmeticId.toString()));
-                            modelObject.add("disables", disables);
-                            array.add(modelObject);
-                        }
-                    });
-                    validModels.add(cosmeticId.toString(), array);
-                });
-                object.add("valid_models", validModels);
-                String rawJson = GSON.toJson(object);
-                String hash = SHA1.hashUnencodedChars(rawJson).toString();
-                if(!Objects.equals(cache.getHash(path), hash) || !Files.exists(path))
-                {
-                    Files.createDirectories(path.getParent());
-                    try(BufferedWriter writer = Files.newBufferedWriter(path))
-                    {
-                        writer.write(rawJson);
+                        array.add(location.toString());
                     }
-                }
-                cache.putNew(path, hash);
-            }
-            catch(IOException e)
-            {
-                LOGGER.error("Couldn't save vehicle cosmetics to {}", path, e);
-            }
+                    else
+                    {
+                        JsonObject modelObject = new JsonObject();
+                        modelObject.addProperty("model", location.toString());
+                        JsonArray disables = new JsonArray();
+                        disabledCosmetics.forEach(disabledCosmeticId -> disables.add(disabledCosmeticId.toString()));
+                        modelObject.add("disables", disables);
+                        array.add(modelObject);
+                    }
+                });
+                validModels.add(cosmeticId.toString(), array);
+            });
+            object.add("valid_models", validModels);
+            futures.add(DataProvider.saveStable(cache, object, cosmeticsPath));
         });
+        
+        return CompletableFuture.allOf(futures.toArray(new CompletableFuture[0]));
     }
 
     @Nonnull

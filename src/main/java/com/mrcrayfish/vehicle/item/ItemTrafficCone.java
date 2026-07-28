@@ -3,8 +3,8 @@ package com.mrcrayfish.vehicle.item;
 import com.mrcrayfish.vehicle.VehicleMod;
 import com.mrcrayfish.vehicle.util.RenderUtil;
 import net.minecraft.world.level.block.Block;
-import net.minecraft.client.gui.screen.Screen;
-import net.minecraft.client.util.ITooltipFlag;
+import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.Item;
@@ -24,18 +24,18 @@ public class ItemTrafficCone extends BlockItem
 {
     public ItemTrafficCone(Block block)
     {
-        super(block, new Item.Properties().tab(VehicleMod.CREATIVE_TAB));
+        super(block, new Item.Properties());
     }
 
     @Nullable
     @Override
-    public EquipmentSlotType getEquipmentSlot(ItemStack stack)
+    public EquipmentSlot getEquipmentSlot(ItemStack stack)
     {
-        return EquipmentSlotType.HEAD;
+        return EquipmentSlot.HEAD;
     }
 
     @Override
-    public void appendHoverText(ItemStack stack, @Nullable Level worldIn, List<Component> tooltip, ITooltipFlag flagIn)
+    public void appendHoverText(ItemStack stack, Item.TooltipContext context, List<Component> tooltip, TooltipFlag flagIn)
     {
         if(Screen.hasShiftDown())
         {
@@ -43,7 +43,7 @@ public class ItemTrafficCone extends BlockItem
         }
         else
         {
-            tooltip.add(Component.translatable("vehicle.info_help").withStyle(TextFormatting.YELLOW));
+            tooltip.add(Component.translatable("vehicle.info_help").withStyle(ChatFormatting.YELLOW));
         }
     }
 }

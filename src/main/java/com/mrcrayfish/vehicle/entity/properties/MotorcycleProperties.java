@@ -15,7 +15,7 @@ public final class MotorcycleProperties extends ExtendedProperties
 
     public MotorcycleProperties(JsonObject object)
     {
-        this.maxLeanAngle = JSONUtils.getAsFloat(object, "maxLeanAngle", DEFAULT_LEAN_ANGLE);
+        this.maxLeanAngle = GsonHelper.getAsFloat(object, "maxLeanAngle", DEFAULT_LEAN_ANGLE);
     }
 
     public MotorcycleProperties(float leanAngle)

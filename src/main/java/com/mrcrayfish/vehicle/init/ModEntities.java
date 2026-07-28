@@ -24,7 +24,7 @@ import java.util.function.BiFunction;
  */
 public class ModEntities
 {
-    public static final DeferredRegister<EntityType<?>> REGISTER = DeferredRegister.create(ForgeRegistries.ENTITIES, Reference.MOD_ID);
+    public static final DeferredRegister<EntityType<?>> REGISTER = DeferredRegister.create(ForgeRegistries.ENTITY_TYPES, Reference.MOD_ID);
 
     public static final RegistryObject<EntityType<QuadBikeEntity>> QUAD_BIKE = VehicleUtil.createEntityType(REGISTER, "quad_bike", QuadBikeEntity::new, 1.5F, 1.0F);
     public static final RegistryObject<EntityType<SportsCarEntity>> SPORTS_CAR = VehicleUtil.createEntityType(REGISTER, "sports_car", SportsCarEntity::new, 1.5F, 1.0F);
@@ -55,7 +55,6 @@ public class ModEntities
 
     private static <T extends Entity> RegistryObject<EntityType<T>> registerEntity(String id, BiFunction<EntityType<T>, Level, T> function, float width, float height)
     {
-        EntityType<T> type = EntityType.Builder.of(function::apply, MobCategory.MISC).sized(width, height).setTrackingRange(256).setUpdateInterval(1).noSummon().fireImmune().setShouldReceiveVelocityUpdates(true).build(id);
-        return ModEntities.REGISTER.register(id, () -> type);
+        return ModEntities.REGISTER.register(id, () -> EntityType.Builder.of(function::apply, MobCategory.MISC).sized(width, height).setTrackingRange(256).setUpdateInterval(1).noSummon().fireImmune().setShouldReceiveVelocityUpdates(true).build(id));
     }
 }

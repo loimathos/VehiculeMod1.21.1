@@ -1,5 +1,9 @@
 package com.mrcrayfish.vehicle.entity.trailer;
 
+import net.minecraft.nbt.Tag;
+
+import net.minecraft.world.Containers;
+
 import com.google.common.collect.ImmutableMap;
 import com.mrcrayfish.vehicle.client.raytrace.EntityRayTracer;
 import com.mrcrayfish.vehicle.common.inventory.IStorage;
@@ -23,7 +27,7 @@ import net.minecraft.world.InteractionHand;
 import net.minecraft.world.level.Level;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
-import net.minecraftforge.common.util.Constants;
+import net.minecraftforge.network.PacketDistributor;
 
 import java.util.Map;
 
@@ -52,7 +56,7 @@ public class StorageTrailerEntity extends TrailerEntity implements IStorage
     protected void readAdditionalSaveData(CompoundTag compound)
     {
         super.readAdditionalSaveData(compound);
-        if(compound.contains(INVENTORY_STORAGE_KEY, Constants.NBT.TAG_LIST))
+        if(compound.contains(INVENTORY_STORAGE_KEY, Tag.TAG_LIST))
         {
             this.initInventory();
             InventoryUtil.readInventoryToNBT(compound, INVENTORY_STORAGE_KEY, this.inventory);
@@ -94,7 +98,7 @@ public class StorageTrailerEntity extends TrailerEntity implements IStorage
         super.onVehicleDestroyed(entity);
         if(this.inventory != null)
         {
-            InventoryHelper.dropContents(this.level, this, this.inventory);
+            Containers.dropContents(this.level(), this, this.inventory);
         }
     }
 
@@ -105,8 +109,8 @@ public class StorageTrailerEntity extends TrailerEntity implements IStorage
             return createScaledBoundingBox(-6.0, -0.5, 9.0, 6.0, 3.5, 17.0, 0.0625);
         }, (entity, rightClick) -> {
             if(rightClick) {
-                PacketHandler.getPlayChannel().sendToServer(new MessageAttachTrailer(entity.getId()));
-                Minecraft.getInstance().player.swing(Hand.MAIN_HAND);
+                PacketHandler.getPlayChannel().send(new MessageAttachTrailer(entity.getId()), PacketDistributor.SERVER.noArg());
+                Minecraft.getInstance().player.swing(InteractionHand.MAIN_HAND);
             }
         }, entity -> true);
 
@@ -116,8 +120,8 @@ public class StorageTrailerEntity extends TrailerEntity implements IStorage
             return createScaledBoundingBox(-0.4375, 0.125 * bodyScale, -0.4375, 0.4375, 0.9125 * bodyScale, 0.4375, chestScale);
         }, (entity, rightClick) -> {
             if(rightClick) {
-                PacketHandler.getPlayChannel().sendToServer(new MessageOpenStorage(entity.getId(), INVENTORY_STORAGE_KEY));
-                Minecraft.getInstance().player.swing(Hand.MAIN_HAND);
+                PacketHandler.getPlayChannel().send(new MessageOpenStorage(entity.getId(), INVENTORY_STORAGE_KEY), PacketDistributor.SERVER.noArg());
+                Minecraft.getInstance().player.swing(InteractionHand.MAIN_HAND);
             }
         }, entity -> true);
     }

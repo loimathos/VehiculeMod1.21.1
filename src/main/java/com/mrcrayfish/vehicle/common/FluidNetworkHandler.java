@@ -1,14 +1,15 @@
 package com.mrcrayfish.vehicle.common;
 
+import net.minecraft.world.level.block.Block;
+
 import com.mrcrayfish.vehicle.block.FluidPipeBlock;
 import com.mrcrayfish.vehicle.blockentity.PipeBlockEntity;
 import com.mrcrayfish.vehicle.blockentity.PumpBlockEntity;
-import net.minecraft.world.level.block.BlockState;
+import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.entity.BlockEntity;
-import net.minecraft.util.RegistryKey;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.Level;
-import net.minecraftforge.common.util.Constants;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 
@@ -37,7 +38,7 @@ public class FluidNetworkHandler
     }
 
     private boolean dirty = false;
-    private Map<RegistryKey<Level>, Set<BlockPos>> pipeUpdateMap = new HashMap<>();
+    private Map<ResourceKey<Level>, Set<BlockPos>> pipeUpdateMap = new HashMap<>();
 
     private FluidNetworkHandler() {}
 
@@ -51,7 +52,7 @@ public class FluidNetworkHandler
     }
 
     @SubscribeEvent
-    public void onServerTick(TickEvent.WorldTickEvent event)
+    public void onServerTick(TickEvent.LevelTickEvent event)
     {
         if(!this.dirty)
             return;
@@ -59,18 +60,18 @@ public class FluidNetworkHandler
         if(event.phase != TickEvent.Phase.END)
             return;
 
-        Set<BlockPos> positions = this.pipeUpdateMap.remove(event.world.dimension());
+        Set<BlockPos> positions = this.pipeUpdateMap.remove(event.level.dimension());
         if(positions != null)
         {
             positions.forEach(pos ->
             {
-                BlockEntity tileEntity = event.world.getBlockEntity(pos);
+                BlockEntity tileEntity = event.level.getBlockEntity(pos);
                 if(tileEntity instanceof PipeBlockEntity)
                 {
                     PipeBlockEntity pipeTileEntity = (PipeBlockEntity) tileEntity;
                     BlockState state = pipeTileEntity.getBlockState();
-                    boolean disabled = pipeTileEntity.getPumps().isEmpty() || event.world.hasNeighborSignal(pos);
-                    event.world.setBlock(pos, state.setValue(FluidPipeBlock.DISABLED, disabled), Constants.BlockFlags.BLOCK_UPDATE | Constants.BlockFlags.RERENDER_MAIN_THREAD);
+                    boolean disabled = pipeTileEntity.getPumps().isEmpty() || event.level.hasNeighborSignal(pos);
+                    event.level.setBlock(pos, state.setValue(FluidPipeBlock.DISABLED, disabled), Block.UPDATE_ALL);
                 }
             });
         }

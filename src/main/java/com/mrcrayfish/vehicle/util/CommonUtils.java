@@ -1,15 +1,20 @@
 package com.mrcrayfish.vehicle.util;
 
+
+import net.minecraft.core.component.DataComponents;
+import net.minecraft.world.item.component.CustomData;
+import net.minecraft.nbt.Tag;
+
 import com.mrcrayfish.vehicle.Config;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.entity.player.ServerPlayer;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.util.Mth;
 import net.minecraft.world.phys.Vec3;
 import org.joml.Vector3f;
+import net.minecraft.network.chat.Component;
 
-import net.minecraftforge.common.util.Constants;
 
 /**
  * Author: MrCrayfish
@@ -18,26 +23,26 @@ public class CommonUtils
 {
     public static CompoundTag getOrCreateStackTag(ItemStack stack)
     {
-        if(stack.getTag() == null)
+        if(stack.getOrDefault(DataComponents.CUSTOM_DATA, CustomData.EMPTY).copyTag() == null)
         {
-            stack.setTag(new CompoundTag());
+            stack.set(DataComponents.CUSTOM_DATA, CustomData.of(new CompoundTag()));
         }
-        return stack.getTag();
+        return stack.getOrDefault(DataComponents.CUSTOM_DATA, CustomData.EMPTY).copyTag();
     }
 
     public static void writeItemStackToTag(CompoundTag compound, String key, ItemStack stack)
     {
         if(!stack.isEmpty())
         {
-            compound.put(key, stack.save(new CompoundTag()));
+            compound.put(key, stack.save(net.minecraft.core.HolderLookup.Provider.create(java.util.stream.Stream.of()), new CompoundTag()));
         }
     }
 
     public static ItemStack readItemStackFromTag(CompoundTag compound, String key)
     {
-        if(compound.contains(key, Constants.NBT.TAG_COMPOUND))
+        if(compound.contains(key, Tag.TAG_COMPOUND))
         {
-            return ItemStack.of(compound.getCompound(key));
+            return ItemStack.parseOptional(net.minecraft.core.HolderLookup.Provider.create(java.util.stream.Stream.of()), compound.getCompound(key));
         }
         return ItemStack.EMPTY;
     }
@@ -55,17 +60,17 @@ public class CommonUtils
         return mouseX >= x && mouseX < x + width && mouseY >= y && mouseY < y + height;
     }
 
-    public static float yaw(Vector3d vec)
+    public static float yaw(Vec3 vec)
     {
         return (float) (Math.toDegrees(Math.atan2(vec.z, vec.x)) - 90F);
     }
 
-    public static float pitch(Vector3d vec)
+    public static float pitch(Vec3 vec)
     {
         if(vec.normalize().y != 0)
         {
             // Fixes the absolute of the value being slighter greater than 1.0
-            double y = MathHelper.clamp(vec.normalize().y, -1.0, 1.0);
+            double y = Mth.clamp(vec.normalize().y, -1.0, 1.0);
             // If abs of y is grater than 1.0, returns NaN when calling Math#asin and crashes world
             return (float) Math.toDegrees(Math.asin(y));
         }
@@ -74,24 +79,24 @@ public class CommonUtils
 
     public static float yaw(Vector3f vec)
     {
-        return yaw(new Vector3d(vec));
+        return yaw(new Vec3(vec));
     }
 
     public static float pitch(Vector3f vec)
     {
-        return pitch(new Vector3d(vec));
+        return pitch(new Vec3(vec));
     }
 
-    public static Vector3d lerp(Vector3d start, Vector3d end, float time)
+    public static Vec3 lerp(Vec3 start, Vec3 end, float time)
     {
-        double x = MathHelper.lerp(time, start.x, end.x);
-        double y = MathHelper.lerp(time, start.y, end.y);
-        double z = MathHelper.lerp(time, start.z, end.z);
-        return new Vector3d(x, y, z);
+        double x = Mth.lerp(time, start.x, end.x);
+        double y = Mth.lerp(time, start.y, end.y);
+        double z = Mth.lerp(time, start.z, end.z);
+        return new Vec3(x, y, z);
     }
 
-    public static Vector3d clampSpeed(Vector3d motion)
+    public static Vec3 clampSpeed(Vec3 motion)
     {
-        return motion.normalize().scale(MathHelper.clamp(motion.length(), 0F, Config.SERVER.globalSpeedLimit.get()));
+        return motion.normalize().scale(Mth.clamp(motion.length(), 0F, Config.SERVER.globalSpeedLimit.get()));
     }
 }

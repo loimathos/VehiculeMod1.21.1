@@ -5,10 +5,10 @@ import com.mrcrayfish.vehicle.blockentity.PipeBlockEntity;
 import com.mrcrayfish.vehicle.blockentity.PumpBlockEntity;
 import com.mrcrayfish.vehicle.util.VoxelShapeHelper;
 import net.minecraft.world.level.block.Block;
-import net.minecraft.world.level.block.BlockState;
+import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.item.BlockItemUseContext;
-import net.minecraft.world.level.block.state.DirectionProperty;
+import net.minecraft.world.item.context.BlockPlaceContext;
+import net.minecraft.world.level.block.state.properties.DirectionProperty;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.block.entity.BlockEntity;
@@ -29,6 +29,7 @@ import net.minecraft.world.level.Level;
 import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.List;
+import net.minecraft.world.level.LevelAccessor;
 
 /**
  * Author: MrCrayfish
@@ -47,18 +48,18 @@ public class FluidPumpBlock extends FluidPipeBlock
     };
 
     @Override
-    public VoxelShape getShape(BlockState state, BlockAndTintGetter worldIn, BlockPos pos, CollisionContext context)
+    public VoxelShape getShape(BlockState state, BlockGetter worldIn, BlockPos pos, CollisionContext context)
     {
         return this.getPumpShape(state, worldIn, pos);
     }
 
     @Override
-    public VoxelShape getCollisionShape(BlockState state, BlockAndTintGetter worldIn, BlockPos pos, CollisionContext context)
+    public VoxelShape getCollisionShape(BlockState state, BlockGetter worldIn, BlockPos pos, CollisionContext context)
     {
         return this.getPumpShape(state, worldIn, pos);
     }
 
-    protected VoxelShape getPumpShape(BlockState state, BlockAndTintGetter worldIn, BlockPos pos)
+    protected VoxelShape getPumpShape(BlockState state, BlockGetter worldIn, BlockPos pos)
     {
         List<VoxelShape> shapes = new ArrayList<>();
         shapes.add(super.getPipeShape(state, worldIn, pos));
@@ -72,12 +73,8 @@ public class FluidPumpBlock extends FluidPipeBlock
     }
 
     @Override
-    public InteractionResult use(BlockState state, Level world, BlockPos pos, Player player, Hand hand, BlockRayTraceResult result)
+    public InteractionResult useWithoutItem(BlockState state, Level world, BlockPos pos, Player player, BlockHitResult result)
     {
-        if(super.use(state, world, pos, player, hand, result) == InteractionResult.SUCCESS)
-        {
-            return InteractionResult.SUCCESS;
-        }
 
         if(!world.isClientSide())
         {
@@ -91,13 +88,13 @@ public class FluidPumpBlock extends FluidPipeBlock
                     pumpTileEntity.invalidatePipeNetwork();
                 }*/
 
-                Vector3d localHitVec = result.getLocation().add(-pos.getX(), -pos.getY(), -pos.getZ());
-                if(player.getItemInHand(hand).getItem() == ModItems.WRENCH.get() && this.isLookingAtHousing(state, localHitVec))
+                Vec3 localHitVec = result.getLocation().add(-pos.getX(), -pos.getY(), -pos.getZ());
+                if(player.getMainHandItem().getItem() == ModItems.WRENCH.get() && this.isLookingAtHousing(state, localHitVec))
                 {
                     pumpTileEntity.cyclePowerMode();
                     this.invalidatePipeNetwork(world, pos);
-                    Vector3d vec = result.getLocation();
-                    world.playSound(null, vec.x(), vec.y(), vec.z(), SoundEvents.NETHERITE_BLOCK_HIT, SoundCategory.BLOCKS, 1.0F, 0.5F + 0.1F * world.random.nextFloat());
+                    Vec3 vec = result.getLocation();
+                    world.playSound(null, vec.x(), vec.y(), vec.z(), SoundEvents.NETHERITE_BLOCK_HIT, SoundSource.BLOCKS, 1.0F, 0.5F + 0.1F * world.random.nextFloat());
                     return InteractionResult.SUCCESS;
                 }
             }
@@ -106,10 +103,10 @@ public class FluidPumpBlock extends FluidPipeBlock
         return InteractionResult.PASS;
     }
 
-    public boolean isLookingAtHousing(BlockState state, Vector3d hitVec)
+    public boolean isLookingAtHousing(BlockState state, Vec3 hitVec)
     {
         VoxelShape shape = PUMP_BOX[this.getCollisionFacing(state).get3DDataValue()];
-        AxisAlignedBB boundingBox = shape.bounds();
+        AABB boundingBox = shape.bounds();
         return boundingBox.inflate(0.001).contains(hitVec);
     }
 
@@ -141,7 +138,7 @@ public class FluidPumpBlock extends FluidPipeBlock
 
     @Nullable
     @Override
-    public BlockState getStateForPlacement(BlockItemUseContext context)
+    public BlockState getStateForPlacement(BlockPlaceContext context)
     {
         Level world = context.getLevel();
         BlockPos pos = context.getClickedPos();
@@ -167,7 +164,7 @@ public class FluidPumpBlock extends FluidPipeBlock
     }
 
     @Override
-    protected boolean canPipeConnectTo(BlockState state, IWorld world, BlockPos pos, Direction direction)
+    protected boolean canPipeConnectTo(BlockState state, LevelAccessor world, BlockPos pos, Direction direction)
     {
         if(direction == state.getValue(DIRECTION).getOpposite())
             return false;
@@ -183,8 +180,8 @@ public class FluidPumpBlock extends FluidPipeBlock
 
     @Nullable
     @Override
-    public PumpBlockEntity createTileEntity(BlockState state, BlockAndTintGetter world)
+    public BlockEntity newBlockEntity(BlockPos pos, BlockState state)
     {
-        return new PumpBlockEntity();
+        return new PumpBlockEntity(pos, state);
     }
 }

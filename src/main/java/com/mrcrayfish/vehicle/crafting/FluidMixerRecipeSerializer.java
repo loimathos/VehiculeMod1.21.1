@@ -1,56 +1,37 @@
 package com.mrcrayfish.vehicle.crafting;
 
-import com.google.gson.JsonArray;
-import com.google.gson.JsonObject;
+import com.mojang.serialization.MapCodec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
+import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.RecipeSerializer;
-import net.minecraft.network.FriendlyByteBuf;
-import net.minecraft.util.GsonHelper;
-import net.minecraft.resources.ResourceLocation;
-import net.minecraftforge.common.crafting.CraftingHelper;
 
-import javax.annotation.Nullable;
-
-/**
- * Author: MrCrayfish
- */
-public class FluidMixerRecipeSerializer extends net.minecraftforge.registries.ForgeRegistryEntry<RecipeSerializer<?>> implements RecipeSerializer<FluidMixerRecipe>
+public class FluidMixerRecipeSerializer implements RecipeSerializer<FluidMixerRecipe>
 {
-    @Override
-    public FluidMixerRecipe fromJson(ResourceLocation recipeId, JsonObject json)
-    {
-        String s = JSONUtils.getAsString(json, "group", "");
-        JsonArray input = JSONUtils.getAsJsonArray(json, "input");
-        if(input.size() != 2)
-        {
-            throw new com.google.gson.JsonSyntaxException("Invalid input, must only have two objects");
-        }
-        FluidEntry inputOne = FluidEntry.fromJson(input.get(0).getAsJsonObject());
-        FluidEntry inputTwo = FluidEntry.fromJson(input.get(1).getAsJsonObject());
-        ItemStack ingredient = CraftingHelper.getItemStack(json.getAsJsonObject("ingredient"), false);
-        FluidEntry result = FluidEntry.fromJson(json.getAsJsonObject("result"));
-        return new FluidMixerRecipe(recipeId, inputOne, inputTwo, ingredient, result);
-    }
+    public static final MapCodec<FluidMixerRecipe> CODEC = RecordCodecBuilder.mapCodec(builder -> builder.group(
+        ItemStack.CODEC.fieldOf("ingredient").forGetter(FluidMixerRecipe::getIngredient)
+    ).apply(builder, (ingredient) -> new FluidMixerRecipe(ingredient, null)));
 
-    @Nullable
+    public static final StreamCodec<RegistryFriendlyByteBuf, FluidMixerRecipe> STREAM_CODEC = StreamCodec.of(
+        (buf, recipe) -> {
+            ItemStack.STREAM_CODEC.encode(buf, recipe.getIngredient());
+        },
+        (buf) -> {
+            ItemStack ingredient = ItemStack.STREAM_CODEC.decode(buf);
+            return new FluidMixerRecipe(ingredient, null);
+        }
+    );
+
     @Override
-    public FluidMixerRecipe fromNetwork(ResourceLocation recipeId, PacketBuffer buffer)
+    public MapCodec<FluidMixerRecipe> codec()
     {
-        FluidEntry inputOne = FluidEntry.read(buffer);
-        FluidEntry inputTwo = FluidEntry.read(buffer);
-        ItemStack ingredient = buffer.readItem();
-        FluidEntry result = FluidEntry.read(buffer);
-        return new FluidMixerRecipe(recipeId, inputOne, inputTwo, ingredient, result);
+        return CODEC;
     }
 
     @Override
-    public void toNetwork(PacketBuffer buffer, FluidMixerRecipe recipe)
+    public StreamCodec<RegistryFriendlyByteBuf, FluidMixerRecipe> streamCodec()
     {
-        for(FluidEntry entry : recipe.getInputs())
-        {
-            entry.write(buffer);
-        }
-        buffer.writeItem(recipe.getIngredient());
-        recipe.getResult().write(buffer);
+        return STREAM_CODEC;
     }
 }

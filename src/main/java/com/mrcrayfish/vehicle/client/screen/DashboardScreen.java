@@ -9,8 +9,8 @@ import com.mrcrayfish.vehicle.common.Seat;
 import com.mrcrayfish.vehicle.common.cosmetic.actions.OpenableAction;
 import com.mrcrayfish.vehicle.entity.VehicleEntity;
 import com.mrcrayfish.vehicle.entity.properties.VehicleProperties;
-import net.minecraft.client.gui.screen.Screen;
-import net.minecraft.client.gui.widget.Widget;
+import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.network.chat.Component;
 
@@ -40,7 +40,7 @@ public class DashboardScreen extends AbstractToolbarScreen
     }
 
     @Override
-    protected void loadWidgets(List<Widget> widgets)
+    protected void loadWidgets(List<AbstractWidget> widgets)
     {
         widgets.add(new IconButton(20, 20, Icons.LEFT_DOOR, Component.translatable("vehicle.toolbar.label.doors"), onPress -> {
             this.minecraft.setScreen(new DoorScreen(this, this.vehicleRef.get()));
@@ -58,7 +58,7 @@ public class DashboardScreen extends AbstractToolbarScreen
         }
 
         @Override
-        protected void loadWidgets(List<Widget> widgets)
+        protected void loadWidgets(List<AbstractWidget> widgets)
         {
             VehicleEntity vehicle = this.vehicleRef.get();
             if(vehicle != null)
@@ -81,7 +81,7 @@ public class DashboardScreen extends AbstractToolbarScreen
         }
 
         @Override
-        protected void loadWidgets(List<Widget> widgets)
+        protected void loadWidgets(List<AbstractWidget> widgets)
         {
             VehicleEntity vehicle = this.vehicleRef.get();
             if(vehicle != null)
@@ -106,7 +106,7 @@ public class DashboardScreen extends AbstractToolbarScreen
         SEAT_PASSENGER,
         SEAT_DRIVER;
 
-        private static final ResourceLocation ICON_TEXTURE = new ResourceLocation(Reference.MOD_ID, "textures/gui/icons.png");
+        private static final ResourceLocation ICON_TEXTURE = ResourceLocation.fromNamespaceAndPath(Reference.MOD_ID, "textures/gui/icons.png");
 
         @Override
         public ResourceLocation getTextureLocation()

@@ -8,26 +8,26 @@ import net.minecraft.world.level.LevelReader;
 
 public class StateHelper
 {
-    public static Block getBlock(IWorldReader world, BlockPos pos, Direction facing, RelativeDirection dir)
+    public static Block getBlock(LevelReader world, BlockPos pos, Direction facing, RelativeDirection dir)
     {
         BlockPos target = getBlockPosRelativeTo(world, pos, facing, dir);
         return world.getBlockState(target).getBlock();
     }
 
-    public static RelativeDirection getRotation(IWorldReader world, BlockPos pos, Direction facing, RelativeDirection dir)
+    public static RelativeDirection getRotation(LevelReader world, BlockPos pos, Direction facing, RelativeDirection dir)
     {
         BlockPos target = getBlockPosRelativeTo(world, pos, facing, dir);
         Direction other = world.getBlockState(target).getValue(RotatedObjectBlock.DIRECTION);
         return getDirectionRelativeTo(facing, other);
     }
 
-    public static boolean isAirBlock(IWorldReader world, BlockPos pos, Direction facing, RelativeDirection dir)
+    public static boolean isAirBlock(LevelReader world, BlockPos pos, Direction facing, RelativeDirection dir)
     {
         BlockPos target = getBlockPosRelativeTo(world, pos, facing, dir);
         return world.getBlockState(target).isAir();
     }
 
-    private static BlockPos getBlockPosRelativeTo(IWorldReader world, BlockPos pos, Direction facing, RelativeDirection dir)
+    private static BlockPos getBlockPosRelativeTo(LevelReader world, BlockPos pos, Direction facing, RelativeDirection dir)
     {
         switch(dir)
         {

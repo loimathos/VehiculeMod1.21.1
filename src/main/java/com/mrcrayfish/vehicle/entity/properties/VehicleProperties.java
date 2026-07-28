@@ -16,12 +16,13 @@ import com.mrcrayfish.vehicle.entity.Wheel;
 import com.mrcrayfish.vehicle.network.HandshakeMessages;
 import com.mrcrayfish.vehicle.util.ExtraJSONUtils;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.resources.ReloadListener;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.network.FriendlyByteBuf;
-import net.minecraft.profiler.IProfiler;
-import net.minecraft.resources.IResource;
-import net.minecraft.resources.IResourceManager;
+import net.minecraft.network.chat.Component;
+import net.minecraft.util.profiling.ProfilerFiller;
+import net.minecraft.server.packs.resources.Resource;
+import net.minecraft.server.packs.resources.ResourceManager;
+import net.minecraft.server.packs.resources.SimplePreparableReloadListener;
 import net.minecraft.util.GsonHelper;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.phys.Vec3;
@@ -33,8 +34,9 @@ import net.minecraftforge.event.AddReloadListenerEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.LogicalSide;
 import net.minecraftforge.fml.common.Mod;
-import net.minecraftforge.fml.common.thread.EffectiveSide;
-import net.minecraftforge.fml.event.server.FMLServerStoppedEvent;
+import net.minecraftforge.fml.util.thread.EffectiveSide;
+import net.minecraftforge.event.server.ServerStoppedEvent;
+import net.minecraftforge.fml.ModList;
 import net.minecraftforge.fml.loading.FMLEnvironment;
 import org.apache.commons.lang3.tuple.Pair;
 import org.lwjgl.glfw.GLFW;
@@ -45,6 +47,8 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.lang.reflect.Type;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -55,6 +59,7 @@ import java.util.Optional;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
+import net.minecraft.core.registries.BuiltInRegistries;
 
 /**
  * Author: MrCrayfish
@@ -71,10 +76,10 @@ public class VehicleProperties
 
     public static final float DEFAULT_MAX_HEALTH = 100F;
     public static final float DEFAULT_AXLE_OFFSET = 0F;
-    public static final Vector3d DEFAULT_HELD_OFFSET = Vector3d.ZERO;
+    public static final Vec3 DEFAULT_HELD_OFFSET = Vec3.ZERO;
     public static final boolean DEFAULT_CAN_TOW_TRAILERS = false;
-    public static final Vector3d DEFAULT_TOW_BAR_OFFSET = Vector3d.ZERO;
-    public static final Vector3d DEFAULT_TRAILER_OFFSET = Vector3d.ZERO;
+    public static final Vec3 DEFAULT_TOW_BAR_OFFSET = Vec3.ZERO;
+    public static final Vec3 DEFAULT_TRAILER_OFFSET = Vec3.ZERO;
     public static final boolean DEFAULT_CAN_CHANGE_WHEELS = false;
     public static final boolean DEFAULT_IMMUNE_TO_FALL_DAMAGE = false;
     public static final boolean DEFAULT_CAN_PLAYER_CARRY = true;
@@ -86,10 +91,10 @@ public class VehicleProperties
     private final float maxHealth;
     private final float axleOffset;
     private final float wheelOffset;
-    private final Vector3d heldOffset;
+    private final Vec3 heldOffset;
     private final boolean canTowTrailers;
-    private final Vector3d towBarOffset;
-    private final Vector3d trailerOffset;
+    private final Vec3 towBarOffset;
+    private final Vec3 trailerOffset;
     private final boolean canChangeWheels;
     private final boolean immuneToFallDamage;
     private final boolean canPlayerCarry;
@@ -103,7 +108,7 @@ public class VehicleProperties
     private final ImmutableMap<ResourceLocation, ExtendedProperties> extended;
     private final ImmutableMap<ResourceLocation, CosmeticProperties> cosmetics;
 
-    private VehicleProperties(float maxHealth, float axleOffset, float wheelOffset, Vector3d heldOffset, boolean canTowTrailers, Vector3d towBarOffset, Vector3d trailerOffset, boolean canChangeWheels, boolean immuneToFallDamage, boolean canPlayerCarry, boolean canFitInTrailer, List<Wheel> wheels, Transform bodyTransform, Transform displayTransform, List<Seat> seats, boolean canBePainted, CameraProperties camera, Map<ResourceLocation, ExtendedProperties> extended, Map<ResourceLocation, CosmeticProperties> cosmetics)
+    private VehicleProperties(float maxHealth, float axleOffset, float wheelOffset, Vec3 heldOffset, boolean canTowTrailers, Vec3 towBarOffset, Vec3 trailerOffset, boolean canChangeWheels, boolean immuneToFallDamage, boolean canPlayerCarry, boolean canFitInTrailer, List<Wheel> wheels, Transform bodyTransform, Transform displayTransform, List<Seat> seats, boolean canBePainted, CameraProperties camera, Map<ResourceLocation, ExtendedProperties> extended, Map<ResourceLocation, CosmeticProperties> cosmetics)
     {
         this.maxHealth = maxHealth;
         this.axleOffset = axleOffset;
@@ -141,7 +146,7 @@ public class VehicleProperties
         return this.wheelOffset;
     }
 
-    public Vector3d getHeldOffset()
+    public Vec3 getHeldOffset()
     {
         return this.heldOffset;
     }
@@ -151,12 +156,12 @@ public class VehicleProperties
         return this.canTowTrailers;
     }
 
-    public Vector3d getTowBarOffset()
+    public Vec3 getTowBarOffset()
     {
         return this.towBarOffset;
     }
 
-    public Vector3d getTrailerOffset()
+    public Vec3 getTrailerOffset()
     {
         return this.trailerOffset;
     }
@@ -245,15 +250,42 @@ public class VehicleProperties
     {
         for(EntityType<? extends VehicleEntity> entityType : VehicleRegistry.getRegisteredVehicleTypes())
         {
-            DEFAULT_VEHICLE_PROPERTIES.computeIfAbsent(entityType.getRegistryName(), VehicleProperties::loadDefaultProperties);
+            DEFAULT_VEHICLE_PROPERTIES.computeIfAbsent(BuiltInRegistries.ENTITY_TYPE.getKey(entityType), VehicleProperties::loadDefaultProperties);
         }
+    }
+
+    /**
+     * Opens a file bundled inside this mod's own jar.
+     *
+     * <p>Class#getResourceAsStream cannot be used here. Since 1.17 mods are loaded as named JPMS
+     * modules, and "data/vehicle/vehicles/properties" maps to a valid Java package name, so module
+     * encapsulation denies the lookup and it silently returns null in production (it works fine in
+     * a dev environment, which is why this was easy to miss). Going through the mod file is the
+     * supported way to read a mod's own resources.</p>
+     *
+     * @return an open stream, or null if the resource does not exist
+     */
+    @Nullable
+    private static InputStream openModResource(String path) throws IOException
+    {
+        Path resourcePath = ModList.get().getModFileById(Reference.MOD_ID).getFile().findResource(path);
+        if(resourcePath == null || !Files.exists(resourcePath))
+        {
+            return null;
+        }
+        return Files.newInputStream(resourcePath);
     }
 
     private static VehicleProperties loadDefaultProperties(ResourceLocation id)
     {
-        String resource = String.format("/data/%s/vehicles/properties/%s.json", id.getNamespace(), id.getPath());
-        try(InputStream is = VehicleProperties.class.getResourceAsStream(resource))
+        String resource = String.format("data/%s/vehicles/properties/%s.json", id.getNamespace(), id.getPath());
+        try(InputStream is = openModResource(resource))
         {
+            if(is == null)
+            {
+                VehicleMod.LOGGER.error("Missing vehicle properties file: " + resource);
+                return null;
+            }
             VehicleProperties properties = loadPropertiesFromStream(is);
             loadDefaultCosmetics(id, properties);
             return properties;
@@ -271,10 +303,13 @@ public class VehicleProperties
 
     private static void loadDefaultCosmetics(ResourceLocation id, VehicleProperties properties)
     {
-        String resource = String.format("/data/%s/vehicles/cosmetics/%s.json", id.getNamespace(), id.getPath());
-        try(InputStream is = VehicleProperties.class.getResourceAsStream(resource))
+        String resource = String.format("data/%s/vehicles/cosmetics/%s.json", id.getNamespace(), id.getPath());
+        try(InputStream is = openModResource(resource))
         {
-            Objects.requireNonNull(is, "");
+            if(is == null)
+            {
+                return;
+            }
             Map<ResourceLocation, List<Pair<ResourceLocation, List<ResourceLocation>>>> modelMap = new HashMap<>();
             CosmeticProperties.deserializeModels(is, modelMap);
             modelMap.forEach((cosmeticId, models) -> {
@@ -301,7 +336,7 @@ public class VehicleProperties
 
     public static VehicleProperties get(EntityType<?> entityType)
     {
-        return get(entityType.getRegistryName());
+        return get(BuiltInRegistries.ENTITY_TYPE.getKey(entityType));
     }
 
     public static VehicleProperties get(ResourceLocation id)
@@ -324,7 +359,15 @@ public class VehicleProperties
             properties = DEFAULT_VEHICLE_PROPERTIES.get(id);
             if(properties == null)
             {
-                throw new IllegalArgumentException("No vehicle properties registered for " + id);
+                properties = loadDefaultProperties(id);
+                if(properties != null)
+                {
+                    DEFAULT_VEHICLE_PROPERTIES.put(id, properties);
+                }
+                else
+                {
+                    throw new IllegalArgumentException("No vehicle properties registered for " + id);
+                }
             }
         }
         return properties;
@@ -355,7 +398,7 @@ public class VehicleProperties
     }
 
     @SubscribeEvent
-    public static void onClientDisconnect(ClientPlayerNetworkEvent.LoggedOutEvent event)
+    public static void onClientDisconnect(ClientPlayerNetworkEvent.LoggingOut event)
     {
         NETWORK_VEHICLE_PROPERTIES.clear();
     }
@@ -374,7 +417,7 @@ public class VehicleProperties
     }
 
     @SubscribeEvent
-    public static void onKeyPress(InputEvent.KeyInputEvent event)
+    public static void onKeyPress(InputEvent.Key event)
     {
         if(FMLEnvironment.production)
             return;
@@ -423,17 +466,17 @@ public class VehicleProperties
         @Override
         public VehicleProperties deserialize(JsonElement element, Type type, JsonDeserializationContext context) throws JsonParseException
         {
-            JsonObject object = JSONUtils.convertToJsonObject(element, "vehicle property");
+            JsonObject object = GsonHelper.convertToJsonObject(element, "vehicle property");
             VehicleProperties.Builder builder = VehicleProperties.builder();
-            builder.setCanBePainted(JSONUtils.getAsBoolean(object, "canBePainted", DEFAULT_CAN_BE_PAINTED));
-            builder.setCanChangeWheels(JSONUtils.getAsBoolean(object, "canChangeWheels", DEFAULT_CAN_CHANGE_WHEELS));
-            builder.setImmuneToFallDamage(JSONUtils.getAsBoolean(object, "immuneToFallDamage", DEFAULT_IMMUNE_TO_FALL_DAMAGE));
-            builder.setCanPlayerCarry(JSONUtils.getAsBoolean(object, "canPlayerCarry", DEFAULT_CAN_PLAYER_CARRY));
-            builder.setCanFitInTrailer(JSONUtils.getAsBoolean(object, "canFitInTrailer", DEFAULT_CAN_FIT_IN_TRAILER));
-            builder.setAxleOffset(JSONUtils.getAsFloat(object, "offsetToGround", DEFAULT_AXLE_OFFSET));
+            builder.setCanBePainted(GsonHelper.getAsBoolean(object, "canBePainted", DEFAULT_CAN_BE_PAINTED));
+            builder.setCanChangeWheels(GsonHelper.getAsBoolean(object, "canChangeWheels", DEFAULT_CAN_CHANGE_WHEELS));
+            builder.setImmuneToFallDamage(GsonHelper.getAsBoolean(object, "immuneToFallDamage", DEFAULT_IMMUNE_TO_FALL_DAMAGE));
+            builder.setCanPlayerCarry(GsonHelper.getAsBoolean(object, "canPlayerCarry", DEFAULT_CAN_PLAYER_CARRY));
+            builder.setCanFitInTrailer(GsonHelper.getAsBoolean(object, "canFitInTrailer", DEFAULT_CAN_FIT_IN_TRAILER));
+            builder.setAxleOffset(GsonHelper.getAsFloat(object, "offsetToGround", DEFAULT_AXLE_OFFSET));
             builder.setHeldOffset(ExtraJSONUtils.getAsVector3d(object, "heldOffset", DEFAULT_HELD_OFFSET));
             builder.setTrailerOffset(ExtraJSONUtils.getAsVector3d(object, "trailerOffset", DEFAULT_TRAILER_OFFSET));
-            builder.setCanTowTrailers(JSONUtils.getAsBoolean(object, "canTowTrailers", DEFAULT_CAN_TOW_TRAILERS));
+            builder.setCanTowTrailers(GsonHelper.getAsBoolean(object, "canTowTrailers", DEFAULT_CAN_TOW_TRAILERS));
             builder.setTowBarOffset(ExtraJSONUtils.getAsVector3d(object, "towBarOffset", DEFAULT_TOW_BAR_OFFSET));
             builder.setDisplayTransform(ExtraJSONUtils.getAsTransform(object, "displayTransform", DEFAULT_DISPLAY_TRANSFORM));
             builder.setBodyTransform(ExtraJSONUtils.getAsTransform(object, "bodyTransform", DEFAULT_BODY_TRANSFORM));
@@ -449,7 +492,7 @@ public class VehicleProperties
         {
             if(object.has("wheels"))
             {
-                JsonArray wheelArray = JSONUtils.getAsJsonArray(object, "wheels");
+                JsonArray wheelArray = GsonHelper.getAsJsonArray(object, "wheels");
                 for(JsonElement wheelElement : wheelArray)
                 {
                     JsonObject wheelObject = wheelElement.getAsJsonObject();
@@ -475,7 +518,7 @@ public class VehicleProperties
         {
             if(object.has("seats"))
             {
-                JsonArray jsonArray = JSONUtils.getAsJsonArray(object, "seats");
+                JsonArray jsonArray = GsonHelper.getAsJsonArray(object, "seats");
                 for(JsonElement element : jsonArray)
                 {
                     JsonObject seatObject = element.getAsJsonObject();
@@ -501,7 +544,7 @@ public class VehicleProperties
         {
             if(object.has("camera"))
             {
-                JsonObject cameraObject = JSONUtils.getAsJsonObject(object, "camera", new JsonObject());
+                JsonObject cameraObject = GsonHelper.getAsJsonObject(object, "camera", new JsonObject());
                 builder.setCamera(CameraProperties.fromJsonObject(cameraObject));
             }
         }
@@ -520,7 +563,7 @@ public class VehicleProperties
 
         private void readExtended(VehicleProperties.Builder builder, JsonObject object)
         {
-            JsonObject extended = JSONUtils.getAsJsonObject(object, "extended", new JsonObject());
+            JsonObject extended = GsonHelper.getAsJsonObject(object, "extended", new JsonObject());
             extended.entrySet().stream().filter(entry -> entry.getValue().isJsonObject()).forEach(entry -> {
                 ResourceLocation id = ResourceLocation.tryParse(entry.getKey());
                 JsonObject content = entry.getValue().getAsJsonObject();
@@ -544,7 +587,7 @@ public class VehicleProperties
 
         private void readCosmetics(VehicleProperties.Builder builder, JsonObject object)
         {
-            JsonArray cosmetics = JSONUtils.getAsJsonArray(object, "cosmetics", new JsonArray());
+            JsonArray cosmetics = GsonHelper.getAsJsonArray(object, "cosmetics", new JsonArray());
             if(cosmetics != null)
             {
                 StreamSupport.stream(cosmetics.spliterator(), false).filter(JsonElement::isJsonObject).forEach(element -> {
@@ -578,10 +621,10 @@ public class VehicleProperties
     {
         private float maxHealth = DEFAULT_MAX_HEALTH;
         private float axleOffset = DEFAULT_AXLE_OFFSET;
-        private Vector3d heldOffset = DEFAULT_HELD_OFFSET;
+        private Vec3 heldOffset = DEFAULT_HELD_OFFSET;
         private boolean canTowTrailers = DEFAULT_CAN_TOW_TRAILERS;
-        private Vector3d towBarOffset = DEFAULT_TOW_BAR_OFFSET;
-        private Vector3d trailerOffset = DEFAULT_TRAILER_OFFSET;
+        private Vec3 towBarOffset = DEFAULT_TOW_BAR_OFFSET;
+        private Vec3 trailerOffset = DEFAULT_TRAILER_OFFSET;
         private boolean canChangeWheels = DEFAULT_CAN_CHANGE_WHEELS;
         private boolean immuneToFallDamage = DEFAULT_IMMUNE_TO_FALL_DAMAGE;
         private boolean canPlayerCarry = DEFAULT_CAN_PLAYER_CARRY;
@@ -609,11 +652,11 @@ public class VehicleProperties
 
         public Builder setHeldOffset(double x, double y, double z)
         {
-            this.heldOffset = new Vector3d(x, y, z);
+            this.heldOffset = new Vec3(x, y, z);
             return this;
         }
 
-        public Builder setHeldOffset(Vector3d vec)
+        public Builder setHeldOffset(Vec3 vec)
         {
             this.heldOffset = vec;
             return this;
@@ -621,7 +664,7 @@ public class VehicleProperties
 
         public Builder setTowBarPosition(double x, double y, double z)
         {
-            this.towBarOffset = new Vector3d(x, y, z);
+            this.towBarOffset = new Vec3(x, y, z);
             return this;
         }
 
@@ -631,7 +674,7 @@ public class VehicleProperties
             return this;
         }
 
-        public Builder setTowBarOffset(Vector3d vec)
+        public Builder setTowBarOffset(Vec3 vec)
         {
             this.towBarOffset = vec;
             return this;
@@ -639,11 +682,11 @@ public class VehicleProperties
 
         public Builder setTrailerOffset(double x, double y, double z)
         {
-            this.trailerOffset = new Vector3d(x, y, z);
+            this.trailerOffset = new Vec3(x, y, z);
             return this;
         }
 
-        public Builder setTrailerOffset(Vector3d vec)
+        public Builder setTrailerOffset(Vec3 vec)
         {
             this.trailerOffset = vec;
             return this;
@@ -764,7 +807,7 @@ public class VehicleProperties
                 double xScale = wheel.getScale().x != 0.0 ? wheel.getScale().x : scale;
                 double yScale = wheel.getScale().y != 0.0 ? wheel.getScale().y : scale;
                 double zScale = wheel.getScale().z != 0.0 ? wheel.getScale().z : scale;
-                Vector3d newScale = new Vector3d(xScale, yScale, zScale);
+                Vec3 newScale = new Vec3(xScale, yScale, zScale);
                 return wheel.rescale(newScale);
             }).collect(Collectors.toList());
         }
@@ -782,7 +825,7 @@ public class VehicleProperties
     }
 
     @Mod.EventBusSubscriber(modid = Reference.MOD_ID)
-    public static class Manager extends ReloadListener<Map<ResourceLocation, VehicleProperties>>
+    public static class Manager extends SimplePreparableReloadListener<Map<ResourceLocation, VehicleProperties>>
     {
         private static final String PROPERTIES_DIRECTORY = "vehicles/properties";
         private static final String COSMETICS_DIRECTORY = "vehicles/cosmetics";
@@ -793,24 +836,23 @@ public class VehicleProperties
         private Map<ResourceLocation, VehicleProperties> vehicleProperties;
 
         @Override
-        protected Map<ResourceLocation, VehicleProperties> prepare(IResourceManager manager, IProfiler profiler)
+        protected Map<ResourceLocation, VehicleProperties> prepare(ResourceManager manager, ProfilerFiller profiler)
         {
             Map<ResourceLocation, VehicleProperties> propertiesMap = new HashMap<>();
-            manager.listResources(PROPERTIES_DIRECTORY, location -> location.endsWith(FILE_SUFFIX))
-                .stream()
-                .filter(location -> DEFAULT_VEHICLE_PROPERTIES.containsKey(format(location, PROPERTIES_DIRECTORY)))
-                .forEach(location -> {
-                    try
+            manager.listResources(PROPERTIES_DIRECTORY, location -> location.getPath().endsWith(FILE_SUFFIX))
+                .forEach((location, resource) -> {
+                    ResourceLocation formatLocation = format(location, PROPERTIES_DIRECTORY);
+                    if(DEFAULT_VEHICLE_PROPERTIES.containsKey(formatLocation))
                     {
-                        IResource resource = manager.getResource(location);
-                        InputStream stream = resource.getInputStream();
-                        VehicleProperties properties = loadPropertiesFromStream(stream);
-                        propertiesMap.put(format(location, PROPERTIES_DIRECTORY), properties);
-                        stream.close();
-                    }
-                    catch(IOException e)
-                    {
-                        VehicleMod.LOGGER.error("Couldn't parse vehicle properties {}", location);
+                        try (InputStream stream = resource.open())
+                        {
+                            VehicleProperties properties = loadPropertiesFromStream(stream);
+                            propertiesMap.put(formatLocation, properties);
+                        }
+                        catch(IOException e)
+                        {
+                            VehicleMod.LOGGER.error("Couldn't parse vehicle properties {}", location);
+                        }
                     }
                 });
 
@@ -822,11 +864,13 @@ public class VehicleProperties
 
                 // Loads the cosmetics json for applicable vehicles
                 Map<ResourceLocation, List<Pair<ResourceLocation, List<ResourceLocation>>>> modelMap = new HashMap<>();
-                manager.listResources(COSMETICS_DIRECTORY, fileName -> {
-                    return fileName.equals(id.getPath() + FILE_SUFFIX);
-                }).stream().sorted(Comparator.comparing(ResourceLocation::getNamespace, (n1, n2) -> {
+                
+                manager.listResources(COSMETICS_DIRECTORY, location -> {
+                    return location.getPath().endsWith(id.getPath() + FILE_SUFFIX);
+                }).entrySet().stream().sorted(Comparator.comparing(entry -> entry.getKey().getNamespace(), (n1, n2) -> {
                     return n1.equals(n2) ? 0 : n1.equals(Reference.MOD_ID) ? 1 : -1;
-                })).forEach(location -> {
+                })).forEach(entry -> {
+                    ResourceLocation location = entry.getKey();
                     ResourceLocation vehicleId = format(location, COSMETICS_DIRECTORY);
                     if(!vehicleId.getNamespace().equals(id.getNamespace()))
                         return;
@@ -846,9 +890,9 @@ public class VehicleProperties
         }
 
         @Override
-        protected void apply(Map<ResourceLocation, VehicleProperties> propertiesMap, IResourceManager manager, IProfiler profiler)
+        protected void apply(Map<ResourceLocation, VehicleProperties> propertiesMap, ResourceManager manager, ProfilerFiller profiler)
         {
-            this.vehicleProperties = ImmutableMap.copyOf(propertiesMap);
+            this.vehicleProperties = com.google.common.collect.ImmutableMap.copyOf(propertiesMap);
         }
 
         @Nullable
@@ -859,7 +903,7 @@ public class VehicleProperties
 
         private static ResourceLocation format(ResourceLocation location, String directory)
         {
-            return new ResourceLocation(location.getNamespace(), location.getPath().substring(directory.length() + 1, location.getPath().length() - FILE_SUFFIX.length()));
+            return ResourceLocation.fromNamespaceAndPath(location.getNamespace(), location.getPath().substring(directory.length() + 1, location.getPath().length() - FILE_SUFFIX.length()));
         }
 
         @SubscribeEvent
@@ -869,7 +913,7 @@ public class VehicleProperties
         }
 
         @SubscribeEvent
-        public static void onServerStopped(FMLServerStoppedEvent event)
+        public static void onServerStopped(ServerStoppedEvent event)
         {
             Manager.instance = null;
         }
@@ -884,7 +928,7 @@ public class VehicleProperties
             return instance;
         }
 
-        public void writeVehicleProperties(PacketBuffer buffer)
+        public void writeVehicleProperties(FriendlyByteBuf buffer)
         {
             buffer.writeVarInt(this.vehicleProperties.size());
             this.vehicleProperties.forEach((id, properties) ->
@@ -895,7 +939,7 @@ public class VehicleProperties
             });
         }
 
-        public static ImmutableMap<ResourceLocation, VehicleProperties> readVehicleProperties(PacketBuffer buffer)
+        public static ImmutableMap<ResourceLocation, VehicleProperties> readVehicleProperties(FriendlyByteBuf buffer)
         {
             int size = buffer.readVarInt();
             if(size > 0)
@@ -914,7 +958,7 @@ public class VehicleProperties
             return ImmutableMap.of();
         }
 
-        private static void writeCosmeticModelLocations(PacketBuffer buffer, VehicleProperties properties)
+        private static void writeCosmeticModelLocations(FriendlyByteBuf buffer, VehicleProperties properties)
         {
             buffer.writeInt(properties.getCosmetics().size());
             properties.getCosmetics().forEach((cosmeticId, cosmeticProperties) ->
@@ -931,7 +975,7 @@ public class VehicleProperties
             });
         }
 
-        private static void readCosmeticModelLocations(PacketBuffer buffer, VehicleProperties properties)
+        private static void readCosmeticModelLocations(FriendlyByteBuf buffer, VehicleProperties properties)
         {
             int cosmeticsLength = buffer.readInt();
             for(int i = 0; i < cosmeticsLength; i++)

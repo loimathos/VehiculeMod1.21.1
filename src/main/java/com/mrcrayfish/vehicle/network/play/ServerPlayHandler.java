@@ -1,6 +1,6 @@
 package com.mrcrayfish.vehicle.network.play;
 
-//import com.mrcrayfish.obfuscate.common.data.SyncedPlayerData;
+import com.mrcrayfish.obfuscate.common.data.SyncedPlayerData;
 import com.mrcrayfish.vehicle.Config;
 import com.mrcrayfish.vehicle.block.VehicleCrateBlock;
 import com.mrcrayfish.vehicle.common.CommonEvents;
@@ -36,7 +36,7 @@ import net.minecraft.world.level.block.SoundType;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.item.ItemEntity;
-import net.minecraft.world.entity.player.ServerPlayer;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.SimpleMenuProvider;
 import net.minecraft.world.item.DyeItem;
@@ -51,7 +51,7 @@ import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.level.Level;
 import net.minecraftforge.common.ForgeMod;
-import net.minecraftforge.network.NetworkHooks;
+
 import net.minecraftforge.registries.ForgeRegistries;
 
 import java.util.List;
@@ -65,21 +65,21 @@ public class ServerPlayHandler
 {
     public static void handleAttachChestMessage(ServerPlayer player, MessageAttachChest message)
     {
-        Level world = player.level;
+        Level world = player.level();
         Entity targetEntity = world.getEntity(message.getEntityId());
         if(targetEntity instanceof IAttachableChest)
         {
-            float reachDistance = (float) player.getAttribute(ForgeMod.REACH_DISTANCE.get()).getValue();
+            float reachDistance = (float) player.getAttribute(net.minecraft.world.entity.ai.attributes.Attributes.BLOCK_INTERACTION_RANGE).getValue();
             if(player.distanceTo(targetEntity) < reachDistance)
             {
                 IAttachableChest attachableChest = (IAttachableChest) targetEntity;
                 if(!attachableChest.hasChest(message.getKey()))
                 {
-                    ItemStack stack = player.inventory.getSelected();
+                    ItemStack stack = player.getInventory().getSelected();
                     if(!stack.isEmpty() && stack.getItem() == Items.CHEST)
                     {
                         attachableChest.attachChest(message.getKey(), stack);
-                        world.playSound(null, targetEntity.getX(), targetEntity.getY(), targetEntity.getZ(), SoundType.WOOD.getPlaceSound(), SoundCategory.BLOCKS, 1.0F, 1.0F);
+                        world.playSound(null, targetEntity.getX(), targetEntity.getY(), targetEntity.getZ(), SoundType.WOOD.getPlaceSound(), SoundSource.BLOCKS, 1.0F, 1.0F);
                     }
                 }
             }
@@ -88,7 +88,7 @@ public class ServerPlayHandler
 
     public static void handleAttachTrailerMessage(ServerPlayer player, MessageAttachTrailer message)
     {
-        Entity trailerEntity = player.level.getEntity(message.getTrailerId());
+        Entity trailerEntity = player.level().getEntity(message.getTrailerId());
         if(trailerEntity instanceof TrailerEntity)
         {
             TrailerEntity trailer = (TrailerEntity) trailerEntity;
@@ -102,7 +102,7 @@ public class ServerPlayHandler
 
     public static void handleCraftVehicleMessage(ServerPlayer player, MessageCraftVehicle message)
     {
-        Level world = player.level;
+        Level world = player.level();
         if(!(player.containerMenu instanceof WorkstationContainer))
             return;
 
@@ -110,11 +110,11 @@ public class ServerPlayHandler
         if(!workstation.getPos().equals(message.getPos()))
             return;
 
-        ResourceLocation entityId = new ResourceLocation(message.getVehicleId());
+        ResourceLocation entityId = ResourceLocation.parse(message.getVehicleId());
         if(Config.SERVER.disabledVehicles.get().contains(entityId.toString()))
             return;
 
-        EntityType<?> entityType = ForgeRegistries.ENTITIES.getValue(entityId);
+        EntityType<?> entityType = ForgeRegistries.ENTITY_TYPES.getValue(entityId);
         if(entityType == null)
             return;
 
@@ -167,7 +167,7 @@ public class ServerPlayHandler
             if(workstationDyeStack.getItem() instanceof DyeItem)
             {
                 DyeItem dyeItem = (DyeItem) workstationDyeStack.getItem();
-                color = dyeItem.getDyeColor().getColorValue();
+                color = dyeItem.getDyeColor().getTextureDiffuseColor();
                 workstationBlockEntity.getInventory().set(0, ItemStack.EMPTY);
             }
         }
@@ -243,7 +243,7 @@ public class ServerPlayHandler
 
     public static void handleFuelVehicleMessage(ServerPlayer player, MessageFuelVehicle message)
     {
-        Entity targetEntity = player.level.getEntity(message.getEntityId());
+        Entity targetEntity = player.level().getEntity(message.getEntityId());
         if(targetEntity instanceof PoweredVehicleEntity)
         {
             ((PoweredVehicleEntity) targetEntity).fuelVehicle(player, message.getHand());
@@ -285,32 +285,32 @@ public class ServerPlayHandler
             if(vehicle.getTrailer() != null)
             {
                 vehicle.setTrailer(null);
-                player.level.playSound(null, vehicle.blockPosition(), SoundEvents.ITEM_BREAK, SoundCategory.PLAYERS, 1.0F, 1.0F);
+                player.level().playSound(null, vehicle.blockPosition(), SoundEvents.ITEM_BREAK, SoundSource.PLAYERS, 1.0F, 1.0F);
             }
         }
         else
         {
             VehicleProperties properties = vehicle.getProperties();
-            Vector3d vehicleVec = vehicle.position();
-            Vector3d towBarVec = properties.getTowBarOffset();
-            towBarVec = new Vector3d(towBarVec.x * 0.0625, towBarVec.y * 0.0625, towBarVec.z * 0.0625 + properties.getBodyTransform().getZ());
-            vehicleVec = vehicleVec.add(towBarVec.yRot((float) Math.toRadians(-vehicle.yRot)));
+            Vec3 vehicleVec = vehicle.position();
+            Vec3 towBarVec = properties.getTowBarOffset();
+            towBarVec = new Vec3(towBarVec.x * 0.0625, towBarVec.y * 0.0625, towBarVec.z * 0.0625 + properties.getBodyTransform().getZ());
+            vehicleVec = vehicleVec.add(towBarVec.yRot((float) Math.toRadians(-vehicle.getYRot())));
 
-            AxisAlignedBB towBarBox = new AxisAlignedBB(vehicleVec.x, vehicleVec.y, vehicleVec.z, vehicleVec.x, vehicleVec.y, vehicleVec.z).inflate(0.25);
-            List<TrailerEntity> trailers = player.level.getEntitiesOfClass(TrailerEntity.class, vehicle.getBoundingBox().inflate(5), input -> input.getPullingEntity() == null);
+            AABB towBarBox = new AABB(vehicleVec.x, vehicleVec.y, vehicleVec.z, vehicleVec.x, vehicleVec.y, vehicleVec.z).inflate(0.25);
+            List<TrailerEntity> trailers = player.level().getEntitiesOfClass(TrailerEntity.class, vehicle.getBoundingBox().inflate(5), input -> input.getPullingEntity() == null);
             for(TrailerEntity trailer : trailers)
             {
                 if(trailer.getPullingEntity() != null)
                     continue;
 
-                Vector3d trailerVec = trailer.position();
-                Vector3d hitchVec = new Vector3d(0, 0, -trailer.getHitchOffset() / 16.0);
-                trailerVec = trailerVec.add(hitchVec.yRot((float) Math.toRadians(-trailer.yRot)));
-                AxisAlignedBB hitchBox = new AxisAlignedBB(trailerVec.x, trailerVec.y, trailerVec.z, trailerVec.x, trailerVec.y, trailerVec.z).inflate(0.25);
+                Vec3 trailerVec = trailer.position();
+                Vec3 hitchVec = new Vec3(0, 0, -trailer.getHitchOffset() / 16.0);
+                trailerVec = trailerVec.add(hitchVec.yRot((float) Math.toRadians(-trailer.getYRot())));
+                AABB hitchBox = new AABB(trailerVec.x, trailerVec.y, trailerVec.z, trailerVec.x, trailerVec.y, trailerVec.z).inflate(0.25);
                 if(towBarBox.intersects(hitchBox))
                 {
                     vehicle.setTrailer(trailer);
-                    player.level.playSound(null, vehicle.blockPosition(), SoundEvents.ANVIL_PLACE, SoundCategory.PLAYERS, 1.0F, 1.5F);
+                    player.level().playSound(null, vehicle.blockPosition(), SoundEvents.ANVIL_PLACE, SoundSource.PLAYERS, 1.0F, 1.5F);
                     return;
                 }
             }
@@ -328,7 +328,7 @@ public class ServerPlayHandler
 
     public static void handleInteractKeyMessage(ServerPlayer player, MessageInteractKey message)
     {
-        Entity targetEntity = player.level.getEntity(message.getEntityId());
+        Entity targetEntity = player.level().getEntity(message.getEntityId());
         if(targetEntity instanceof PoweredVehicleEntity)
         {
             PoweredVehicleEntity poweredVehicle = (PoweredVehicleEntity) targetEntity;
@@ -357,7 +357,7 @@ public class ServerPlayHandler
                         if(poweredVehicle.getUUID().equals(keyUuid))
                         {
                             poweredVehicle.setKeyStack(stack.copy());
-                            player.setItemSlot(EquipmentSlotType.MAINHAND, ItemStack.EMPTY);
+                            player.setItemSlot(EquipmentSlot.MAINHAND, ItemStack.EMPTY);
                         }
                         else
                         {
@@ -377,10 +377,10 @@ public class ServerPlayHandler
     {
         if(player.isCrouching())
         {
-            Entity targetEntity = player.level.getEntity(message.getEntityId());
+            Entity targetEntity = player.level().getEntity(message.getEntityId());
             if(targetEntity != null)
             {
-                CommonEvents.handleVehicleInteraction(player.level, player, Hand.MAIN_HAND, targetEntity);
+                CommonEvents.handleVehicleInteraction(player.level(), player, InteractionHand.MAIN_HAND, targetEntity);
             }
         }
     }
@@ -421,7 +421,7 @@ public class ServerPlayHandler
             return;
 
         EntityType<?> entityType = optional.get();
-        Entity entity = entityType.create(player.level);
+        Entity entity = entityType.create(player.level());
         if(entity instanceof VehicleEntity)
         {
             entity.load(heldTag);
@@ -431,10 +431,10 @@ public class ServerPlayHandler
 
             //Sets the positions and spawns the entity
             float rotation = (player.getYHeadRot() + 90F) % 360.0F;
-            Vector3d heldOffset = ((VehicleEntity) entity).getProperties().getHeldOffset().yRot((float) Math.toRadians(-player.getYHeadRot()));
+            Vec3 heldOffset = ((VehicleEntity) entity).getProperties().getHeldOffset().yRot((float) Math.toRadians(-player.getYHeadRot()));
 
             //Gets the clicked vec if it was a right click block event
-            Vector3d lookVec = player.getLookAngle();
+            Vec3 lookVec = player.getLookAngle();
             double posX = player.getX();
             double posY = player.getY() + player.getEyeHeight();
             double posZ = player.getZ();
@@ -443,8 +443,8 @@ public class ServerPlayHandler
             entity.setDeltaMovement(lookVec);
             entity.fallDistance = 0.0F;
 
-            player.level.addFreshEntity(entity);
-            player.level.playSound(null, player.getX(), player.getY(), player.getZ(), ModSounds.ENTITY_VEHICLE_PICK_UP.get(), SoundCategory.PLAYERS, 1.0F, 1.0F);
+            player.level().addFreshEntity(entity);
+            player.level().playSound(null, player.getX(), player.getY(), player.getZ(), ModSounds.ENTITY_VEHICLE_PICK_UP.get(), SoundSource.PLAYERS, 1.0F, 1.0F);
         }
     }
 
@@ -459,7 +459,7 @@ public class ServerPlayHandler
 
     public static void handleInteractCosmeticMessage(ServerPlayer player, MessageInteractCosmetic message)
     {
-        Entity targetEntity = player.level.getEntity(message.getEntityId());
+        Entity targetEntity = player.level().getEntity(message.getEntityId());
         if(!(targetEntity instanceof VehicleEntity))
             return;
 
@@ -475,7 +475,7 @@ public class ServerPlayHandler
 
     public static void handleOpenStorageMessage(ServerPlayer player, MessageOpenStorage message)
     {
-        Level world = player.level;
+        Level world = player.level();
         Entity targetEntity = world.getEntity(message.getEntityId());
         if(!(targetEntity instanceof IStorage))
             return;
@@ -500,7 +500,7 @@ public class ServerPlayHandler
             IAttachableChest attachableChest = (IAttachableChest) targetEntity;
             if(attachableChest.hasChest(message.getKey()))
             {
-                ItemStack stack = player.inventory.getSelected();
+                ItemStack stack = player.getInventory().getSelected();
                 if(stack.getItem() == ModItems.WRENCH.get())
                 {
                     ((IAttachableChest) targetEntity).removeChest(message.getKey());
@@ -509,7 +509,7 @@ public class ServerPlayHandler
             }
         }
 
-        NetworkHooks.openGui(player, new SimpleNamedContainerProvider((windowId, playerInventory, playerEntity) -> {
+        player.openMenu(new SimpleMenuProvider((windowId, playerInventory, playerEntity) -> {
             return new StorageContainer(windowId, playerInventory, inventory, playerEntity);
         }, inventory.getDisplayName()), buffer -> {
             buffer.writeVarInt(message.getEntityId());

@@ -16,6 +16,7 @@ import net.minecraft.world.InteractionHand;
 import net.minecraft.world.level.Level;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
+import net.minecraftforge.network.PacketDistributor;
 
 import java.util.Map;
 
@@ -59,8 +60,8 @@ public class SportsCarEntity extends LandVehicleEntity implements IStorage
             return createScaledBoundingBox(2.0, 3.5, 5.0, 8.0, 7.5, 3.0, 0.0625);
         }, (entity, rightClick) -> {
             if(rightClick) {
-                PacketHandler.getPlayChannel().sendToServer(new MessageOpenStorage(entity.getId(), GLOVE_BOX_STORAGE_KEY));
-                Minecraft.getInstance().player.swing(Hand.MAIN_HAND);
+                PacketHandler.getPlayChannel().send(new MessageOpenStorage(entity.getId(), GLOVE_BOX_STORAGE_KEY), PacketDistributor.SERVER.noArg());
+                Minecraft.getInstance().player.swing(InteractionHand.MAIN_HAND);
             }
         }, entity -> true);
 
@@ -68,8 +69,8 @@ public class SportsCarEntity extends LandVehicleEntity implements IStorage
             return createScaledBoundingBox(-7.0, 4.0, -12.0, 7.0, 7.0, -19.0, 0.0625);
         }, (entity, rightClick) -> {
             if(rightClick) {
-                PacketHandler.getPlayChannel().sendToServer(new MessageOpenStorage(entity.getId(), TRUNK_STORAGE_KEY));
-                Minecraft.getInstance().player.swing(Hand.MAIN_HAND);
+                PacketHandler.getPlayChannel().send(new MessageOpenStorage(entity.getId(), TRUNK_STORAGE_KEY), PacketDistributor.SERVER.noArg());
+                Minecraft.getInstance().player.swing(InteractionHand.MAIN_HAND);
             }
         }, entity -> true);
     }

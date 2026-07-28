@@ -18,7 +18,7 @@ public class ComponentLoader
 
     public ComponentModel create(String path)
     {
-        ComponentModel model = new ComponentModel(new ResourceLocation(this.modId, path));
+        ComponentModel model = new ComponentModel(ResourceLocation.fromNamespaceAndPath(this.modId, path));
         this.registeredModels.add(model);
         return model;
     }

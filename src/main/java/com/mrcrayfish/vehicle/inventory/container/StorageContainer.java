@@ -19,7 +19,7 @@ public class StorageContainer extends AbstractContainerMenu
     private final StorageInventory storageInventory;
     private final int numRows;
 
-    public StorageContainer(int windowId, IInventory playerInventory, StorageInventory storageInventory, Player player)
+    public StorageContainer(int windowId, Container playerInventory, StorageInventory storageInventory, Player player)
     {
         super(ModContainers.STORAGE.get(), windowId);
         this.storageInventory = storageInventory;
@@ -98,7 +98,7 @@ public class StorageContainer extends AbstractContainerMenu
         this.storageInventory.stopOpen(playerIn);
     }
 
-    public IInventory getStorageInventory()
+    public Container getStorageInventory()
     {
         return this.storageInventory;
     }

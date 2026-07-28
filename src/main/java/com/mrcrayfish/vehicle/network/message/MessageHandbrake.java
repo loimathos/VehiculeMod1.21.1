@@ -1,9 +1,9 @@
 package com.mrcrayfish.vehicle.network.message;
 
 import com.mrcrayfish.vehicle.network.play.ServerPlayHandler;
-import net.minecraft.world.entity.player.ServerPlayer;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.network.FriendlyByteBuf;
-import net.minecraftforge.network.NetworkEvent;
+import net.minecraftforge.event.network.CustomPayloadEvent;
 
 import java.util.function.Supplier;
 
@@ -19,19 +19,19 @@ public class MessageHandbrake implements IMessage<MessageHandbrake>
 	}
 
 	@Override
-	public void encode(MessageHandbrake message, PacketBuffer buffer)
+	public void encode(MessageHandbrake message, FriendlyByteBuf buffer)
 	{
 		buffer.writeBoolean(message.handbrake);
 	}
 
 	@Override
-	public MessageHandbrake decode(PacketBuffer buffer)
+	public MessageHandbrake decode(FriendlyByteBuf buffer)
 	{
 		return new MessageHandbrake(buffer.readBoolean());
 	}
 
 	@Override
-	public void handle(MessageHandbrake message, Supplier<NetworkEvent.Context> supplier)
+	public void handle(MessageHandbrake message, Supplier<CustomPayloadEvent.Context> supplier)
 	{
 		supplier.get().enqueueWork(() ->
 		{

@@ -1,9 +1,9 @@
 package com.mrcrayfish.vehicle.network.message;
 
 import com.mrcrayfish.vehicle.network.play.ServerPlayHandler;
-import net.minecraft.world.entity.player.ServerPlayer;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.network.FriendlyByteBuf;
-import net.minecraftforge.network.NetworkEvent;
+import net.minecraftforge.event.network.CustomPayloadEvent;
 
 import java.util.function.Supplier;
 
@@ -13,16 +13,16 @@ import java.util.function.Supplier;
 public class MessageThrowVehicle implements IMessage<MessageThrowVehicle>
 {
     @Override
-    public void encode(MessageThrowVehicle message, PacketBuffer buffer) {}
+    public void encode(MessageThrowVehicle message, FriendlyByteBuf buffer) {}
 
     @Override
-    public MessageThrowVehicle decode(PacketBuffer buffer)
+    public MessageThrowVehicle decode(FriendlyByteBuf buffer)
     {
         return new MessageThrowVehicle();
     }
 
     @Override
-    public void handle(MessageThrowVehicle message, Supplier<NetworkEvent.Context> supplier)
+    public void handle(MessageThrowVehicle message, Supplier<CustomPayloadEvent.Context> supplier)
     {
         supplier.get().enqueueWork(() ->
         {

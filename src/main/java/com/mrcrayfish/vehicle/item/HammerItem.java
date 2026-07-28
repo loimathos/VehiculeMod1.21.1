@@ -1,11 +1,11 @@
 package com.mrcrayfish.vehicle.item;
 
 import com.mrcrayfish.vehicle.util.RenderUtil;
-import net.minecraft.client.gui.screen.Screen;
-import net.minecraft.client.util.ITooltipFlag;
+import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.ItemTier;
+import net.minecraft.world.item.Tiers;
 import net.minecraft.world.item.SwordItem;
 import net.minecraft.network.chat.Component;
 import net.minecraft.ChatFormatting;
@@ -22,11 +22,11 @@ public class HammerItem extends SwordItem
 {
     public HammerItem(Item.Properties properties)
     {
-        super(ItemTier.WOOD, 3, -3.0F, properties);
+        super(Tiers.WOOD, properties);
     }
 
     @Override
-    public void appendHoverText(ItemStack stack, @Nullable Level world, List<Component> list, ITooltipFlag flag)
+    public void appendHoverText(ItemStack stack, Item.TooltipContext context, List<Component> list, TooltipFlag flag)
     {
         if(Screen.hasShiftDown())
         {
@@ -34,7 +34,7 @@ public class HammerItem extends SwordItem
         }
         else
         {
-            list.add(Component.translatable("vehicle.info_help").withStyle(TextFormatting.YELLOW));
+            list.add(Component.translatable("vehicle.info_help").withStyle(ChatFormatting.YELLOW));
         }
     }
 }

@@ -1,5 +1,7 @@
 package com.mrcrayfish.vehicle.entity.trailer;
 
+import net.minecraft.nbt.Tag;
+
 import com.mrcrayfish.vehicle.client.raytrace.EntityRayTracer;
 import com.mrcrayfish.vehicle.entity.TrailerEntity;
 import com.mrcrayfish.vehicle.init.ModEntities;
@@ -17,11 +19,9 @@ import net.minecraft.world.level.Level;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.common.capabilities.Capability;
-import net.minecraftforge.common.util.Constants;
 import net.minecraftforge.common.util.LazyOptional;
-import net.minecraftforge.fluids.FluidAttributes;
 import net.minecraftforge.fluids.FluidUtil;
-import net.minecraftforge.fluids.capability.CapabilityFluidHandler;
+import net.minecraftforge.common.capabilities.ForgeCapabilities;
 import net.minecraftforge.fluids.capability.templates.FluidTank;
 import net.minecraftforge.entity.IEntityAdditionalSpawnData;
 import net.minecraftforge.network.PacketDistributor;
@@ -33,7 +33,7 @@ import javax.annotation.Nonnull;
  */
 public class FluidTrailerEntity extends TrailerEntity implements IEntityAdditionalSpawnData
 {
-    protected FluidTank tank = new FluidTank(FluidAttributes.BUCKET_VOLUME * 100)
+    protected FluidTank tank = new FluidTank(1000 * 100)
     {
         @Override
         protected void onContentsChanged()
@@ -48,9 +48,9 @@ public class FluidTrailerEntity extends TrailerEntity implements IEntityAddition
     }
 
     @Override
-    public InteractionResult interact(Player player, Hand hand)
+    public InteractionResult interact(Player player, InteractionHand hand)
     {
-        if(!level.isClientSide && !player.isCrouching())
+        if(!this.level().isClientSide && !player.isCrouching())
         {
             if(FluidUtil.interactWithFluidHandler(player, hand, tank))
             {
@@ -64,7 +64,7 @@ public class FluidTrailerEntity extends TrailerEntity implements IEntityAddition
     protected void readAdditionalSaveData(CompoundTag compound)
     {
         super.readAdditionalSaveData(compound);
-        if(compound.contains("Tank", Constants.NBT.TAG_COMPOUND))
+        if(compound.contains("Tank", Tag.TAG_COMPOUND))
         {
             this.tank.readFromNBT(compound.getCompound("Tank"));
         }
@@ -83,7 +83,7 @@ public class FluidTrailerEntity extends TrailerEntity implements IEntityAddition
     @Override
     public <T> LazyOptional<T> getCapability(@Nonnull Capability<T> cap)
     {
-        if (cap == CapabilityFluidHandler.FLUID_HANDLER_CAPABILITY)
+        if (cap == ForgeCapabilities.FLUID_HANDLER)
             return LazyOptional.of(() -> this.tank).cast();
         return super.getCapability(cap);
     }
@@ -95,21 +95,21 @@ public class FluidTrailerEntity extends TrailerEntity implements IEntityAddition
 
     public void syncTank()
     {
-        if(!this.level.isClientSide)
+        if(!this.level().isClientSide)
         {
-            PacketHandler.getPlayChannel().send(PacketDistributor.TRACKING_ENTITY.with(() -> this), new MessageEntityFluid(this.getId(), this.tank.getFluid()));
+            PacketHandler.getPlayChannel().send(new MessageEntityFluid(this.getId(), this.tank.getFluid()), PacketDistributor.TRACKING_ENTITY.with(this));
         }
     }
 
     @Override
-    public void writeSpawnData(PacketBuffer buffer)
+    public void writeSpawnData(FriendlyByteBuf buffer)
     {
         super.writeSpawnData(buffer);
         buffer.writeNbt(this.tank.writeToNBT(new CompoundTag()));
     }
 
     @Override
-    public void readSpawnData(PacketBuffer buffer)
+    public void readSpawnData(FriendlyByteBuf buffer)
     {
         super.readSpawnData(buffer);
         this.tank.readFromNBT(buffer.readNbt());
@@ -122,8 +122,8 @@ public class FluidTrailerEntity extends TrailerEntity implements IEntityAddition
             return createScaledBoundingBox(-7.0, -0.5, 12.0, 7.0, 3.5, 24.0, 0.0625);
         }, (entity, rightClick) -> {
             if(rightClick) {
-                PacketHandler.getPlayChannel().sendToServer(new MessageAttachTrailer(entity.getId()));
-                Minecraft.getInstance().player.swing(Hand.MAIN_HAND);
+                PacketHandler.getPlayChannel().send(new MessageAttachTrailer(entity.getId()), PacketDistributor.SERVER.noArg());
+                Minecraft.getInstance().player.swing(InteractionHand.MAIN_HAND);
             }
         }, entity -> true);
     }

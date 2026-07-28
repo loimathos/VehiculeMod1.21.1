@@ -1,5 +1,11 @@
 package com.mrcrayfish.vehicle.blockentity;
 
+
+
+import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.core.BlockPos;
+import net.minecraft.nbt.Tag;
+
 import com.mrcrayfish.vehicle.block.VehicleCrateBlock;
 import com.mrcrayfish.vehicle.client.VehicleHelper;
 import com.mrcrayfish.vehicle.common.VehicleRegistry;
@@ -13,13 +19,13 @@ import com.mrcrayfish.vehicle.init.ModSounds;
 import com.mrcrayfish.vehicle.init.ModBlockEntities;
 import com.mrcrayfish.vehicle.item.EngineItem;
 import com.mrcrayfish.vehicle.util.CommonUtils;
-import net.minecraft.world.level.block.BlockState;
+import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.network.syncher.EntityDataManager;
+import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.core.particles.ParticleTypes;
 
 import net.minecraft.core.Direction;
@@ -28,17 +34,18 @@ import net.minecraft.sounds.SoundEvents;
 import net.minecraft.world.phys.AABB;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
-import net.minecraftforge.common.util.Constants;
 import net.minecraftforge.registries.ForgeRegistries;
+import net.minecraftforge.registries.RegistryObject;
 
 import java.util.List;
 import java.util.Random;
 import java.util.UUID;
+import net.minecraft.core.HolderLookup;
 
 /**
  * Author: MrCrayfish
  */
-public class VehicleCrateBlockEntity extends BlockEntitySynced implements BlockEntityTicker
+public class VehicleCrateBlockEntity extends BlockEntitySynced
 {
     private static final Random RAND = new Random();
 
@@ -53,9 +60,9 @@ public class VehicleCrateBlockEntity extends BlockEntitySynced implements BlockE
     @OnlyIn(Dist.CLIENT)
     private Entity entity;
 
-    public VehicleCrateBlockEntity()
+    public VehicleCrateBlockEntity(BlockPos pos, BlockState state)
     {
-        super(ModBlockEntities.VEHICLE_CRATE.get());
+        super(ModBlockEntities.VEHICLE_CRATE.get(), pos, state);
     }
 
     public void setEntityId(ResourceLocation entityId)
@@ -95,7 +102,6 @@ public class VehicleCrateBlockEntity extends BlockEntitySynced implements BlockE
         return (E) entity;
     }
 
-    @Override
     public void tick()
     {
         if(this.opened)
@@ -105,17 +111,17 @@ public class VehicleCrateBlockEntity extends BlockEntitySynced implements BlockE
             {
                 if(this.entityId != null && this.entity == null)
                 {
-                    EntityType<?> entityType = ForgeRegistries.ENTITIES.getValue(this.entityId);
+                    EntityType<?> entityType = ForgeRegistries.ENTITY_TYPES.getValue(this.entityId);
                     if(entityType != null)
                     {
                         this.entity = entityType.create(this.level);
                         if(this.entity != null)
                         {
                             VehicleHelper.playSound(SoundEvents.ITEM_BREAK, this.worldPosition, 1.0F, 0.5F);
-                            List<EntityDataManager.DataEntry<?>> entryList = this.entity.getEntityData().getAll();
+                            List<SynchedEntityData.DataValue<?>> entryList = this.entity.getEntityData().getNonDefaultValues();
                             if(entryList != null)
                             {
-                                entryList.forEach(dataEntry -> this.entity.onSyncedDataUpdated(dataEntry.getAccessor()));
+                                this.entity.getEntityData().assignValues(entryList);
                             }
                             if(this.entity instanceof VehicleEntity)
                             {
@@ -152,7 +158,7 @@ public class VehicleCrateBlockEntity extends BlockEntitySynced implements BlockE
                 }
                 if(this.timer == 150)
                 {
-                    VehicleHelper.playSound(SoundEvents.GENERIC_EXPLODE, this.worldPosition, 1.0F, 1.0F);
+                    VehicleHelper.playSound(SoundEvents.GENERIC_EXPLODE.get(), this.worldPosition, 1.0F, 1.0F);
                     this.level.addParticle(ParticleTypes.EXPLOSION_EMITTER, false, this.worldPosition.getX() + 0.5, this.worldPosition.getY() + 0.5, this.worldPosition.getZ() + 0.5, 0, 0, 0);
                 }
             }
@@ -160,7 +166,7 @@ public class VehicleCrateBlockEntity extends BlockEntitySynced implements BlockE
             {
                 BlockState state = this.level.getBlockState(this.worldPosition);
                 Direction facing = state.getValue(VehicleCrateBlock.DIRECTION);
-                EntityType<?> entityType = ForgeRegistries.ENTITIES.getValue(this.entityId);
+                EntityType<?> entityType = ForgeRegistries.ENTITY_TYPES.getValue(this.entityId);
                 if(entityType != null)
                 {
                     Entity entity = entityType.create(this.level);
@@ -195,20 +201,20 @@ public class VehicleCrateBlockEntity extends BlockEntitySynced implements BlockE
     }
 
     @Override
-    public void load(BlockState state, CompoundTag compound)
+    protected void loadAdditional(CompoundTag compound, HolderLookup.Provider registries)
     {
-        super.load(state, compound);
-        if(compound.contains("Vehicle", Constants.NBT.TAG_STRING))
+        super.loadAdditional(compound, registries);
+        if(compound.contains("Vehicle", Tag.TAG_STRING))
         {
-            this.entityId = new ResourceLocation(compound.getString("Vehicle"));
+            this.entityId = ResourceLocation.parse(compound.getString("Vehicle"));
         }
-        if(compound.contains("Color", Constants.NBT.TAG_INT))
+        if(compound.contains("Color", Tag.TAG_INT))
         {
             this.color = compound.getInt("Color");
         }
-        if(compound.contains("EngineStack", Constants.NBT.TAG_COMPOUND))
+        if(compound.contains("EngineStack", Tag.TAG_COMPOUND))
         {
-            this.engineStack = ItemStack.of(compound.getCompound("EngineStack"));
+            this.engineStack = ItemStack.parse(registries, compound.getCompound("EngineStack")).orElse(ItemStack.EMPTY);
         }
         else if(compound.getBoolean("Creative"))
         {
@@ -216,26 +222,26 @@ public class VehicleCrateBlockEntity extends BlockEntitySynced implements BlockE
             EngineItem engineItem = VehicleRegistry.getEngineItem(properties.getExtended(PoweredProperties.class).getEngineType(), EngineTier.IRON);
             this.engineStack = engineItem != null ? new ItemStack(engineItem) : ItemStack.EMPTY;
         }
-        if(compound.contains("WheelStack", Constants.NBT.TAG_COMPOUND))
+        if(compound.contains("WheelStack", Tag.TAG_COMPOUND))
         {
-            this.wheelStack = ItemStack.of(compound.getCompound("WheelStack"));
+            this.wheelStack = ItemStack.parse(registries, compound.getCompound("WheelStack")).orElse(ItemStack.EMPTY);
         }
         else
         {
             this.wheelStack = new ItemStack(ModItems.STANDARD_WHEEL.get());
         }
-        if(compound.contains("Opener", Constants.NBT.TAG_STRING))
+        if(compound.contains("Opener", Tag.TAG_STRING))
         {
             this.opener = compound.getUUID("Opener");
         }
-        if(compound.contains("Opened", Constants.NBT.TAG_BYTE))
+        if(compound.contains("Opened", Tag.TAG_BYTE))
         {
             this.opened = compound.getBoolean("Opened");
         }
     }
 
     @Override
-    public CompoundTag save(CompoundTag compound)
+    protected void saveAdditional(CompoundTag compound, HolderLookup.Provider registries)
     {
         if(this.entityId != null)
         {
@@ -255,16 +261,15 @@ public class VehicleCrateBlockEntity extends BlockEntitySynced implements BlockE
         }
         compound.putInt("Color", this.color);
         compound.putBoolean("Opened", this.opened);
-        return super.save(compound);
+        super.saveAdditional(compound, registries);
     }
 
     @Override
-    public AxisAlignedBB getRenderBoundingBox()
+    public AABB getRenderBoundingBox()
     {
         return INFINITE_EXTENT_AABB;
     }
 
-    @Override
     @OnlyIn(Dist.CLIENT)
     public double getViewDistance()
     {

@@ -1,12 +1,14 @@
 package com.mrcrayfish.vehicle.block;
 
+
+import net.minecraft.world.level.block.EntityBlock;
 import com.mrcrayfish.vehicle.blockentity.JackBlockEntity;
-import net.minecraft.world.level.block.AbstractBlock;
+import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.Block;
-import net.minecraft.world.level.block.BlockRenderType;
-import net.minecraft.world.level.block.BlockState;
-//import net.minecraft.world.level.block.material.Material; // Removed in 1.21.1
-import net.minecraft.world.level.block.state.BooleanProperty;
+import net.minecraft.world.level.block.RenderShape;
+import net.minecraft.world.level.block.state.BlockState;
+// // Removed in 1.21.1
+import net.minecraft.world.level.block.state.properties.BooleanProperty;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.block.entity.BlockEntity;
@@ -14,7 +16,7 @@ import net.minecraft.core.Direction;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
-import net.minecraft.world.phys.shapes.VoxelShapes;
+import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
 
@@ -23,7 +25,7 @@ import javax.annotation.Nullable;
 /**
  * Author: MrCrayfish
  */
-public class JackBlock extends RotatedObjectBlock
+public class JackBlock extends RotatedObjectBlock implements EntityBlock
 {
     public static final BooleanProperty ENABLED = BlockStateProperties.ENABLED;
 
@@ -31,39 +33,32 @@ public class JackBlock extends RotatedObjectBlock
 
     public JackBlock()
     {
-        super(AbstractBlock.Properties.of(Material.PISTON));
+        super(BlockBehaviour.Properties.of());
         this.registerDefaultState(this.getStateDefinition().any().setValue(DIRECTION, Direction.NORTH).setValue(ENABLED, false));
     }
 
     @Override
-    public VoxelShape getShape(BlockState state, BlockAndTintGetter worldIn, BlockPos pos, CollisionContext context)
+    public VoxelShape getShape(BlockState state, BlockGetter worldIn, BlockPos pos, CollisionContext context)
     {
         BlockEntity tileEntity = worldIn.getBlockEntity(pos);
         if(tileEntity instanceof JackBlockEntity)
         {
             JackBlockEntity jack = (JackBlockEntity) tileEntity;
-            return VoxelShapes.create(SHAPE.bounds().expandTowards(0, 0.5 * jack.getProgress(), 0));
+            return Shapes.create(SHAPE.bounds().expandTowards(0, 0.5 * jack.getProgress(), 0));
         }
         return SHAPE;
     }
-
-    @Override
-    public boolean hasTileEntity(BlockState state)
-    {
-        return true;
-    }
-
     @Nullable
     @Override
     public BlockEntity newBlockEntity(BlockPos pos, BlockState state)
     {
-        return new JackBlockEntity();
+        return new JackBlockEntity(pos, state);
     }
 
     @Override
-    public BlockRenderType getRenderShape(BlockState state)
+    public RenderShape getRenderShape(BlockState state)
     {
-        return BlockRenderType.ENTITYBLOCK_ANIMATED;
+        return RenderShape.ENTITYBLOCK_ANIMATED;
     }
 
     @Override

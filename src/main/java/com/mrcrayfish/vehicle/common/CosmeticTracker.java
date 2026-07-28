@@ -17,7 +17,7 @@ import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
-import net.minecraftforge.common.util.Constants;
+import net.minecraft.nbt.Tag;
 import net.minecraftforge.fml.DistExecutor;
 import net.minecraftforge.fml.loading.FMLLoader;
 import net.minecraftforge.network.PacketDistributor;
@@ -57,9 +57,9 @@ public class CosmeticTracker
 
     public void tick(VehicleEntity vehicle)
     {
-        if(!vehicle.level.isClientSide() && this.dirty)
+        if(!vehicle.level().isClientSide() && this.dirty)
         {
-            PacketHandler.getPlayChannel().send(PacketDistributor.TRACKING_ENTITY.with(() -> vehicle), new MessageSyncCosmetics(vehicle.getId(), this.getDirtyEntries()));
+            PacketHandler.getPlayChannel().send(new MessageSyncCosmetics(vehicle.getId(), this.getDirtyEntries()), PacketDistributor.TRACKING_ENTITY.with(vehicle));
             this.resetDirty();
         }
 
@@ -68,21 +68,21 @@ public class CosmeticTracker
             entry.getActions().forEach(action ->
             {
                 action.tick(vehicle);
-                if(!vehicle.level.isClientSide() && action.isDirty())
+                if(!vehicle.level().isClientSide() && action.isDirty())
                 {
                     this.dirtyActions.computeIfAbsent(cosmeticId, id -> new ArrayList<>()).add(action);
                 }
             });
         });
 
-        if(!vehicle.level.isClientSide())
+        if(!vehicle.level().isClientSide())
         {
             if(!this.dirtyActions.isEmpty())
             {
                 this.dirtyActions.forEach((cosmeticId, actions) ->
                 {
                     List<Pair<ResourceLocation, CompoundTag>> actionData = actions.stream().map(action -> Pair.of(CosmeticActions.getId(action.getClass()), action.save(true))).collect(Collectors.toList());
-                    PacketHandler.getPlayChannel().send(PacketDistributor.TRACKING_ENTITY.with(() -> vehicle), new MessageSyncActionData(vehicle.getId(), cosmeticId, actionData));
+                    PacketHandler.getPlayChannel().send(new MessageSyncActionData(vehicle.getId(), cosmeticId, actionData), PacketDistributor.TRACKING_ENTITY.with(vehicle));
                     actions.forEach(Action::clean);
                 });
                 this.dirtyActions.clear();
@@ -180,13 +180,13 @@ public class CosmeticTracker
 
     public void read(CompoundTag tag)
     {
-        if(tag.contains("Cosmetics", Constants.NBT.TAG_LIST))
+        if(tag.contains("Cosmetics", Tag.TAG_LIST))
         {
-            ListTag list = tag.getList("Cosmetics", Constants.NBT.TAG_COMPOUND);
+            ListTag list = tag.getList("Cosmetics", Tag.TAG_COMPOUND);
             list.forEach(nbt -> {
                 CompoundTag cosmeticTag = (CompoundTag) nbt;
-                ResourceLocation cosmeticId = new ResourceLocation(cosmeticTag.getString("Id"));
-                ResourceLocation modelLocation = new ResourceLocation(cosmeticTag.getString("Model"));
+                ResourceLocation cosmeticId = ResourceLocation.parse(cosmeticTag.getString("Id"));
+                ResourceLocation modelLocation = ResourceLocation.parse(cosmeticTag.getString("Model"));
                 this.setSelectedModel(cosmeticId, modelLocation);
                 CompoundTag actions = cosmeticTag.getCompound("Actions");
                 this.selectedCosmetics.get(cosmeticId).getActions().forEach(action -> {
@@ -197,7 +197,7 @@ public class CosmeticTracker
         }
     }
 
-    public void write(PacketBuffer buffer)
+    public void write(FriendlyByteBuf buffer)
     {
         buffer.writeInt(this.selectedCosmetics.size());
         this.selectedCosmetics.forEach((cosmeticId, entry) -> {
@@ -211,7 +211,7 @@ public class CosmeticTracker
         });
     }
 
-    public void read(PacketBuffer buffer)
+    public void read(FriendlyByteBuf buffer)
     {
         int size = buffer.readInt();
         for(int i = 0; i < size; i++)

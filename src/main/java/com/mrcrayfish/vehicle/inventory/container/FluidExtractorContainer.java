@@ -22,7 +22,7 @@ public class FluidExtractorContainer extends AbstractContainerMenu
 
     private FluidExtractorBlockEntity fluidExtractor;
 
-    public FluidExtractorContainer(int windowId, IInventory playerInventory, FluidExtractorBlockEntity fluidExtractor)
+    public FluidExtractorContainer(int windowId, Container playerInventory, FluidExtractorBlockEntity fluidExtractor)
     {
         super(ModContainers.FLUID_EXTRACTOR.get(), windowId);
         this.fluidExtractor = fluidExtractor;
@@ -84,7 +84,7 @@ public class FluidExtractorContainer extends AbstractContainerMenu
                         return ItemStack.EMPTY;
                     }
                 }
-                else if(ForgeHooks.getBurnTime(slotStack) > 0)
+                else if(ForgeHooks.getBurnTime(slotStack, null) > 0)
                 {
                     if(!this.moveItemStackTo(slotStack, 0, 1, false))
                     {

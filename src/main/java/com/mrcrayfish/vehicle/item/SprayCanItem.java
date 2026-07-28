@@ -1,11 +1,16 @@
 package com.mrcrayfish.vehicle.item;
 
+
+import net.minecraft.core.component.DataComponents;
+import net.minecraft.world.item.component.CustomData;
+import net.minecraft.nbt.Tag;
+
 import com.mrcrayfish.vehicle.Config;
 import com.mrcrayfish.vehicle.util.RenderUtil;
-import net.minecraft.client.gui.screen.Screen;
-import net.minecraft.client.util.ITooltipFlag;
+import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.item.Item;
-import net.minecraft.world.item.ItemGroup;
+import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.core.NonNullList;
@@ -15,7 +20,6 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.ChatFormatting;
 
 import net.minecraft.world.level.Level;
-import net.minecraftforge.common.util.Constants;
 
 import javax.annotation.Nullable;
 import java.util.List;
@@ -31,18 +35,7 @@ public class SprayCanItem extends Item implements IDyeable
     }
 
     @Override
-    public void fillItemCategory(ItemGroup group, NonNullList<ItemStack> items)
-    {
-        if (this.allowdedIn(group))
-        {
-            ItemStack stack = new ItemStack(this);
-            this.refill(stack);
-            items.add(stack);
-        }
-    }
-
-    @Override
-    public void appendHoverText(ItemStack stack, @Nullable Level world, List<Component> tooltip, ITooltipFlag flag)
+    public void appendHoverText(ItemStack stack, Item.TooltipContext context, List<Component> tooltip, TooltipFlag flag)
     {
         if(Screen.hasShiftDown())
         {
@@ -52,42 +45,42 @@ public class SprayCanItem extends Item implements IDyeable
         {
             if(this.hasColor(stack))
             {
-                tooltip.add(Component.literal(String.format("#%06X", this.getColor(stack))).withStyle(TextFormatting.BLUE));
+                tooltip.add(Component.literal(String.format("#%06X", this.getColor(stack))).withStyle(ChatFormatting.BLUE));
             }
             else
             {
-                tooltip.add(Component.translatable(this.getDescriptionId() + ".empty").withStyle(TextFormatting.RED));
+                tooltip.add(Component.translatable(this.getDescriptionId() + ".empty").withStyle(ChatFormatting.RED));
             }
-            tooltip.add(Component.translatable("vehicle.info_help").withStyle(TextFormatting.YELLOW));
+            tooltip.add(Component.translatable("vehicle.info_help").withStyle(ChatFormatting.YELLOW));
         }
     }
 
     public static CompoundTag getStackTag(ItemStack stack)
     {
-        if (stack.getTag() == null)
+        if (stack.getOrDefault(DataComponents.CUSTOM_DATA, CustomData.EMPTY).copyTag() == null)
         {
-            stack.setTag(new CompoundTag());
+            stack.set(DataComponents.CUSTOM_DATA, CustomData.of(new CompoundTag()));
         }
         if (stack.getItem() instanceof SprayCanItem)
         {
             SprayCanItem sprayCan = (SprayCanItem) stack.getItem();
-            CompoundTag compound = stack.getTag();
+            CompoundTag compound = stack.getOrDefault(DataComponents.CUSTOM_DATA, CustomData.EMPTY).copyTag();
             if (compound != null)
             {
-                if (!compound.contains("RemainingSprays", Constants.NBT.TAG_INT))
+                if (!compound.contains("RemainingSprays", Tag.TAG_INT))
                 {
                     compound.putInt("RemainingSprays", sprayCan.getCapacity(stack));
                 }
             }
         }
-        return stack.getTag();
+        return stack.getOrDefault(DataComponents.CUSTOM_DATA, CustomData.EMPTY).copyTag();
     }
 
     @Override
-    public boolean showDurabilityBar(ItemStack stack)
+    public boolean isBarVisible(ItemStack stack)
     {
-        CompoundTag compound = stack.getTag();
-        if (compound != null && compound.contains("RemainingSprays", Constants.NBT.TAG_INT))
+        CompoundTag compound = stack.getOrDefault(DataComponents.CUSTOM_DATA, CustomData.EMPTY).copyTag();
+        if (compound != null && compound.contains("RemainingSprays", Tag.TAG_INT))
         {
             int remainingSprays = compound.getInt("RemainingSprays");
             return this.hasColor(stack) && remainingSprays < this.getCapacity(stack);
@@ -96,20 +89,20 @@ public class SprayCanItem extends Item implements IDyeable
     }
 
     @Override
-    public double getDurabilityForDisplay(ItemStack stack)
+    public int getBarWidth(ItemStack stack)
     {
-        CompoundTag compound = stack.getTag();
-        if (compound != null && compound.contains("RemainingSprays", Constants.NBT.TAG_INT))
+        CompoundTag compound = stack.getOrDefault(DataComponents.CUSTOM_DATA, CustomData.EMPTY).copyTag();
+        if (compound != null && compound.contains("RemainingSprays", Tag.TAG_INT))
         {
-            return MathHelper.clamp(1.0 - (compound.getInt("RemainingSprays") / (double) this.getCapacity(stack)), 0.0, 1.0);
+            return Math.round(13.0F * compound.getInt("RemainingSprays") / (float) this.getCapacity(stack));
         }
-        return 0.0;
+        return 0;
     }
 
     public float getRemainingSprays(ItemStack stack)
     {
-        CompoundTag compound = stack.getTag();
-        if (compound != null && compound.contains("RemainingSprays", Constants.NBT.TAG_INT))
+        CompoundTag compound = stack.getOrDefault(DataComponents.CUSTOM_DATA, CustomData.EMPTY).copyTag();
+        if (compound != null && compound.contains("RemainingSprays", Tag.TAG_INT))
         {
             return compound.getInt("RemainingSprays") / (float) this.getCapacity(stack);
         }
@@ -118,8 +111,8 @@ public class SprayCanItem extends Item implements IDyeable
 
     public int getCapacity(ItemStack stack)
     {
-        CompoundTag compound = stack.getTag();
-        if (compound != null && compound.contains("Capacity", Constants.NBT.TAG_INT))
+        CompoundTag compound = stack.getOrDefault(DataComponents.CUSTOM_DATA, CustomData.EMPTY).copyTag();
+        if (compound != null && compound.contains("Capacity", Tag.TAG_INT))
         {
             return compound.getInt("Capacity");
         }

@@ -13,12 +13,12 @@ import java.util.function.Supplier;
  */
 public class InteractableBox<T extends VehicleEntity>
 {
-    private final Supplier<AxisAlignedBB> boxSupplier;
+    private final Supplier<AABB> boxSupplier;
     private final BiConsumer<T, Boolean> handler;
     private final Predicate<T> active;
     private final InteractableBoxRayTraceData data;
 
-    public InteractableBox(Supplier<AxisAlignedBB> boxSupplier, BiConsumer<T, Boolean> handler, Predicate<T> active)
+    public InteractableBox(Supplier<AABB> boxSupplier, BiConsumer<T, Boolean> handler, Predicate<T> active)
     {
         this.boxSupplier = boxSupplier;
         this.handler = handler;
@@ -26,7 +26,7 @@ public class InteractableBox<T extends VehicleEntity>
         this.data = new InteractableBoxRayTraceData(this);
     }
 
-    public Supplier<AxisAlignedBB> getBoxSupplier()
+    public Supplier<AABB> getBoxSupplier()
     {
         return this.boxSupplier;
     }

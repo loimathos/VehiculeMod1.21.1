@@ -1,9 +1,9 @@
 package com.mrcrayfish.vehicle.network.message;
 
 import com.mrcrayfish.vehicle.network.play.ServerPlayHandler;
-import net.minecraft.world.entity.player.ServerPlayer;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.network.FriendlyByteBuf;
-import net.minecraftforge.network.NetworkEvent;
+import net.minecraftforge.event.network.CustomPayloadEvent;
 
 import java.util.function.Supplier;
 
@@ -23,7 +23,7 @@ public class MessagePlaneInput implements IMessage<MessagePlaneInput>
 	}
 
 	@Override
-	public void encode(MessagePlaneInput message, PacketBuffer buffer)
+	public void encode(MessagePlaneInput message, FriendlyByteBuf buffer)
 	{
 		buffer.writeFloat(message.lift);
 		buffer.writeFloat(message.forward);
@@ -31,13 +31,13 @@ public class MessagePlaneInput implements IMessage<MessagePlaneInput>
 	}
 
 	@Override
-	public MessagePlaneInput decode(PacketBuffer buffer)
+	public MessagePlaneInput decode(FriendlyByteBuf buffer)
 	{
 		return new MessagePlaneInput(buffer.readFloat(), buffer.readFloat(), buffer.readFloat());
 	}
 
 	@Override
-	public void handle(MessagePlaneInput message, Supplier<NetworkEvent.Context> supplier)
+	public void handle(MessagePlaneInput message, Supplier<CustomPayloadEvent.Context> supplier)
 	{
 		supplier.get().enqueueWork(() ->
 		{

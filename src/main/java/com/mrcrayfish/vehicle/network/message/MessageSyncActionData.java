@@ -4,8 +4,7 @@ import com.mrcrayfish.vehicle.network.play.ClientPlayHandler;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraftforge.network.NetworkDirection;
-import net.minecraftforge.network.NetworkEvent;
+import net.minecraftforge.event.network.CustomPayloadEvent;
 import org.apache.commons.lang3.tuple.Pair;
 
 import java.util.ArrayList;
@@ -31,7 +30,7 @@ public class MessageSyncActionData implements IMessage<MessageSyncActionData>
     }
 
     @Override
-    public void encode(MessageSyncActionData message, PacketBuffer buffer)
+    public void encode(MessageSyncActionData message, FriendlyByteBuf buffer)
     {
         buffer.writeInt(message.entityId);
         buffer.writeResourceLocation(message.cosmeticId);
@@ -43,7 +42,7 @@ public class MessageSyncActionData implements IMessage<MessageSyncActionData>
     }
 
     @Override
-    public MessageSyncActionData decode(PacketBuffer buffer)
+    public MessageSyncActionData decode(FriendlyByteBuf buffer)
     {
         int entityId = buffer.readInt();
         ResourceLocation cosmeticId = buffer.readResourceLocation();
@@ -59,9 +58,9 @@ public class MessageSyncActionData implements IMessage<MessageSyncActionData>
     }
 
     @Override
-    public void handle(MessageSyncActionData message, Supplier<NetworkEvent.Context> supplier)
+    public void handle(MessageSyncActionData message, Supplier<CustomPayloadEvent.Context> supplier)
     {
-        if(supplier.get().getDirection() == NetworkDirection.PLAY_TO_CLIENT)
+        if(supplier.get().isClientSide())
         {
             IMessage.enqueueTask(supplier, () -> ClientPlayHandler.handleSyncActionData(message));
         }

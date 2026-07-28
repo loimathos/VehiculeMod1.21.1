@@ -1,18 +1,19 @@
 package com.mrcrayfish.vehicle.client.render.vehicle;
 
-import com.mojang.blaze3d.matrix.MatrixStack;
+
+import com.mrcrayfish.vehicle.client.render.Axis;
+import com.mojang.blaze3d.vertex.PoseStack;
 import com.mrcrayfish.vehicle.client.model.VehicleModels;
 import com.mrcrayfish.vehicle.client.raytrace.RayTraceTransforms;
 import com.mrcrayfish.vehicle.client.raytrace.TransformHelper;
 import com.mrcrayfish.vehicle.client.render.AbstractTrailerRenderer;
-import com.mrcrayfish.vehicle.client.render.Axis;
 import com.mrcrayfish.vehicle.common.inventory.StorageInventory;
 import com.mrcrayfish.vehicle.entity.properties.VehicleProperties;
 import com.mrcrayfish.vehicle.entity.trailer.FertilizerTrailerEntity;
 import com.mrcrayfish.vehicle.util.RenderUtil;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.MultiBufferSource;
-import net.minecraft.client.resources.model.ItemTransform;
+import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.item.ItemStack;
@@ -33,7 +34,7 @@ public class FertilizerTrailerRenderer extends AbstractTrailerRenderer<Fertilize
     }
 
     @Override
-    protected void render(@Nullable FertilizerTrailerEntity vehicle, MatrixStack matrixStack, IRenderTypeBuffer renderTypeBuffer, float partialTicks, int light)
+    protected void render(@Nullable FertilizerTrailerEntity vehicle, PoseStack matrixStack, MultiBufferSource renderTypeBuffer, float partialTicks, int light)
     {
         this.renderDamagedPart(vehicle, VehicleModels.FERTILIZER_TRAILER, matrixStack, renderTypeBuffer, light, partialTicks);
 
@@ -62,11 +63,11 @@ public class FertilizerTrailerRenderer extends AbstractTrailerRenderer<Fertilize
                             matrixStack.translate(0, layer * 0.1 + j * 0.0625, 0);
                             matrixStack.translate((layerIndex % width) * 0.5, 0, (float) (layerIndex / width) * 0.75);
                             matrixStack.translate(0.5 * (layer % 2), 0, 0);
-                            matrixStack.mulPose(Vector3f.XP.rotationDegrees(90F));
-                            matrixStack.mulPose(Vector3f.ZP.rotationDegrees(47F * index));
-                            matrixStack.mulPose(Vector3f.XP.rotationDegrees(2F * layerIndex));
+                            matrixStack.mulPose(Axis.XP.rotationDegrees(90F));
+                            matrixStack.mulPose(Axis.ZP.rotationDegrees(47F * index));
+                            matrixStack.mulPose(Axis.XP.rotationDegrees(2F * layerIndex));
                             matrixStack.translate(layer * 0.001, layer * 0.001, layer * 0.001); // Fixes Z fighting
-                            Minecraft.getInstance().getItemRenderer().render(stack, ItemCameraTransforms.TransformType.NONE, false, matrixStack, renderTypeBuffer, light, OverlayTexture.NO_OVERLAY, RenderUtil.getModel(stack));
+                            Minecraft.getInstance().getItemRenderer().render(stack, ItemDisplayContext.NONE, false, matrixStack, renderTypeBuffer, light, OverlayTexture.NO_OVERLAY, RenderUtil.getModel(stack));
                         }
                         matrixStack.popPose();
                         index++;
@@ -84,10 +85,10 @@ public class FertilizerTrailerRenderer extends AbstractTrailerRenderer<Fertilize
         matrixStack.pushPose();
         {
             matrixStack.translate(0, -0.5, -0.4375);
-            matrixStack.mulPose(Vector3f.ZP.rotationDegrees(90F));
-            matrixStack.mulPose(Axis.POSITIVE_X.rotationDegrees(-this.getWheelRotation(vehicle, null, partialTicks)));
+            matrixStack.mulPose(Axis.ZP.rotationDegrees(90F));
+            matrixStack.mulPose(Axis.XP.rotationDegrees(-this.getWheelRotation(vehicle, null, partialTicks)));
             matrixStack.scale((float) 1.25, (float) 1.25, (float) 1.25);
-            RenderUtil.renderColoredModel(VehicleModels.SEED_SPIKER.getBaseModel(), ItemCameraTransforms.TransformType.NONE, false, matrixStack, renderTypeBuffer, -1, light, OverlayTexture.NO_OVERLAY);
+            RenderUtil.renderColoredModel(VehicleModels.SEED_SPIKER.getBaseModel(), ItemDisplayContext.NONE, false, matrixStack, renderTypeBuffer, -1, light, OverlayTexture.NO_OVERLAY);
         }
         matrixStack.popPose();
     }

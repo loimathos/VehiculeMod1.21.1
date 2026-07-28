@@ -17,10 +17,10 @@ import net.minecraft.world.item.ItemStack;
  */
 public class EditVehicleContainer extends AbstractContainerMenu
 {
-    private final IInventory vehicleInventory;
+    private final Container vehicleInventory;
     private final PoweredVehicleEntity vehicle;
 
-    public EditVehicleContainer(int windowId, IInventory vehicleInventory, PoweredVehicleEntity vehicle, Player player, Inventory playerInventory)
+    public EditVehicleContainer(int windowId, Container vehicleInventory, PoweredVehicleEntity vehicle, Player player, Inventory playerInventory)
     {
         super(ModContainers.EDIT_VEHICLE.get(), windowId);
         this.vehicleInventory = vehicleInventory;
@@ -72,7 +72,7 @@ public class EditVehicleContainer extends AbstractContainerMenu
         }
     }
 
-    public IInventory getVehicleInventory()
+    public Container getVehicleInventory()
     {
         return vehicleInventory;
     }

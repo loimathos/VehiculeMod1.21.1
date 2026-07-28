@@ -1,25 +1,27 @@
 package com.mrcrayfish.vehicle.block;
 
+
+import net.minecraft.world.level.block.EntityBlock;
 import com.mrcrayfish.vehicle.blockentity.WorkstationBlockEntity;
 import com.mrcrayfish.vehicle.util.VoxelShapeHelper;
-import net.minecraft.world.level.block.AbstractBlock;
+import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.Block;
-import net.minecraft.world.level.block.BlockState;
-//import net.minecraft.world.level.block.material.Material; // Removed in 1.21.1
+import net.minecraft.world.level.block.state.BlockState;
+// // Removed in 1.21.1
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.entity.player.ServerPlayer;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.MenuProvider;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.InteractionHand;
-import net.minecraft.util.Util;
+import net.minecraft.Util;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
-import net.minecraftforge.network.NetworkHooks;
+
 
 import javax.annotation.Nullable;
 import java.util.ArrayList;
@@ -28,7 +30,7 @@ import java.util.List;
 /**
  * Author: MrCrayfish
  */
-public class WorkstationBlock extends RotatedObjectBlock
+public class WorkstationBlock extends RotatedObjectBlock implements EntityBlock
 {
     private static final VoxelShape SHAPE = Util.make(() -> {
         List<VoxelShape> shapes = new ArrayList<>();
@@ -42,40 +44,34 @@ public class WorkstationBlock extends RotatedObjectBlock
 
     public WorkstationBlock()
     {
-        super(AbstractBlock.Properties.of(Material.METAL).strength(1.0F));
+        super(BlockBehaviour.Properties.of().strength(1.0F));
     }
 
     @Override
-    public VoxelShape getShape(BlockState state, BlockAndTintGetter reader, BlockPos pos, CollisionContext context)
+    public VoxelShape getShape(BlockState state, BlockGetter reader, BlockPos pos, CollisionContext context)
     {
         return SHAPE;
     }
 
     @Override
-    public InteractionResult use(BlockState state, Level world, BlockPos pos, Player playerEntity, Hand hand, BlockRayTraceResult result)
+    protected InteractionResult useWithoutItem(BlockState state, Level world, BlockPos pos, Player playerEntity, BlockHitResult result)
     {
         if(!world.isClientSide)
         {
             BlockEntity tileEntity = world.getBlockEntity(pos);
-            if(tileEntity instanceof INamedContainerProvider)
+            if(tileEntity instanceof MenuProvider)
             {
-                NetworkHooks.openGui((ServerPlayer) playerEntity, (INamedContainerProvider) tileEntity, pos);
+                playerEntity.openMenu((MenuProvider) tileEntity);
                 return InteractionResult.SUCCESS;
             }
         }
         return InteractionResult.SUCCESS;
     }
 
-    @Override
-    public boolean hasTileEntity(BlockState state)
-    {
-        return true;
-    }
-
     @Nullable
     @Override
     public BlockEntity newBlockEntity(BlockPos pos, BlockState state)
     {
-        return new WorkstationBlockEntity();
+        return new WorkstationBlockEntity(pos, state);
     }
 }

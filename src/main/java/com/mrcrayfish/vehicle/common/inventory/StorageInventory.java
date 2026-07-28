@@ -2,17 +2,16 @@ package com.mrcrayfish.vehicle.common.inventory;
 
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.SimpleContainer;
 import net.minecraft.world.inventory.ChestMenu;
 import net.minecraft.world.inventory.AbstractContainerMenu;
-import net.minecraft.world.inventory.MenuProvider;
 import net.minecraft.world.MenuProvider;
 import net.minecraft.world.SimpleMenuProvider;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.network.chat.Component;
+import net.minecraft.core.HolderLookup;
 
 import javax.annotation.Nullable;
 import java.lang.ref.WeakReference;
@@ -21,7 +20,7 @@ import java.util.function.Predicate;
 /**
  * Author: MrCrayfish
  */
-public class StorageInventory extends Inventory
+public class StorageInventory extends SimpleContainer
 {
     private final WeakReference<Entity> entityRef;
     private final Component displayName;
@@ -59,7 +58,7 @@ public class StorageInventory extends Inventory
         return this.itemPredicate.test(stack);
     }
 
-    public ListTag createTag()
+    public ListTag createTag(HolderLookup.Provider registries)
     {
         ListTag tagList = new ListTag();
         for(int i = 0; i < this.getContainerSize(); i++)
@@ -69,15 +68,14 @@ public class StorageInventory extends Inventory
             {
                 CompoundTag slotTag = new CompoundTag();
                 slotTag.putByte("Slot", (byte) i);
-                stack.save(slotTag);
+                stack.save(registries, slotTag);
                 tagList.add(slotTag);
             }
         }
         return tagList;
     }
 
-    @Override
-    public void fromTag(ListTag tagList)
+    public void fromTag(ListTag tagList, HolderLookup.Provider registries)
     {
         this.clearContent();
         for(int i = 0; i < tagList.size(); i++)
@@ -86,9 +84,14 @@ public class StorageInventory extends Inventory
             byte slot = slotTag.getByte("Slot");
             if(slot >= 0 && slot < this.getContainerSize())
             {
-                this.setItem(slot, ItemStack.of(slotTag));
+                this.setItem(slot, ItemStack.parseOptional(registries, slotTag));
             }
         }
+    }
+
+    public void fromTag(ListTag tagList)
+    {
+        this.fromTag(tagList, net.minecraft.core.HolderLookup.Provider.create(java.util.stream.Stream.of()));
     }
 
     @Override

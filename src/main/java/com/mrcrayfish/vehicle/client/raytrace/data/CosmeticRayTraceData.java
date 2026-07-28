@@ -15,6 +15,7 @@ import com.mrcrayfish.vehicle.entity.VehicleEntity;
 import com.mrcrayfish.vehicle.entity.properties.VehicleProperties;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.resources.model.BakedModel;
+import net.minecraft.client.resources.model.ModelResourceLocation;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.resources.ResourceLocation;
 import org.joml.Matrix4f;
@@ -34,14 +35,14 @@ public class CosmeticRayTraceData extends RayTraceData
 {
     private final ResourceLocation cosmeticId;
     private final ResourceLocation modelLocation;
-    private final Vector3d offset;
+    private final Vec3 offset;
 
-    public CosmeticRayTraceData(ResourceLocation cosmeticId, ResourceLocation modelLocation, Vector3d offset)
+    public CosmeticRayTraceData(ResourceLocation cosmeticId, ResourceLocation modelLocation, Vec3 offset)
     {
         this(cosmeticId, modelLocation, offset, null);
     }
 
-    public CosmeticRayTraceData(ResourceLocation cosmeticId, ResourceLocation modelLocation, Vector3d offset, @Nullable RayTraceFunction function)
+    public CosmeticRayTraceData(ResourceLocation cosmeticId, ResourceLocation modelLocation, Vec3 offset, @Nullable RayTraceFunction function)
     {
         super(function);
         this.cosmeticId = cosmeticId;
@@ -62,7 +63,7 @@ public class CosmeticRayTraceData extends RayTraceData
         {
             return new CosmeticTriangleList(model.getComplexModel(), this.matrix);
         }
-        IBakedModel bakedModel = Minecraft.getInstance().getModelManager().getModel(this.modelLocation);
+        BakedModel bakedModel = Minecraft.getInstance().getModelManager().getModel(new ModelResourceLocation(this.modelLocation, "inventory"));
         return new CosmeticTriangleList(bakedModel, this.matrix);
     }
 
@@ -90,7 +91,7 @@ public class CosmeticRayTraceData extends RayTraceData
             this.createAndAddMatrixPair(model, new ArrayList<>());
         }
 
-        public CosmeticTriangleList(IBakedModel model, Matrix4f baseMatrix)
+        public CosmeticTriangleList(BakedModel model, Matrix4f baseMatrix)
         {
             this.baseMatrix = baseMatrix;
             this.matrixPairs.add(this.createEntry(model, Collections.emptyList()));
@@ -105,7 +106,7 @@ public class CosmeticRayTraceData extends RayTraceData
             complexTransforms.removeAll(model.getTransforms());
         }
 
-        private Pair<List<Triangle>, BiFunction<RayTraceData, Entity, Matrix4f>> createEntry(IBakedModel model, List<Transform> modelTransforms)
+        private Pair<List<Triangle>, BiFunction<RayTraceData, Entity, Matrix4f>> createEntry(BakedModel model, List<Transform> modelTransforms)
         {
             return Pair.of(EntityRayTracer.createTrianglesFromBakedModel(model, this.baseMatrix), (data, entity) -> {
                 VehicleEntity vehicle = ((VehicleEntity) entity);

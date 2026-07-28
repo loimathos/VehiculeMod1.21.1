@@ -8,9 +8,9 @@ import net.minecraft.world.level.material.Fluid;
 import net.minecraft.world.level.material.FluidState;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.level.block.state.StateDefinition;
-import net.minecraft.resources.ResourceLocation;
-import net.minecraft.sounds.SoundEvents;
-import net.minecraftforge.fluids.FluidAttributes;
+
+
+
 import net.minecraftforge.fluids.ForgeFlowingFluid;
 
 /**
@@ -20,7 +20,7 @@ public abstract class EnderSap extends ForgeFlowingFluid
 {
     public EnderSap()
     {
-        super(new Properties(() -> ModFluids.ENDER_SAP.get(), () -> ModFluids.FLOWING_ENDER_SAP.get(), FluidAttributes.builder(new ResourceLocation(Reference.MOD_ID, "block/ender_sap_still"), new ResourceLocation(Reference.MOD_ID, "block/ender_sap_flowing")).viscosity(3000).sound(SoundEvents.BUCKET_FILL, SoundEvents.BUCKET_EMPTY)).block(() -> ModBlocks.ENDER_SAP.get()));
+        super(new Properties(ModFluids.ENDER_SAP_TYPE, () -> ModFluids.ENDER_SAP.get(), () -> ModFluids.FLOWING_ENDER_SAP.get()).block(() -> ModBlocks.ENDER_SAP.get()).bucket(() -> ModItems.ENDER_SAP_BUCKET.get()));
     }
 
     @Override

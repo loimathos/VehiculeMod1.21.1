@@ -4,7 +4,7 @@ import com.mrcrayfish.vehicle.network.play.ClientPlayHandler;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraftforge.fluids.FluidStack;
-import net.minecraftforge.network.NetworkEvent;
+import net.minecraftforge.event.network.CustomPayloadEvent;
 
 import java.util.function.Supplier;
 
@@ -25,20 +25,20 @@ public class MessageEntityFluid implements IMessage<MessageEntityFluid>
     }
 
     @Override
-    public void encode(MessageEntityFluid message, PacketBuffer buffer)
+    public void encode(MessageEntityFluid message, FriendlyByteBuf buffer)
     {
         buffer.writeInt(message.entityId);
         buffer.writeNbt(message.stack.writeToNBT(new CompoundTag()));
     }
 
     @Override
-    public MessageEntityFluid decode(PacketBuffer buffer)
+    public MessageEntityFluid decode(FriendlyByteBuf buffer)
     {
         return new MessageEntityFluid(buffer.readInt(), FluidStack.loadFluidStackFromNBT(buffer.readNbt()));
     }
 
     @Override
-    public void handle(MessageEntityFluid message, Supplier<NetworkEvent.Context> supplier)
+    public void handle(MessageEntityFluid message, Supplier<CustomPayloadEvent.Context> supplier)
     {
         IMessage.enqueueTask(supplier, () -> ClientPlayHandler.handleEntityFluid(message));
     }

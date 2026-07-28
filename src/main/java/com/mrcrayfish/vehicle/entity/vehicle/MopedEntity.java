@@ -1,5 +1,9 @@
 package com.mrcrayfish.vehicle.entity.vehicle;
 
+import net.minecraft.nbt.Tag;
+
+import net.minecraft.world.Containers;
+
 import com.google.common.collect.ImmutableMap;
 import com.mrcrayfish.vehicle.client.raytrace.EntityRayTracer;
 import com.mrcrayfish.vehicle.common.inventory.IAttachableChest;
@@ -25,9 +29,9 @@ import net.minecraft.world.ContainerHelper;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.network.syncher.DataParameter;
-import net.minecraft.network.syncher.DataSerializers;
-import net.minecraft.network.syncher.EntityDataManager;
+import net.minecraft.network.syncher.EntityDataAccessor;
+import net.minecraft.network.syncher.EntityDataSerializers;
+import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.core.NonNullList;
 import net.minecraft.sounds.SoundSource;
@@ -37,18 +41,20 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.world.level.Level;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
-import net.minecraftforge.common.util.Constants;
+import net.minecraftforge.network.PacketDistributor;
 
 import javax.annotation.Nullable;
 import java.util.Map;
+import net.minecraft.core.component.DataComponents;
+import net.minecraft.world.item.component.CustomData;
 
 /**
  * Author: MrCrayfish
  */
 public class MopedEntity extends MotorcycleEntity implements IStorage, IAttachableChest
 {
-    private static final DataParameter<Boolean> CHEST = EntityDataManager.defineId(MopedEntity.class, DataSerializers.BOOLEAN);
-    private static final DataParameter<Boolean> CHEST_OPEN = EntityDataManager.defineId(MopedEntity.class, DataSerializers.BOOLEAN);
+    private static final EntityDataAccessor<Boolean> CHEST = SynchedEntityData.defineId(MopedEntity.class, EntityDataSerializers.BOOLEAN);
+    private static final EntityDataAccessor<Boolean> CHEST_OPEN = SynchedEntityData.defineId(MopedEntity.class, EntityDataSerializers.BOOLEAN);
 
     @Nullable
     private StorageInventory inventory;
@@ -65,11 +71,11 @@ public class MopedEntity extends MotorcycleEntity implements IStorage, IAttachab
     }
 
     @Override
-    public void defineSynchedData()
+    public void defineSynchedData(SynchedEntityData.Builder builder)
     {
-        super.defineSynchedData();
-        this.entityData.define(CHEST, false);
-        this.entityData.define(CHEST_OPEN, false);
+        super.defineSynchedData(builder);
+        builder.define(CHEST, false);
+        builder.define(CHEST_OPEN, false);
     }
 
     @Override
@@ -145,7 +151,7 @@ public class MopedEntity extends MotorcycleEntity implements IStorage, IAttachab
         super.onVehicleDestroyed(entity);
         if(this.hasChest() && this.inventory != null)
         {
-            InventoryHelper.dropContents(this.level, this, this.inventory);
+            Containers.dropContents(this.level(), this, this.inventory);
         }
     }
 
@@ -156,14 +162,14 @@ public class MopedEntity extends MotorcycleEntity implements IStorage, IAttachab
         {
             this.setChest(true);
             this.initInventory();
-            CompoundTag itemTag = stack.getTag();
+            CompoundTag itemTag = stack.getOrDefault(DataComponents.CUSTOM_DATA, CustomData.EMPTY).copyTag();
             if(itemTag != null)
             {
                 CompoundTag blockEntityTag = itemTag.getCompound("BlockEntityTag");
-                if(!blockEntityTag.isEmpty() && blockEntityTag.contains("Items", Constants.NBT.TAG_LIST))
+                if(!blockEntityTag.isEmpty() && blockEntityTag.contains("Items", Tag.TAG_LIST))
                 {
                     NonNullList<ItemStack> chestInventory = NonNullList.withSize(27, ItemStack.EMPTY);
-                    ItemStackHelper.loadAllItems(blockEntityTag, chestInventory);
+                    ContainerHelper.loadAllItems(blockEntityTag, chestInventory, this.level().registryAccess());
                     for(int i = 0; i < chestInventory.size(); i++)
                     {
                         this.inventory.setItem(i, chestInventory.get(i));
@@ -178,11 +184,11 @@ public class MopedEntity extends MotorcycleEntity implements IStorage, IAttachab
     {
         if(this.hasChest() && this.inventory != null)
         {
-            Vector3d target = this.getChestPosition();
-            InventoryUtil.dropInventoryItems(this.level, target.x, target.y, target.z, this.inventory);
+            Vec3 target = this.getChestPosition();
+            InventoryUtil.dropInventoryItems(this.level(), target.x, target.y, target.z, this.inventory);
             this.setChest(false);
-            this.level.playSound(null, this.getX(), this.getY(), this.getZ(), SoundEvents.ITEM_BREAK, SoundCategory.BLOCKS, 1.0F, 1.0F);
-            this.level.addFreshEntity(new ItemEntity(level, target.x, target.y, target.z, new ItemStack(Blocks.CHEST)));
+            this.level().playSound(null, this.getX(), this.getY(), this.getZ(), SoundEvents.ITEM_BREAK, SoundSource.BLOCKS, 1.0F, 1.0F);
+            this.level().addFreshEntity(new ItemEntity(this.level(), target.x, target.y, target.z, new ItemStack(Blocks.CHEST)));
             this.inventory = null;
         }
     }
@@ -195,7 +201,7 @@ public class MopedEntity extends MotorcycleEntity implements IStorage, IAttachab
         if(this.hasChest())
         {
             // Updates the chest open state
-            if(!this.level.isClientSide())
+            if(!this.level().isClientSide())
             {
                 this.entityData.set(CHEST_OPEN, this.getPlayerCountInChest() > 0);
             }
@@ -213,17 +219,17 @@ public class MopedEntity extends MotorcycleEntity implements IStorage, IAttachab
                     this.openProgress = Math.max(0.0F, this.openProgress - 0.1F);
                     if(this.openProgress < 0.5F && lastOpenProgress >= 0.5F)
                     {
-                        Vector3d target = this.getChestPosition();
-                        this.level.playLocalSound(target.x, target.y, target.z, SoundEvents.CHEST_CLOSE, this.getSoundSource(), 0.5F, this.level.random.nextFloat() * 0.1F + 0.9F, false);
+                        Vec3 target = this.getChestPosition();
+                        this.level().playLocalSound(target.x, target.y, target.z, SoundEvents.CHEST_CLOSE, this.getSoundSource(), 0.5F, this.level().random.nextFloat() * 0.1F + 0.9F, false);
                     }
                 }
             }
         }
     }
 
-    protected Vector3d getChestPosition()
+    protected Vec3 getChestPosition()
     {
-        return new Vector3d(0, 1.0, -0.75).yRot(-(this.yRot) * 0.017453292F).add(this.position());
+        return new Vec3(0, 1.0, -0.75).yRot(-(this.getYRot()) * 0.017453292F).add(this.position());
     }
 
     protected int getPlayerCountInChest()
@@ -234,11 +240,11 @@ public class MopedEntity extends MotorcycleEntity implements IStorage, IAttachab
         }
 
         int count = 0;
-        for(Player player : this.level.getEntitiesOfClass(Player.class, this.getBoundingBox().inflate(5.0F)))
+        for(Player player : this.level().getEntitiesOfClass(Player.class, this.getBoundingBox().inflate(5.0F)))
         {
             if(player.containerMenu instanceof StorageContainer)
             {
-                IInventory container = ((StorageContainer) player.containerMenu).getStorageInventory();
+                Container container = ((StorageContainer) player.containerMenu).getStorageInventory();
                 if(container == this.inventory)
                 {
                     count++;
@@ -255,8 +261,8 @@ public class MopedEntity extends MotorcycleEntity implements IStorage, IAttachab
             return createScaledBoundingBox(-3.5, 8.0, -7.0, 3.5, 15.0, -14.0, 0.0625);
         }, (entity, rightClick) -> {
             if(rightClick) {
-                PacketHandler.getPlayChannel().sendToServer(new MessageOpenStorage(entity.getId(), "Chest"));
-                Minecraft.getInstance().player.swing(Hand.MAIN_HAND);
+                PacketHandler.getPlayChannel().send(new MessageOpenStorage(entity.getId(), "Chest"), PacketDistributor.SERVER.noArg());
+                Minecraft.getInstance().player.swing(InteractionHand.MAIN_HAND);
             }
         }, MopedEntity::hasChest);
 
@@ -264,8 +270,8 @@ public class MopedEntity extends MotorcycleEntity implements IStorage, IAttachab
             return createScaledBoundingBox(-4.0, 7.0, -6.5, 4.0, 8.0, -14.5, 0.0625);
         }, (entity, rightClick) -> {
             if(rightClick) {
-                PacketHandler.getPlayChannel().sendToServer(new MessageAttachChest(entity.getId(), "Chest"));
-                Minecraft.getInstance().player.swing(Hand.MAIN_HAND);
+                PacketHandler.getPlayChannel().send(new MessageAttachChest(entity.getId(), "Chest"), PacketDistributor.SERVER.noArg());
+                Minecraft.getInstance().player.swing(InteractionHand.MAIN_HAND);
             }
         }, entity -> !entity.hasChest());
     }
@@ -292,8 +298,8 @@ public class MopedEntity extends MotorcycleEntity implements IStorage, IAttachab
         @Override
         public void startOpen(Player player)
         {
-            Vector3d target = MopedEntity.this.getChestPosition();
-            player.level.playSound(null, target.x, target.y, target.z, SoundEvents.CHEST_OPEN, MopedEntity.this.getSoundSource(), 0.5F, 0.9F);
+            Vec3 target = MopedEntity.this.getChestPosition();
+            player.level().playSound(null, target.x, target.y, target.z, SoundEvents.CHEST_OPEN, MopedEntity.this.getSoundSource(), 0.5F, 0.9F);
         }
     }
 }

@@ -12,7 +12,6 @@ public class GoKartEntity extends LandVehicleEntity
     public GoKartEntity(EntityType<? extends GoKartEntity> type, Level worldIn)
     {
         super(type, worldIn);
-        this.maxUpStep = 0.625F;
     }
 
 

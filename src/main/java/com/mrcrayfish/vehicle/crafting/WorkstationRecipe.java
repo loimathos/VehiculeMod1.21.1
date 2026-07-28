@@ -2,12 +2,13 @@ package com.mrcrayfish.vehicle.crafting;
 
 import com.google.common.collect.ImmutableList;
 import com.mrcrayfish.vehicle.init.ModRecipeSerializers;
-import com.mrcrayfish.vehicle.blockentity.WorkstationBlockEntity;
 import com.mrcrayfish.vehicle.util.InventoryUtil;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.Recipe;
+import net.minecraft.world.item.crafting.RecipeInput;
 import net.minecraft.world.item.crafting.RecipeSerializer;
 import net.minecraft.world.item.crafting.RecipeType;
 import net.minecraft.resources.ResourceLocation;
@@ -16,11 +17,18 @@ import net.minecraft.world.level.Level;
 /**
  * Author: MrCrayfish
  */
-public class WorkstationRecipe implements Recipe<WorkstationBlockEntity>
+public class WorkstationRecipe implements Recipe<RecipeInput>
 {
     private ResourceLocation id;
     private EntityType<?> vehicle;
     private ImmutableList<WorkstationIngredient> materials;
+
+    public WorkstationRecipe(EntityType<?> vehicle, java.util.List<WorkstationIngredient> materials)
+    {
+        this.id = ResourceLocation.fromNamespaceAndPath("vehicle", "workstation");
+        this.vehicle = vehicle;
+        this.materials = ImmutableList.copyOf(materials);
+    }
 
     public WorkstationRecipe(ResourceLocation id, EntityType<?> vehicle, ImmutableList<WorkstationIngredient> materials)
     {
@@ -40,13 +48,13 @@ public class WorkstationRecipe implements Recipe<WorkstationBlockEntity>
     }
 
     @Override
-    public boolean matches(WorkstationBlockEntity inv, Level worldIn)
+    public boolean matches(RecipeInput input, Level level)
     {
         return false;
     }
 
     @Override
-    public ItemStack assemble(WorkstationBlockEntity inv)
+    public ItemStack assemble(RecipeInput input, HolderLookup.Provider registries)
     {
         return ItemStack.EMPTY;
     }
@@ -58,27 +66,24 @@ public class WorkstationRecipe implements Recipe<WorkstationBlockEntity>
     }
 
     @Override
-    public ItemStack getResultItem()
+    public ItemStack getResultItem(HolderLookup.Provider registries)
     {
         return ItemStack.EMPTY;
     }
 
-    @Override
     public ResourceLocation getId()
     {
         return this.id;
     }
 
-    @Override
     public RecipeSerializer<?> getSerializer()
     {
         return ModRecipeSerializers.WORKSTATION.get();
     }
 
-    @Override
     public RecipeType<?> getType()
     {
-        return RecipeType.WORKSTATION;
+        return com.mrcrayfish.vehicle.crafting.RecipeType.WORKSTATION.get();
     }
 
     public boolean hasMaterials(Player player)

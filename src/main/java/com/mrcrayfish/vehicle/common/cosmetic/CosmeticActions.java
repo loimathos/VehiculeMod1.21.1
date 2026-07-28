@@ -26,17 +26,17 @@ public class CosmeticActions
 
     static
     {
-        register(new ResourceLocation(Reference.MOD_ID, "openable"), OpenableAction.class, object -> {
+        register(ResourceLocation.fromNamespaceAndPath(Reference.MOD_ID, "openable"), OpenableAction.class, object -> {
             JsonObject rotation = object.getAsJsonObject("rotation");
-            Axis axis = Axis.fromKey(JSONUtils.getAsString(rotation, "axis", "x"));
-            float angle = JSONUtils.getAsFloat(rotation, "angle", 0F);
-            int animationLength = JSONUtils.getAsInt(rotation, "animationLength", 12);
+            Axis axis = Axis.fromKey(GsonHelper.getAsString(rotation, "axis", "x"));
+            float angle = GsonHelper.getAsFloat(rotation, "angle", 0F);
+            int animationLength = GsonHelper.getAsInt(rotation, "animationLength", 12);
             JsonObject sound = object.getAsJsonObject("sound");
             ResourceLocation openSound = ExtraJSONUtils.getAsResourceLocation(sound, "open", null);
             ResourceLocation closeSound = ExtraJSONUtils.getAsResourceLocation(sound, "close", null);
             return () -> new OpenableAction(axis, angle, openSound, closeSound, animationLength);
         });
-        register(new ResourceLocation(Reference.MOD_ID, "rotate"), RotateAction.class, RotateAction::createSupplier);
+        register(ResourceLocation.fromNamespaceAndPath(Reference.MOD_ID, "rotate"), RotateAction.class, RotateAction::createSupplier);
     }
 
     public static <A extends Action> void register(ResourceLocation id, Class<A> clazz, Function<JsonObject, Supplier<A>> deserializer)

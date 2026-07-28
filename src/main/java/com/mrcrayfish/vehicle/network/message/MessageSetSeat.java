@@ -1,10 +1,9 @@
 package com.mrcrayfish.vehicle.network.message;
 
 import com.mrcrayfish.vehicle.network.play.ServerPlayHandler;
-import net.minecraft.world.entity.player.ServerPlayer;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.network.FriendlyByteBuf;
-import net.minecraftforge.network.NetworkDirection;
-import net.minecraftforge.network.NetworkEvent;
+import net.minecraftforge.event.network.CustomPayloadEvent;
 
 import java.util.function.Supplier;
 
@@ -23,19 +22,19 @@ public class MessageSetSeat implements IMessage<MessageSetSeat>
     }
 
     @Override
-    public void encode(MessageSetSeat message, PacketBuffer buffer)
+    public void encode(MessageSetSeat message, FriendlyByteBuf buffer)
     {
         buffer.writeInt(message.index);
     }
 
     @Override
-    public MessageSetSeat decode(PacketBuffer buffer)
+    public MessageSetSeat decode(FriendlyByteBuf buffer)
     {
         return new MessageSetSeat(buffer.readInt());
     }
 
     @Override
-    public void handle(MessageSetSeat message, Supplier<NetworkEvent.Context> supplier)
+    public void handle(MessageSetSeat message, Supplier<CustomPayloadEvent.Context> supplier)
     {
         supplier.get().enqueueWork(() ->
         {

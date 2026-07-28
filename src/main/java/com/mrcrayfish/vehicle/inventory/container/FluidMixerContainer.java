@@ -86,7 +86,7 @@ public class FluidMixerContainer extends AbstractContainerMenu
                         return ItemStack.EMPTY;
                     }
                 }
-                else if(ForgeHooks.getBurnTime(slotStack) > 0)
+                else if(ForgeHooks.getBurnTime(slotStack, null) > 0)
                 {
                     if(!this.moveItemStackTo(slotStack, 0, 1, false))
                     {

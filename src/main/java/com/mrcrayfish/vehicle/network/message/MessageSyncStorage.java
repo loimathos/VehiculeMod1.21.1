@@ -6,7 +6,7 @@ import com.mrcrayfish.vehicle.entity.VehicleEntity;
 import com.mrcrayfish.vehicle.network.play.ClientPlayHandler;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.FriendlyByteBuf;
-import net.minecraftforge.network.NetworkEvent;
+import net.minecraftforge.event.network.CustomPayloadEvent;
 import org.apache.commons.lang3.tuple.Pair;
 
 import java.util.ArrayList;
@@ -35,7 +35,7 @@ public class MessageSyncStorage implements IMessage<MessageSyncStorage>
             if(inventory != null)
             {
                 CompoundTag tag = new CompoundTag();
-                tag.put("Inventory", inventory.createTag());
+                tag.put("Inventory", inventory.createTag(vehicle.level().registryAccess()));
                 tagList.add(Pair.of(key, tag));
             }
         }
@@ -57,7 +57,7 @@ public class MessageSyncStorage implements IMessage<MessageSyncStorage>
     }
 
     @Override
-    public void encode(MessageSyncStorage message, PacketBuffer buffer)
+    public void encode(MessageSyncStorage message, FriendlyByteBuf buffer)
     {
         buffer.writeInt(message.entityId);
         buffer.writeInt(message.keys.length);
@@ -69,7 +69,7 @@ public class MessageSyncStorage implements IMessage<MessageSyncStorage>
     }
 
     @Override
-    public MessageSyncStorage decode(PacketBuffer buffer)
+    public MessageSyncStorage decode(FriendlyByteBuf buffer)
     {
         int entityId = buffer.readInt();
         int keyLength = buffer.readInt();
@@ -84,7 +84,7 @@ public class MessageSyncStorage implements IMessage<MessageSyncStorage>
     }
 
     @Override
-    public void handle(MessageSyncStorage message, Supplier<NetworkEvent.Context> supplier)
+    public void handle(MessageSyncStorage message, Supplier<CustomPayloadEvent.Context> supplier)
     {
         IMessage.enqueueTask(supplier, () -> ClientPlayHandler.handleSyncStorage(message));
     }

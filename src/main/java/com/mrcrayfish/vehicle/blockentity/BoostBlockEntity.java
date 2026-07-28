@@ -1,9 +1,15 @@
 package com.mrcrayfish.vehicle.blockentity;
 
+
+
+import net.minecraft.core.HolderLookup;
+import net.minecraft.core.BlockPos;
+import net.minecraft.nbt.Tag;
+import net.minecraft.world.level.block.entity.BlockEntity;
+
 import com.mrcrayfish.vehicle.init.ModBlockEntities;
-import net.minecraft.world.level.block.BlockState;
+import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraftforge.common.util.Constants;
 
 /**
  * Author: MrCrayfish
@@ -12,14 +18,14 @@ public class BoostBlockEntity extends BlockEntity
 {
     private float speedMultiplier;
 
-    public BoostBlockEntity()
+    public BoostBlockEntity(BlockPos pos, BlockState state)
     {
-        super(ModBlockEntities.BOOST.get());
+        super(ModBlockEntities.BOOST.get(), pos, state);
     }
 
-    public BoostBlockEntity(float defaultSpeedMultiplier)
+    public BoostBlockEntity(BlockPos pos, BlockState state, float defaultSpeedMultiplier)
     {
-        super(ModBlockEntities.BOOST.get());
+        super(ModBlockEntities.BOOST.get(), pos, state);
         this.speedMultiplier = defaultSpeedMultiplier;
     }
 
@@ -29,20 +35,20 @@ public class BoostBlockEntity extends BlockEntity
     }
 
     @Override
-    public void load(BlockState state, CompoundTag compound)
+    protected void loadAdditional(CompoundTag compound, HolderLookup.Provider registries)
     {
-        super.load(state, compound);
-        if(compound.contains("SpeedMultiplier", Constants.NBT.TAG_FLOAT))
+        super.loadAdditional(compound, registries);
+        if(compound.contains("SpeedMultiplier", Tag.TAG_FLOAT))
         {
             this.speedMultiplier = compound.getFloat("SpeedMultiplier");
         }
     }
 
     @Override
-    public CompoundTag save(CompoundTag compound)
+    protected void saveAdditional(CompoundTag compound, HolderLookup.Provider registries)
     {
+        super.saveAdditional(compound, registries);
         compound.putFloat("SpeedMultiplier", this.speedMultiplier);
-        return super.save(compound);
     }
 }
 

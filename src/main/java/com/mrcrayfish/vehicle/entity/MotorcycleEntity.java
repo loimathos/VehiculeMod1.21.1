@@ -20,7 +20,7 @@ public abstract class MotorcycleEntity extends LandVehicleEntity
     {
         super.updateBodyRotations();
         float leanAngle = this.getMaxLeanAngle() * (this.getSteeringAngle() / this.getMaxSteeringAngle());
-        leanAngle *= MathHelper.clamp(this.getSpeed() / 30.0, 0.0, 1.0);
+        leanAngle *= Mth.clamp(this.getSpeed() / 30.0, 0.0, 1.0);
         this.bodyRotationRoll = -leanAngle;
     }
 

@@ -1,7 +1,7 @@
 package com.mrcrayfish.vehicle.common.cosmetic.actions;
 
 import com.google.gson.JsonObject;
-import com.mojang.blaze3d.matrix.MatrixStack;
+import com.mojang.blaze3d.vertex.PoseStack;
 import com.mrcrayfish.vehicle.client.raytrace.MatrixTransform;
 import com.mrcrayfish.vehicle.entity.VehicleEntity;
 import net.minecraft.world.entity.player.Player;
@@ -79,7 +79,7 @@ public abstract class Action
     }
 
     @OnlyIn(Dist.CLIENT)
-    public void beforeRender(MatrixStack stack, VehicleEntity vehicle, float partialTicks) {}
+    public void beforeRender(PoseStack stack, VehicleEntity vehicle, float partialTicks) {}
 
     @OnlyIn(Dist.CLIENT)
     public void gatherTransforms(List<MatrixTransform> transforms) {}

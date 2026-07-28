@@ -4,10 +4,9 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.mrcrayfish.vehicle.crafting.WorkstationIngredient;
 import com.mrcrayfish.vehicle.init.ModRecipeSerializers;
-import net.minecraft.data.IFinishedRecipe;
+import net.minecraft.data.recipes.RecipeOutput;
 import net.minecraft.world.item.crafting.RecipeSerializer;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraftforge.common.crafting.CraftingHelper;
 import net.minecraftforge.common.crafting.conditions.ICondition;
 
 import javax.annotation.Nullable;
@@ -43,74 +42,14 @@ public class WorkstationRecipeBuilder
         return this;
     }
 
-    public void save(Consumer<IFinishedRecipe> consumer, String name)
+    public void save(RecipeOutput consumer, String name)
     {
-        this.save(consumer, new ResourceLocation(name));
+        this.save(consumer, ResourceLocation.parse(name));
     }
 
-    public void save(Consumer<IFinishedRecipe> consumer, ResourceLocation id)
+    public void save(RecipeOutput consumer, ResourceLocation id)
     {
-        consumer.accept(new Result(id, this.serializer, this.entityId, this.ingredients, this.conditions));
-    }
-
-    public static class Result implements IFinishedRecipe
-    {
-        private final ResourceLocation id;
-        private final ResourceLocation entityId;
-        private final List<WorkstationIngredient> ingredients;
-        private final List<ICondition> conditions;
-        private final RecipeSerializer<?> serializer;
-
-        private Result(ResourceLocation id, RecipeSerializer<?> serializer, ResourceLocation entityId, List<WorkstationIngredient> ingredients, List<ICondition> conditions)
-        {
-            this.id = id;
-            this.serializer = serializer;
-            this.entityId = entityId;
-            this.ingredients = ingredients;
-            this.conditions = conditions;
-        }
-
-        @Override
-        public void serializeRecipeData(JsonObject object)
-        {
-            object.addProperty("vehicle", this.entityId.toString());
-
-            JsonArray conditions = new JsonArray();
-            this.conditions.forEach(condition -> conditions.add(CraftingHelper.serialize(condition)));
-            if(conditions.size() > 0)
-            {
-                object.add("conditions", conditions);
-            }
-
-            JsonArray materials = new JsonArray();
-            this.ingredients.forEach(ingredient -> materials.add(ingredient.toJson()));
-            object.add("materials", materials);
-        }
-
-        @Override
-        public ResourceLocation getId()
-        {
-            return this.id;
-        }
-
-        @Override
-        public RecipeSerializer<?> getType()
-        {
-            return this.serializer;
-        }
-
-        @Nullable
-        @Override
-        public JsonObject serializeAdvancement()
-        {
-            return null;
-        }
-
-        @Nullable
-        @Override
-        public ResourceLocation getAdvancementId()
-        {
-            return null;
-        }
+        net.minecraft.world.entity.EntityType<?> entityType = net.minecraft.core.registries.BuiltInRegistries.ENTITY_TYPE.get(this.entityId);
+        consumer.accept(id, new com.mrcrayfish.vehicle.crafting.WorkstationRecipe(id, entityType, com.google.common.collect.ImmutableList.copyOf(this.ingredients)), null);
     }
 }

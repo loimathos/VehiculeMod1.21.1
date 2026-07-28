@@ -2,8 +2,9 @@ package com.mrcrayfish.vehicle.entity.vehicle;
 
 import com.mrcrayfish.vehicle.entity.LandVehicleEntity;
 import com.mrcrayfish.vehicle.entity.trailer.StorageTrailerEntity;
+import com.mrcrayfish.vehicle.common.inventory.StorageInventory;
 import net.minecraft.world.level.block.Block;
-import net.minecraft.world.level.block.BlockState;
+import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.BushBlock;
 import net.minecraft.world.entity.EntityType;
@@ -16,7 +17,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.util.Mth;
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.ServerLevel;
+import net.minecraft.server.level.ServerLevel;
 
 import java.util.List;
 
@@ -35,21 +36,21 @@ public class LawnMowerEntity extends LandVehicleEntity
     {
         super.onVehicleTick();
 
-        if(!level.isClientSide && this.getControllingPassenger() != null)
+        if(!this.level().isClientSide && this.getControllingPassenger() != null)
         {
-            AxisAlignedBB axisAligned = this.getBoundingBox().inflate(0.25);
-            Vector3d lookVec = this.getLookAngle().scale(0.5);
-            int minX = MathHelper.floor(axisAligned.minX + lookVec.x);
-            int maxX = MathHelper.ceil(axisAligned.maxX + lookVec.x);
-            int minZ = MathHelper.floor(axisAligned.minZ + lookVec.z);
-            int maxZ = MathHelper.ceil(axisAligned.maxZ + lookVec.z);
+            AABB axisAligned = this.getBoundingBox().inflate(0.25);
+            Vec3 lookVec = this.getLookAngle().scale(0.5);
+            int minX = Mth.floor(axisAligned.minX + lookVec.x);
+            int maxX = Mth.ceil(axisAligned.maxX + lookVec.x);
+            int minZ = Mth.floor(axisAligned.minZ + lookVec.z);
+            int maxZ = Mth.ceil(axisAligned.maxZ + lookVec.z);
 
             for(int x = minX; x < maxX; x++)
             {
                 for(int z = minZ; z < maxZ; z++)
                 {
-                    BlockPos pos = new BlockPos(x, axisAligned.minY + 0.5, z);
-                    BlockState state = level.getBlockState(pos);
+                    BlockPos pos = BlockPos.containing(x, axisAligned.minY + 0.5, z);
+                    BlockState state = this.level().getBlockState(pos);
 
                     StorageTrailerEntity trailer = null;
                     if(getTrailer() instanceof StorageTrailerEntity)
@@ -59,14 +60,14 @@ public class LawnMowerEntity extends LandVehicleEntity
 
                     if(state.getBlock() instanceof BushBlock)
                     {
-                        List<ItemStack> drops = Block.getDrops(state, (ServerLevel) level, pos, null);
+                        List<ItemStack> drops = Block.getDrops(state, (ServerLevel) this.level(), pos, null);
                         for(ItemStack stack : drops)
                         {
                             this.addItemToStorage(trailer, stack);
                         }
-                        level.setBlockAndUpdate(pos, Blocks.AIR.defaultBlockState());
-                        level.playSound(null, pos, state.getBlock().getSoundType(state, level, pos, this).getBreakSound(), SoundCategory.BLOCKS, 1.0F, 1.0F);
-                        level.levelEvent(2001, pos, Block.getId(state));
+                        this.level().setBlockAndUpdate(pos, Blocks.AIR.defaultBlockState());
+                        this.level().playSound(null, pos, state.getBlock().getSoundType(state, this.level(), pos, this).getBreakSound(), SoundSource.BLOCKS, 1.0F, 1.0F);
+                        this.level().levelEvent(2001, pos, Block.getId(state));
                     }
                 }
             }
@@ -80,7 +81,7 @@ public class LawnMowerEntity extends LandVehicleEntity
 
         if(storageTrailer != null && storageTrailer.getInventory() != null)
         {
-            Inventory storage = storageTrailer.getInventory();
+            StorageInventory storage = storageTrailer.getInventory();
             stack = storage.addItem(stack);
             if(!stack.isEmpty())
             {
@@ -90,13 +91,13 @@ public class LawnMowerEntity extends LandVehicleEntity
                 }
                 else
                 {
-                    spawnItemStack(level, stack);
+                    spawnItemStack(this.level(), stack);
                 }
             }
         }
         else
         {
-            spawnItemStack(level, stack);
+            spawnItemStack(this.level(), stack);
         }
     }
 

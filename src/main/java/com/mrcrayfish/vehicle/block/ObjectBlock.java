@@ -1,10 +1,11 @@
 package com.mrcrayfish.vehicle.block;
 
 import com.mrcrayfish.vehicle.util.RenderUtil;
-import net.minecraft.world.level.block.AbstractBlock;
+import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.Block;
-import net.minecraft.client.gui.screen.Screen;
-import net.minecraft.client.util.ITooltipFlag;
+import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.world.item.TooltipFlag;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.network.chat.Component;
 import net.minecraft.ChatFormatting;
@@ -19,13 +20,13 @@ import java.util.List;
  */
 public class ObjectBlock extends Block
 {
-    public ObjectBlock(AbstractBlock.Properties properties)
+    public ObjectBlock(BlockBehaviour.Properties properties)
     {
         super(properties);
     }
 
     @Override
-    public void appendHoverText(ItemStack stack, @Nullable BlockAndTintGetter reader, List<Component> list, ITooltipFlag flag)
+    public void appendHoverText(ItemStack stack, Item.TooltipContext context, List<Component> list, TooltipFlag flag)
     {
         if(Screen.hasShiftDown())
         {
@@ -33,7 +34,7 @@ public class ObjectBlock extends Block
         }
         else
         {
-            list.add(Component.translatable("vehicle.info_help").withStyle(TextFormatting.YELLOW));
+            list.add(Component.translatable("vehicle.info_help").withStyle(ChatFormatting.YELLOW));
         }
     }
 }

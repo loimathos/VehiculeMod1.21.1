@@ -1,6 +1,5 @@
 package com.mrcrayfish.vehicle.client.screen.toolbar;
 
-import com.mojang.blaze3d.matrix.MatrixStack;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mrcrayfish.vehicle.Reference;
 import com.mrcrayfish.vehicle.client.screen.DashboardScreen;
@@ -8,11 +7,9 @@ import com.mrcrayfish.vehicle.client.screen.toolbar.widget.IconButton;
 import com.mrcrayfish.vehicle.client.screen.toolbar.widget.Spacer;
 import com.mrcrayfish.vehicle.util.CommonUtils;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.screen.Screen;
-import net.minecraft.client.gui.widget.Widget;
-import net.minecraft.client.renderer.BufferBuilder;
-import net.minecraft.client.renderer.Tessellator;
-import net.minecraft.client.renderer.block.model.BakedQuad;
+import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.network.chat.Component;
 
@@ -23,12 +20,9 @@ import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * Author: MrCrayfish
- */
 public abstract class AbstractToolbarScreen extends Screen
 {
-    private static final ResourceLocation WINDOW_TEXTURE = new ResourceLocation(Reference.MOD_ID, "textures/gui/components.png");
+    private static final ResourceLocation WINDOW_TEXTURE = ResourceLocation.fromNamespaceAndPath(Reference.MOD_ID, "textures/gui/components.png");
 
     private Screen parent;
     private int contentWidth;
@@ -42,7 +36,7 @@ public abstract class AbstractToolbarScreen extends Screen
     @Override
     protected void init()
     {
-        List<Widget> widgets = new ArrayList<>();
+        List<AbstractWidget> widgets = new ArrayList<>();
         if(this.parent != null)
         {
             widgets.add(new IconButton(20, 20, DashboardScreen.Icons.BACK, Component.translatable("vehicle.toolbar.label.back"), onPress -> this.minecraft.setScreen(this.parent)));
@@ -51,7 +45,7 @@ public abstract class AbstractToolbarScreen extends Screen
         this.loadWidgets(widgets);
 
         int contentWidth = (widgets.size() - 1) * 2 + 4;
-        for(Widget widget : widgets)
+        for(AbstractWidget widget : widgets)
         {
             contentWidth += widget.getWidth();
         }
@@ -63,11 +57,11 @@ public abstract class AbstractToolbarScreen extends Screen
         int offset = 0;
         for(int i = 0; i < widgets.size(); i++)
         {
-            Widget widget = widgets.get(i);
-            widget.x = startX + 4 + 2 + offset;
-            widget.y = startY + 4 + 2;
+            AbstractWidget widget = widgets.get(i);
+            widget.setX(startX + 4 + 2 + offset);
+            widget.setY(startY + 4 + 2);
             offset += widget.getWidth() + 2;
-            this.addButton(widget);
+            this.addRenderableWidget(widget);
         }
     }
 
@@ -77,26 +71,29 @@ public abstract class AbstractToolbarScreen extends Screen
         return false;
     }
 
-    protected abstract void loadWidgets(List<Widget> widgets);
+    protected abstract void loadWidgets(List<AbstractWidget> widgets);
 
     @Override
-    public void render(MatrixStack matrixStack, int mouseX, int mouseY, float partialTicks)
+    public void render(GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTicks)
     {
-        this.fillGradient(matrixStack, 0, this.height / 2, this.width, this.height, 0x00000000, 0xAA000000);
+        guiGraphics.fillGradient(0, this.height / 2, this.width, this.height, 0x00000000, 0xAA000000);
 
         Pair<Integer, Integer> dimensions = this.getDimensionsForWindow(this.contentWidth, 24);
         int startX = (this.width - dimensions.getLeft()) / 2;
         int startY = (this.height - dimensions.getRight()) - dimensions.getRight() / 2;
-        this.drawWindow(startX, startY, dimensions);
-        super.render(matrixStack, mouseX, mouseY, partialTicks);
+        this.drawWindow(guiGraphics, startX, startY, dimensions);
+        super.render(guiGraphics, mouseX, mouseY, partialTicks);
 
-        Widget hoveredWidget = null;
-        for(Widget widget : this.buttons)
+        AbstractWidget hoveredWidget = null;
+        for(var child : this.children())
         {
-            if(CommonUtils.isMouseWithin(mouseX, mouseY, widget.x, widget.y, widget.getWidth(), widget.getHeight()))
+            if(child instanceof AbstractWidget widget)
             {
-                hoveredWidget = widget;
-                break;
+                if(CommonUtils.isMouseWithin(mouseX, mouseY, widget.getX(), widget.getY(), widget.getWidth(), widget.getHeight()))
+                {
+                    hoveredWidget = widget;
+                    break;
+                }
             }
         }
 
@@ -104,45 +101,30 @@ public abstract class AbstractToolbarScreen extends Screen
         {
             Component message = ((IToolbarLabel) hoveredWidget).getLabel();
             int messageWidth = this.minecraft.font.width(message);
-            drawString(matrixStack, this.minecraft.font, message, this.width / 2 - messageWidth / 2, startY - 12, 0xFFFFFF);
+            guiGraphics.drawString(this.minecraft.font, message, this.width / 2 - messageWidth / 2, startY - 12, 0xFFFFFF);
         }
     }
 
-    public void drawWindow(int x, int y, Pair<Integer, Integer> dimensions)
+    public void drawWindow(GuiGraphics guiGraphics, int x, int y, Pair<Integer, Integer> dimensions)
     {
-        this.drawWindow(x, y, dimensions.getLeft(), dimensions.getRight());
+        this.drawWindow(guiGraphics, x, y, dimensions.getLeft(), dimensions.getRight());
     }
 
-    private void drawWindow(int x, int y, int width, int height)
+    private void drawWindow(GuiGraphics guiGraphics, int x, int y, int width, int height)
     {
-        RenderSystem.color4f(1.0F, 1.0F, 1.0F, 1.0F);
+        RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
         RenderSystem.enableBlend();
         RenderSystem.blendFuncSeparate(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA, GL11.GL_ONE, GL11.GL_ZERO);
-        Minecraft.getInstance().getTextureManager().bind(WINDOW_TEXTURE);
         int offset = 17;
-        this.drawTexturedRect(x, y, offset, 0, 4, 4, 4, 4);                              /* Top left corner */
-        this.drawTexturedRect(x + width - 4, y, 5 + offset, 0, 4, 4, 4, 4);              /* Top right corner */
-        this.drawTexturedRect(x, y + height - 4, offset, 5, 4, 4, 4, 4);                 /* Bottom left corner */
-        this.drawTexturedRect(x + width - 4, y + height - 4, 5 + offset, 5, 4, 4, 4, 4); /* Bottom right corner */
-        this.drawTexturedRect(x + 4, y, 4 + offset, 0, width - 8, 4, 1, 4);              /* Top border */
-        this.drawTexturedRect(x + 4, y + height - 4, 4 + offset, 5, width - 8, 4, 1, 4); /* Bottom border */
-        this.drawTexturedRect(x, y + 4, offset, 4, 4, height - 8, 4, 1);                 /* Left border */
-        this.drawTexturedRect(x + width - 4, y + 4, 5 + offset, 4, 4, height - 8, 4, 1); /* Right border */
-        this.drawTexturedRect(x + 4, y + 4, 4 + offset, 4, width - 8, height - 8, 1, 1); /* Center */
-    }
-
-    private void drawTexturedRect(int x, int y, int u, int v, int width, int height, int textureWidth, int textureHeight)
-    {
-        float uScale = 1.0F / 256.0F;
-        float vScale = 1.0F / 256.0F;
-        Tessellator tessellator = Tessellator.getInstance();
-        BufferBuilder builder = tessellator.getBuilder();
-        builder.begin(GL11.GL_QUADS, DefaultVertexFormats.POSITION_TEX);
-        builder.vertex(x, y + height, 0).uv(u * uScale, (v + textureHeight) * vScale).endVertex();
-        builder.vertex(x + width, y + height, 0).uv((u + textureWidth) * uScale, (v + textureHeight) * vScale).endVertex();
-        builder.vertex(x + width, y, 0).uv((u + textureWidth) * uScale, v * vScale).endVertex();
-        builder.vertex(x, y, 0).uv(u * uScale, v * vScale).endVertex();
-        tessellator.end();
+        guiGraphics.blit(WINDOW_TEXTURE, x, y, offset, 0, 4, 4, 256, 256);                              /* Top left corner */
+        guiGraphics.blit(WINDOW_TEXTURE, x + width - 4, y, 5 + offset, 0, 4, 4, 256, 256);              /* Top right corner */
+        guiGraphics.blit(WINDOW_TEXTURE, x, y + height - 4, offset, 5, 4, 4, 256, 256);                 /* Bottom left corner */
+        guiGraphics.blit(WINDOW_TEXTURE, x + width - 4, y + height - 4, 5 + offset, 5, 4, 4, 256, 256); /* Bottom right corner */
+        guiGraphics.blit(WINDOW_TEXTURE, x + 4, y, 4 + offset, 0, width - 8, 4, 256, 256);              /* Top border */
+        guiGraphics.blit(WINDOW_TEXTURE, x + 4, y + height - 4, 4 + offset, 5, width - 8, 4, 256, 256); /* Bottom border */
+        guiGraphics.blit(WINDOW_TEXTURE, x, y + 4, offset, 4, 4, height - 8, 256, 256);                 /* Left border */
+        guiGraphics.blit(WINDOW_TEXTURE, x + width - 4, y + 4, 5 + offset, 4, 4, height - 8, 256, 256); /* Right border */
+        guiGraphics.blit(WINDOW_TEXTURE, x + 4, y + 4, 4 + offset, 4, width - 8, height - 8, 256, 256); /* Center */
     }
 
     private Pair<Integer, Integer> getDimensionsForWindow(int contentWidth, int contentHeight)

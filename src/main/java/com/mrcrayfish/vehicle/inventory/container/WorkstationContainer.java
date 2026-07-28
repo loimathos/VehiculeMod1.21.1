@@ -20,7 +20,7 @@ public class WorkstationContainer extends AbstractContainerMenu
     private WorkstationBlockEntity workstationBlockEntity;
     private BlockPos pos;
 
-    public WorkstationContainer(int windowId, IInventory playerInventory, WorkstationBlockEntity workstationBlockEntity)
+    public WorkstationContainer(int windowId, Container playerInventory, WorkstationBlockEntity workstationBlockEntity)
     {
         super(ModContainers.WORKSTATION.get(), windowId);
         this.workstationBlockEntity = workstationBlockEntity;

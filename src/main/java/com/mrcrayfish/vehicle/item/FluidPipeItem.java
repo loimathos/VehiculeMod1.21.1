@@ -12,6 +12,6 @@ public class FluidPipeItem extends BlockItem
 {
     public FluidPipeItem(Block block)
     {
-        super(block, new Item.Properties().tab(VehicleMod.CREATIVE_TAB));
+        super(block, new Item.Properties());
     }
 }

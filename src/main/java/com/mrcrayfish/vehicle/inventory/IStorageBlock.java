@@ -10,7 +10,7 @@ import net.minecraft.core.NonNullList;
 /**
  * Author: MrCrayfish
  */
-public interface IStorageBlock extends IInventory, INamedContainerProvider
+public interface IStorageBlock extends Container, MenuProvider
 {
     NonNullList<ItemStack> getInventory();
 
@@ -42,7 +42,7 @@ public interface IStorageBlock extends IInventory, INamedContainerProvider
     @Override
     default ItemStack removeItem(int index, int count)
     {
-        ItemStack stack = ItemStackHelper.removeItem(this.getInventory(), index, count);
+        ItemStack stack = ContainerHelper.removeItem(this.getInventory(), index, count);
         if (!stack.isEmpty())
         {
             this.setChanged();

@@ -16,7 +16,7 @@ import java.util.function.Supplier;
  */
 public class ModBlockEntities
 {
-    public static final DeferredRegister<BlockEntityType<?>> REGISTER = DeferredRegister.create(ForgeRegistries.BLOCK_ENTITIES, Reference.MOD_ID);
+    public static final DeferredRegister<BlockEntityType<?>> REGISTER = DeferredRegister.create(ForgeRegistries.BLOCK_ENTITY_TYPES, Reference.MOD_ID);
 
     public static final RegistryObject<BlockEntityType<FluidExtractorBlockEntity>> FLUID_EXTRACTOR = register("fluid_extractor", FluidExtractorBlockEntity::new, () -> new Block[]{ModBlocks.FLUID_EXTRACTOR.get()});
     public static final RegistryObject<BlockEntityType<PipeBlockEntity>> FLUID_PIPE = register("fluid_pipe", PipeBlockEntity::new, () -> new Block[]{ModBlocks.FLUID_PIPE.get()});
@@ -31,7 +31,7 @@ public class ModBlockEntities
     public static final RegistryObject<BlockEntityType<GasPumpBlockEntity>> GAS_PUMP = register("gas_pump", GasPumpBlockEntity::new, () -> new Block[]{ModBlocks.GAS_PUMP.get()});
     public static final RegistryObject<BlockEntityType<GasPumpTankBlockEntity>> GAS_PUMP_TANK = register("gas_pump_tank", GasPumpTankBlockEntity::new, () -> new Block[]{ModBlocks.GAS_PUMP.get()});
 
-    private static <T extends BlockEntity> RegistryObject<BlockEntityType<T>> register(String id, Supplier<T> factoryIn, Supplier<Block[]> validBlocksSupplier)
+    private static <T extends BlockEntity> RegistryObject<BlockEntityType<T>> register(String id, BlockEntityType.BlockEntitySupplier<T> factoryIn, Supplier<Block[]> validBlocksSupplier)
     {
         return REGISTER.register(id, () -> BlockEntityType.Builder.of(factoryIn, validBlocksSupplier.get()).build(null));
     }

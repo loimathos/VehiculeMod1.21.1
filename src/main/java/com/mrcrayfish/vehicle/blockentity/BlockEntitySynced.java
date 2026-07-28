@@ -1,19 +1,22 @@
 package com.mrcrayfish.vehicle.blockentity;
 
 import com.mrcrayfish.vehicle.util.BlockEntityUtil;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.network.NetworkManager;
-import net.minecraft.network.protocol.game.SUpdateBlockEntityPacket;
+import net.minecraft.network.Connection;
+import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityType;
+import net.minecraft.world.level.block.state.BlockState;
 
 import javax.annotation.Nullable;
 
 public class BlockEntitySynced extends BlockEntity
 {
-    public BlockEntitySynced(BlockEntityType<?> tileEntityTypeIn)
+    public BlockEntitySynced(BlockEntityType<?> tileEntityTypeIn, BlockPos pos, BlockState state)
     {
-        super(tileEntityTypeIn);
+        super(tileEntityTypeIn, pos, state);
     }
 
     public void syncToClient()
@@ -23,21 +26,24 @@ public class BlockEntitySynced extends BlockEntity
     }
 
     @Override
-    public CompoundTag getUpdateTag()
+    public CompoundTag getUpdateTag(HolderLookup.Provider registries)
     {
-        return this.save(new CompoundTag());
+        return this.saveWithoutMetadata(registries);
     }
 
     @Nullable
     @Override
-    public SUpdateBlockEntityPacket getUpdatePacket()
+    public ClientboundBlockEntityDataPacket getUpdatePacket()
     {
-        return new SUpdateBlockEntityPacket(this.getBlockPos(), 0, this.getUpdateTag());
+        return ClientboundBlockEntityDataPacket.create(this);
     }
 
     @Override
-    public void onDataPacket(final NetworkManager net, final SUpdateBlockEntityPacket pkt)
+    public void onDataPacket(Connection net, ClientboundBlockEntityDataPacket pkt, HolderLookup.Provider registries)
     {
-        this.load(null, pkt.getTag());
+        if (pkt.getTag() != null)
+        {
+            this.loadWithComponents(pkt.getTag(), registries);
+        }
     }
 }

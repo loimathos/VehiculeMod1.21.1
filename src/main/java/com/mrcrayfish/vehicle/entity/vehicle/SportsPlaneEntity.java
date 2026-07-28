@@ -16,7 +16,7 @@ public class SportsPlaneEntity extends PlaneEntity
     }
 
     @Override
-    public AxisAlignedBB getBoundingBoxForCulling()
+    public AABB getBoundingBoxForCulling()
     {
         return this.getBoundingBox().inflate(1.5);
     }

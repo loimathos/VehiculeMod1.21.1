@@ -21,9 +21,7 @@ public abstract class RayTraceData
     public RayTraceData(@Nullable RayTraceFunction function)
     {
         this.function = function;
-        Matrix4f matrix = new Matrix4f();
-        matrix.setIdentity();
-        this.matrix = matrix;
+        this.matrix = new Matrix4f();
     }
 
     @Nullable

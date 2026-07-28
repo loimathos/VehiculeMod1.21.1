@@ -19,7 +19,7 @@ import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.fml.ModList;
 import net.minecraftforge.registries.RegistryObject;
-import net.minecraftforge.fml.client.registry.RenderingRegistry;
+import net.minecraftforge.client.event.EntityRenderersEvent;
 import net.minecraftforge.fml.util.ObfuscationReflectionHelper;
 import net.minecraftforge.registries.DeferredRegister;
 
@@ -40,12 +40,14 @@ public class VehicleUtil
 
     public static <T extends VehicleEntity> RegistryObject<EntityType<T>> createEntityType(DeferredRegister<EntityType<?>> deferredRegister, String name, BiFunction<EntityType<T>, Level, T> function, float width, float height, boolean includeCrate)
     {
-        String modId = ObfuscationReflectionHelper.getPrivateValue(DeferredRegister.class, deferredRegister, "modid");
-        ResourceLocation id = new ResourceLocation(modId, name);
-        EntityType<T> type = VehicleUtil.buildVehicleType(id, function, width, height);
-        VehicleRegistry.registerVehicleType(type);
+        String modId = com.mrcrayfish.vehicle.Reference.MOD_ID;
+        ResourceLocation id = ResourceLocation.fromNamespaceAndPath(modId, name);
         if(includeCrate) VehicleCrateBlock.registerVehicle(id);
-        return deferredRegister.register(name, () -> type);
+        return deferredRegister.register(name, () -> {
+            EntityType<T> type = VehicleUtil.buildVehicleType(id, function, width, height);
+            VehicleRegistry.registerVehicleType(type);
+            return type;
+        });
     }
 
     @Nullable
@@ -64,11 +66,11 @@ public class VehicleUtil
     }
 
     @OnlyIn(Dist.CLIENT)
-    public static <T extends VehicleEntity> void registerVehicleRenderer(EntityType<T> type, BiFunction<EntityType<T>, VehicleProperties, AbstractVehicleRenderer<T>> rendererFunction)
+    public static <T extends VehicleEntity> void registerVehicleRenderer(EntityRenderersEvent.RegisterRenderers event, EntityType<T> type, java.util.function.BiFunction<EntityType<T>, VehicleProperties, AbstractVehicleRenderer<T>> rendererFunction)
     {
         VehicleProperties properties = VehicleProperties.get(type);
         AbstractVehicleRenderer<T> renderer = rendererFunction.apply(type, properties);
-        RenderingRegistry.registerEntityRenderingHandler(type, manager -> new EntityVehicleRenderer<>(manager, renderer));
+        event.registerEntityRenderer(type, manager -> new EntityVehicleRenderer<>(manager, renderer));
         VehicleRenderRegistry.registerVehicleRendererFunction(type, rendererFunction, renderer);
         EntityRayTracer.instance().registerTransforms(type, renderer::getRayTraceTransforms);
         EntityRayTracer.instance().registerDynamicRayTraceData(type, VehicleUtil::getCosmeticsRayTraceData);

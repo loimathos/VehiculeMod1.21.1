@@ -1,20 +1,23 @@
 package com.mrcrayfish.vehicle.block;
 
+
+import net.minecraft.world.level.block.EntityBlock;
 import com.mrcrayfish.vehicle.init.ModSounds;
 import com.mrcrayfish.vehicle.blockentity.GasPumpTankBlockEntity;
 import com.mrcrayfish.vehicle.blockentity.GasPumpBlockEntity;
 import com.mrcrayfish.vehicle.util.VoxelShapeHelper;
-import net.minecraft.world.level.block.AbstractBlock;
+import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.Block;
-import net.minecraft.world.level.block.BlockState;
+import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.Blocks;
-//import net.minecraft.world.level.block.material.Material; // Removed in 1.21.1
+// // Removed in 1.21.1
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.level.storage.loot.LootContext;
+import net.minecraft.world.ItemInteractionResult;
+import net.minecraft.world.level.storage.loot.parameters.LootContextParams;
 import net.minecraft.world.level.storage.loot.LootParams;
-import net.minecraft.world.level.block.state.BooleanProperty;
+import net.minecraft.world.level.block.state.properties.BooleanProperty;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.InteractionResult;
@@ -40,14 +43,14 @@ import java.util.Map;
 /**
  * Author: MrCrayfish
  */
-public class GasPumpBlock extends RotatedObjectBlock
+public class GasPumpBlock extends RotatedObjectBlock implements EntityBlock
 {
     public static final BooleanProperty TOP = BooleanProperty.create("top");
     private static final Map<BlockState, VoxelShape> SHAPES = new HashMap<>();
 
     public GasPumpBlock()
     {
-        super(AbstractBlock.Properties.of(Material.HEAVY_METAL).strength(1.0F));
+        super(BlockBehaviour.Properties.of().strength(1.0F));
         this.registerDefaultState(this.getStateDefinition().any().setValue(DIRECTION, Direction.NORTH).setValue(TOP, false));
     }
 
@@ -74,13 +77,32 @@ public class GasPumpBlock extends RotatedObjectBlock
     }
 
     @Override
-    public VoxelShape getShape(BlockState state, BlockAndTintGetter reader, BlockPos pos, CollisionContext context)
+    public VoxelShape getShape(BlockState state, BlockGetter reader, BlockPos pos, CollisionContext context)
     {
         return this.getShape(state);
     }
 
     @Override
-    public InteractionResult use(BlockState state, Level world, BlockPos pos, Player playerEntity, Hand hand, BlockRayTraceResult result)
+    protected ItemInteractionResult useItemOn(ItemStack stack, BlockState state, Level world, BlockPos pos, Player playerEntity, InteractionHand hand, BlockHitResult result)
+    {
+        if(world.isClientSide())
+        {
+            return ItemInteractionResult.sidedSuccess(world.isClientSide);
+        }
+
+        if(!state.getValue(TOP))
+        {
+            if(FluidUtil.interactWithFluidHandler(playerEntity, hand, world, pos, result.getDirection()))
+            {
+                return ItemInteractionResult.sidedSuccess(world.isClientSide);
+            }
+        }
+
+        return ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
+    }
+
+    @Override
+    protected InteractionResult useWithoutItem(BlockState state, Level world, BlockPos pos, Player playerEntity, BlockHitResult result)
     {
         if(world.isClientSide())
         {
@@ -96,25 +118,22 @@ public class GasPumpBlock extends RotatedObjectBlock
                 if(gasPump.getFuelingEntity() != null && gasPump.getFuelingEntity().getId() == playerEntity.getId())
                 {
                     gasPump.setFuelingEntity(null);
-                    world.playSound(null, pos, ModSounds.BLOCK_GAS_PUMP_NOZZLE_PUT_DOWN.get(), SoundCategory.BLOCKS, 1.0F, 1.0F);
+                    world.playSound(null, pos, ModSounds.BLOCK_GAS_PUMP_NOZZLE_PUT_DOWN.get(), SoundSource.BLOCKS, 1.0F, 1.0F);
                 }
                 else if(state.getValue(DIRECTION).getClockWise().equals(result.getDirection()))
                 {
                     gasPump.setFuelingEntity(playerEntity);
-                    world.playSound(null, pos, ModSounds.BLOCK_GAS_PUMP_NOZZLE_PICK_UP.get(), SoundCategory.BLOCKS, 1.0F, 1.0F);
+                    world.playSound(null, pos, ModSounds.BLOCK_GAS_PUMP_NOZZLE_PICK_UP.get(), SoundSource.BLOCKS, 1.0F, 1.0F);
                 }
             }
             return InteractionResult.SUCCESS;
         }
-        else if(FluidUtil.interactWithFluidHandler(playerEntity, hand, world, pos, result.getDirection()))
-        {
-            return InteractionResult.CONSUME;
-        }
+
         return InteractionResult.FAIL;
     }
 
     @Override
-    public boolean canSurvive(BlockState state, IWorldReader reader, BlockPos pos)
+    public boolean canSurvive(BlockState state, LevelReader reader, BlockPos pos)
     {
         return reader.isEmptyBlock(pos) && reader.isEmptyBlock(pos.above());
     }
@@ -126,7 +145,7 @@ public class GasPumpBlock extends RotatedObjectBlock
     }
 
     @Override
-    public void playerWillDestroy(Level world, BlockPos pos, BlockState state, Player player)
+    public BlockState playerWillDestroy(Level world, BlockPos pos, BlockState state, Player player)
     {
         if (!world.isClientSide())
         {
@@ -140,22 +159,22 @@ public class GasPumpBlock extends RotatedObjectBlock
             }
         }
 
-        super.playerWillDestroy(world, pos, state, player);
+        return super.playerWillDestroy(world, pos, state, player);
     }
 
     @Override
-    public List<ItemStack> getDrops(BlockState state, LootContext.Builder builder)
+    public List<ItemStack> getDrops(BlockState state, LootParams.Builder builder)
     {
         if (state.getValue(TOP))
         {
-            Vector3d origin = builder.getOptionalParameter(LootParameters.ORIGIN);
+            Vec3 origin = builder.getOptionalParameter(LootContextParams.ORIGIN);
             if (origin != null)
             {
-                BlockPos pos = new BlockPos(origin);
+                BlockPos pos = BlockPos.containing(origin);
                 BlockEntity tileEntity = builder.getLevel().getBlockEntity(pos.below());
                 if (tileEntity != null)
                 {
-                    builder = builder.withParameter(LootParameters.BLOCK_ENTITY, tileEntity);
+                    builder = builder.withParameter(LootContextParams.BLOCK_ENTITY, tileEntity);
                 }
             }
         }
@@ -168,21 +187,14 @@ public class GasPumpBlock extends RotatedObjectBlock
         super.createBlockStateDefinition(builder);
         builder.add(TOP);
     }
-
-    @Override
-    public boolean hasTileEntity(BlockState state)
-    {
-        return true;
-    }
-
     @Nullable
     @Override
     public BlockEntity newBlockEntity(BlockPos pos, BlockState state)
     {
         if (state.getValue(TOP))
         {
-            return new GasPumpBlockEntity();
+            return new GasPumpBlockEntity(pos, state);
         }
-        return new GasPumpTankBlockEntity();
+        return new GasPumpTankBlockEntity(pos, state);
     }
 }

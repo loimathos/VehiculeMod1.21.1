@@ -11,7 +11,7 @@ import net.minecraft.world.level.block.entity.AbstractFurnaceBlockEntity;
  */
 public class FuelSlot extends Slot
 {
-    public FuelSlot(IInventory inventory, int index, int x, int y)
+    public FuelSlot(Container inventory, int index, int x, int y)
     {
         super(inventory, index, x, y);
     }
