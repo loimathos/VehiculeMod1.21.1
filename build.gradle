@@ -1,36 +1,28 @@
 import groovy.json.JsonOutput
 import groovy.json.JsonSlurper
 
-buildscript {
-    repositories {
-        maven { url = 'https://files.minecraftforge.net/maven' }
-        jcenter()
-        mavenCentral()
-    }
-    dependencies {
-        classpath group: 'net.minecraftforge.gradle', name: 'ForgeGradle', version: '4.1.+', changing: true
-    }
+plugins {
+    id 'net.minecraftforge.gradle' version '6.0.54'
 }
-apply plugin: 'net.minecraftforge.gradle'
 apply plugin: 'maven-publish'
 
-version = "0.45.2-1.16.5"
+version = "0.45.2-1.21.1"
 group = "com.mrcrayfish"
 archivesBaseName = "vehicle-mod"
 
-java.toolchain.languageVersion = JavaLanguageVersion.of(8)
+java.toolchain.languageVersion = JavaLanguageVersion.of(21)
 
 sourceSets.main.resources { srcDir 'src/generated/resources' }
 
 minecraft {
-    mappings channel: "official", version: "1.16.5"
+    mappings channel: "official", version: "1.21.1"
+
+    accessTransformer = file('src/main/resources/META-INF/accesstransformer.cfg')
 
     runs {
         client {
             workingDirectory project.file('run')
-            property 'mixin.env.remapRefMap', 'true'
-            property 'mixin.env.refMapRemappingFile', "${projectDir}/build/createSrgToMcp/output.srg"
-            property 'forge.logging.markers', 'SCAN,REGISTRIES,REGISTRYDUMP'
+            property 'forge.logging.markers', 'REGISTRIES'
             property 'forge.logging.console.level', 'debug'
             mods {
                 vehicle {
@@ -41,9 +33,7 @@ minecraft {
 
         server {
             workingDirectory project.file('run')
-            property 'mixin.env.remapRefMap', 'true'
-            property 'mixin.env.refMapRemappingFile', "${projectDir}/build/createSrgToMcp/output.srg"
-            property 'forge.logging.markers', 'SCAN,REGISTRIES,REGISTRYDUMP'
+            property 'forge.logging.markers', 'REGISTRIES'
             property 'forge.logging.console.level', 'debug'
             mods {
                 vehicle {
@@ -54,10 +44,11 @@ minecraft {
 
         data {
             workingDirectory project.file('run')
-            property 'mixin.env.remapRefMap', 'true'
-            property 'mixin.env.refMapRemappingFile', "${projectDir}/build/createSrgToMcp/output.srg"
+            property 'forge.logging.markers', 'REGISTRIES'
             property 'forge.logging.console.level', 'debug'
-            args '--mod', 'vehicle', '--all', '--output', file('src/generated/resources/')
+            args '--mod', 'vehicle', '--all',
+                 '--output', file('src/generated/resources/'),
+                 '--existing', file('src/main/resources/')
             mods {
                 vehicle {
                     source sourceSets.main
@@ -68,18 +59,44 @@ minecraft {
 }
 
 repositories {
+    mavenLocal()
+    mavenCentral()
+    maven {
+        url "https://maven.minecraftforge.net/"
+    }
+    maven {
+        url "https://libraries.minecraft.net/"
+    }
     maven {
         url = "https://www.cursemaven.com"
     }
 }
 
-dependencies {
-    minecraft 'net.minecraftforge:forge:1.16.5-36.2.20'
+configurations.all {
+    resolutionStrategy.eachDependency { details ->
+        def notation = details.requested.toString()
+        if (notation.contains(':natives-macos-patch')) {
+            details.useTarget(
+                details.requested.group + ':' +
+                details.requested.name + ':' +
+                details.requested.version + ':natives-macos-arm64'
+            )
+        }
+    }
+}
 
-    compile fg.deobf('curse.maven:obfuscate-289380:3336021')
-    compile fg.deobf('curse.maven:controllable-317269:3519536')
-    compile fg.deobf('curse.maven:configured-457570:3546348')
-    compile fg.deobf('curse.maven:catalogue-459701:3529457')
+
+
+
+
+dependencies {
+    minecraft 'net.minecraftforge:forge:1.21.1-52.1.15'
+
+    // TODO: Update these dependencies to 1.21.1 compatible versions
+    // compile fg.deobf('curse.maven:obfuscate-289380:3336021')
+    // compile fg.deobf('curse.maven:controllable-317269:3519536')
+    // compile fg.deobf('curse.maven:configured-457570:3546348')
+    // compile fg.deobf('curse.maven:catalogue-459701:3529457')
 }
 
 processResources {

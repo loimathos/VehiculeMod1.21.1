@@ -3,10 +3,10 @@ package com.mrcrayfish.vehicle.datagen;
 import com.google.gson.JsonObject;
 import com.mrcrayfish.vehicle.crafting.FluidEntry;
 import com.mrcrayfish.vehicle.init.ModRecipeSerializers;
-import net.minecraft.data.IFinishedRecipe;
-import net.minecraft.item.crafting.IRecipeSerializer;
-import net.minecraft.item.crafting.Ingredient;
-import net.minecraft.util.ResourceLocation;
+import net.minecraft.data.recipes.RecipeOutput;
+import net.minecraft.world.item.crafting.RecipeSerializer;
+import net.minecraft.world.item.crafting.Ingredient;
+import net.minecraft.resources.ResourceLocation;
 
 import javax.annotation.Nullable;
 import java.util.function.Consumer;
@@ -16,11 +16,11 @@ import java.util.function.Consumer;
  */
 public class FluidExtractorRecipeBuilder
 {
-    private final IRecipeSerializer<?> serializer;
+    private final RecipeSerializer<?> serializer;
     private final Ingredient ingredient;
     private final FluidEntry entry;
 
-    public FluidExtractorRecipeBuilder(IRecipeSerializer<?> serializer, Ingredient ingredient, FluidEntry entry)
+    public FluidExtractorRecipeBuilder(RecipeSerializer<?> serializer, Ingredient ingredient, FluidEntry entry)
     {
         this.serializer = serializer;
         this.ingredient = ingredient;
@@ -32,62 +32,13 @@ public class FluidExtractorRecipeBuilder
         return new FluidExtractorRecipeBuilder(ModRecipeSerializers.FLUID_EXTRACTOR.get(), ingredient, entry);
     }
 
-    public void save(Consumer<IFinishedRecipe> consumer, String name)
+    public void save(RecipeOutput consumer, String name)
     {
-        this.save(consumer, new ResourceLocation(name));
+        this.save(consumer, ResourceLocation.parse(name));
     }
 
-    public void save(Consumer<IFinishedRecipe> consumer, ResourceLocation id)
+    public void save(RecipeOutput consumer, ResourceLocation id)
     {
-        consumer.accept(new Result(id, this.serializer, this.ingredient, this.entry));
-    }
-
-    public static class Result implements IFinishedRecipe
-    {
-        private final ResourceLocation id;
-        private final IRecipeSerializer<?> serializer;
-        private final Ingredient ingredient;
-        private final FluidEntry entry;
-
-        private Result(ResourceLocation id, IRecipeSerializer<?> serializer, Ingredient ingredient, FluidEntry entry)
-        {
-            this.id = id;
-            this.serializer = serializer;
-            this.ingredient = ingredient;
-            this.entry = entry;
-        }
-
-        @Override
-        public void serializeRecipeData(JsonObject object)
-        {
-            object.add("ingredient", this.ingredient.toJson());
-            object.add("result", this.entry.toJson());
-        }
-
-        @Override
-        public ResourceLocation getId()
-        {
-            return this.id;
-        }
-
-        @Override
-        public IRecipeSerializer<?> getType()
-        {
-            return this.serializer;
-        }
-
-        @Nullable
-        @Override
-        public JsonObject serializeAdvancement()
-        {
-            return null;
-        }
-
-        @Nullable
-        @Override
-        public ResourceLocation getAdvancementId()
-        {
-            return null;
-        }
+        consumer.accept(id, new com.mrcrayfish.vehicle.crafting.FluidExtractorRecipe(this.ingredient.getItems().length > 0 ? this.ingredient.getItems()[0] : net.minecraft.world.item.ItemStack.EMPTY, this.entry), null);
     }
 }

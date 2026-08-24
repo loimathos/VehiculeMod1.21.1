@@ -2,11 +2,12 @@ package com.mrcrayfish.vehicle.client.audio;
 
 import com.mrcrayfish.vehicle.entity.PoweredVehicleEntity;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.audio.TickableSound;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.util.SoundCategory;
-import net.minecraft.util.SoundEvent;
-import net.minecraft.util.math.MathHelper;
+import net.minecraft.client.resources.sounds.AbstractTickableSoundInstance;
+import net.minecraft.client.resources.sounds.SoundInstance;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.sounds.SoundSource;
+import net.minecraft.sounds.SoundEvent;
+import net.minecraft.util.Mth;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 
@@ -17,14 +18,15 @@ import java.util.function.Predicate;
  * Author: MrCrayfish
  */
 @OnlyIn(Dist.CLIENT)
-public class MovingEngineSound extends TickableSound
+public class MovingEngineSound extends AbstractTickableSoundInstance
 {
-    private final WeakReference<PlayerEntity> playerRef;
+    private final WeakReference<Player> playerRef;
     private final WeakReference<PoweredVehicleEntity> vehicleRef;
 
-    public MovingEngineSound(PlayerEntity player, PoweredVehicleEntity vehicle)
+    public MovingEngineSound(Player player, PoweredVehicleEntity vehicle)
     {
-        super(vehicle.getEngineSound(), SoundCategory.NEUTRAL);
+        super(vehicle.getEngineSound(), SoundSource.NEUTRAL, SoundInstance.createUnseededRandom());
+        this.attenuation = SoundInstance.Attenuation.LINEAR;
         this.playerRef = new WeakReference<>(player);
         this.vehicleRef = new WeakReference<>(vehicle);
         this.volume = 0.0F;
@@ -47,16 +49,16 @@ public class MovingEngineSound extends TickableSound
             return;
 
         PoweredVehicleEntity vehicle = this.vehicleRef.get();
-        PlayerEntity player = this.playerRef.get();
+        Player player = this.playerRef.get();
         if(vehicle == null || player == null || ((vehicle.getControllingPassenger() == null || !vehicle.isEnginePowered()) && this.volume <= 0.05F) || !vehicle.isAlive())
         {
             this.stop();
             return;
         }
 
-        this.volume = MathHelper.lerp(0.2F, this.volume, vehicle.getEngineVolume());
-        this.pitch = MathHelper.lerp(0.2F, this.pitch, vehicle.getEnginePitch());
-        this.attenuation = vehicle.equals(player.getVehicle()) ? AttenuationType.NONE : AttenuationType.LINEAR;
+        this.volume = Mth.lerp(0.2F, this.volume, vehicle.getEngineVolume());
+        this.pitch = Mth.lerp(0.2F, this.pitch, vehicle.getEnginePitch());
+        this.attenuation = vehicle.equals(player.getVehicle()) ? SoundInstance.Attenuation.NONE : SoundInstance.Attenuation.LINEAR;
 
         if(!vehicle.equals(player.getVehicle()))
         {

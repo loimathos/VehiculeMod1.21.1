@@ -1,22 +1,23 @@
 package com.mrcrayfish.vehicle.client.render.vehicle;
 
-import com.mojang.blaze3d.matrix.MatrixStack;
+
+import com.mojang.blaze3d.vertex.PoseStack;
 import com.mrcrayfish.vehicle.client.model.VehicleModels;
 import com.mrcrayfish.vehicle.client.raytrace.MatrixTransform;
 import com.mrcrayfish.vehicle.client.raytrace.RayTraceTransforms;
 import com.mrcrayfish.vehicle.client.raytrace.TransformHelper;
 import com.mrcrayfish.vehicle.client.render.AbstractHelicopterRenderer;
-import com.mrcrayfish.vehicle.client.render.Axis;
 import com.mrcrayfish.vehicle.entity.properties.VehicleProperties;
 import com.mrcrayfish.vehicle.entity.vehicle.SofacopterEntity;
 import com.mrcrayfish.vehicle.init.ModEntities;
-import net.minecraft.client.renderer.IRenderTypeBuffer;
-import net.minecraft.client.renderer.entity.model.PlayerModel;
-import net.minecraft.entity.EntityType;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.util.math.vector.Vector3f;
+import net.minecraft.client.renderer.MultiBufferSource;
+import net.minecraft.client.model.PlayerModel;
+import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.player.Player;
+import org.joml.Vector3f;
 
 import javax.annotation.Nullable;
+import com.mojang.math.Axis;
 
 /**
  * Author: MrCrayfish
@@ -29,7 +30,7 @@ public class SofaHelicopterRenderer extends AbstractHelicopterRenderer<Sofacopte
     }
 
     @Override
-    protected void render(@Nullable SofacopterEntity vehicle, MatrixStack matrixStack, IRenderTypeBuffer renderTypeBuffer, float partialTicks, int light)
+    protected void render(@Nullable SofacopterEntity vehicle, PoseStack matrixStack, MultiBufferSource renderTypeBuffer, float partialTicks, int light)
     {
         matrixStack.pushPose();
         //this.renderDamagedPart(vehicle, VehicleModels.RED_SOFA.getModel(), matrixStack, renderTypeBuffer, light);
@@ -42,27 +43,27 @@ public class SofaHelicopterRenderer extends AbstractHelicopterRenderer<Sofacopte
 
         matrixStack.pushPose();
         matrixStack.translate(0.0, 32 * 0.0625, 0.0);
-        matrixStack.mulPose(Vector3f.YP.rotationDegrees(this.bladeRotationProperty.get(vehicle, partialTicks)));
+        matrixStack.mulPose(Axis.YP.rotationDegrees(this.bladeRotationProperty.get(vehicle, partialTicks)));
         matrixStack.scale(1.5F, 1.5F, 1.5F);
         this.renderDamagedPart(vehicle, VehicleModels.SPORTS_PLANE_WING, matrixStack, renderTypeBuffer, light, partialTicks);
         matrixStack.popPose();
 
        /* GlStateManager.pushMatrix();
-        Minecraft.getMinecraft().getRenderItem().renderItem(entity.skid, ItemCameraTransforms.TransformType.NONE);
+        Minecraft.getMinecraft().getRenderItem().renderItem(entity.skid, ItemDisplayContext.NONE);
         GlStateManager.popMatrix();*/
     }
 
     @Override
-    public void applyPlayerModel(SofacopterEntity entity, PlayerEntity player, PlayerModel model, float partialTicks)
+    public void applyPlayerModel(SofacopterEntity entity, Player player, PlayerModel model, float partialTicks)
     {
-        model.rightArm.xRot = (float) Math.toRadians(-55F);
-        model.rightArm.yRot = (float) Math.toRadians(25F);
-        model.leftArm.xRot = (float) Math.toRadians(-55F);
-        model.leftArm.yRot = (float) Math.toRadians(-25F);
-        model.rightLeg.xRot = (float) Math.toRadians(-90F);
-        model.rightLeg.yRot = (float) Math.toRadians(15F);
-        model.leftLeg.xRot = (float) Math.toRadians(-90F);
-        model.leftLeg.yRot = (float) Math.toRadians(-15F);
+        model.rightArm.xRot =  (float) Math.toRadians(-55F);
+        model.rightArm.yRot =  (float) Math.toRadians(25F);
+        model.leftArm.xRot =  (float) Math.toRadians(-55F);
+        model.leftArm.yRot =  (float) Math.toRadians(-25F);
+        model.rightLeg.xRot =  (float) Math.toRadians(-90F);
+        model.rightLeg.yRot =  (float) Math.toRadians(15F);
+        model.leftLeg.xRot =  (float) Math.toRadians(-90F);
+        model.leftLeg.yRot =  (float) Math.toRadians(-15F);
     }
 
     @Nullable
@@ -72,7 +73,7 @@ public class SofaHelicopterRenderer extends AbstractHelicopterRenderer<Sofacopte
         return (tracer, transforms, parts) ->
         {
             TransformHelper.createTransformListForPart(VehicleModels.RED_SOFA, parts, transforms,
-                    MatrixTransform.rotate(Axis.POSITIVE_Y.rotationDegrees(90F)));
+                    MatrixTransform.rotate(Axis.YP.rotationDegrees(90F)));
             TransformHelper.createTransformListForPart(VehicleModels.SOFA_HELICOPTER_ARM, parts, transforms,
                     MatrixTransform.translate(0.0F, 8 * 0.0625F, 0.0F));
             TransformHelper.createFuelFillerTransforms(ModEntities.SOFACOPTER.get(), VehicleModels.FUEL_DOOR_CLOSED, parts, transforms);

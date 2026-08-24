@@ -4,8 +4,8 @@ import com.mrcrayfish.vehicle.client.raytrace.data.CosmeticRayTraceData;
 import com.mrcrayfish.vehicle.client.raytrace.data.RayTraceData;
 import com.mrcrayfish.vehicle.entity.VehicleEntity;
 import net.minecraft.client.Minecraft;
-import net.minecraft.entity.EntityType;
-import net.minecraft.util.ResourceLocation;
+import net.minecraft.world.entity.EntityType;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraftforge.client.event.InputEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.loading.FMLLoader;
@@ -77,7 +77,7 @@ public class CosmeticCache
     }
 
     @SubscribeEvent
-    public void onClientTick(InputEvent.KeyInputEvent event)
+    public void onClientTick(InputEvent.Key event)
     {
         Minecraft mc = Minecraft.getInstance();
         if(mc.player == null)

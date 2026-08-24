@@ -1,28 +1,39 @@
 package com.mrcrayfish.vehicle.crafting;
 
 import com.mrcrayfish.vehicle.init.ModRecipeSerializers;
-import com.mrcrayfish.vehicle.tileentity.FluidMixerTileEntity;
+import com.mrcrayfish.vehicle.blockentity.FluidMixerBlockEntity;
 import com.mrcrayfish.vehicle.util.InventoryUtil;
-import net.minecraft.fluid.Fluid;
-import net.minecraft.item.ItemStack;
-import net.minecraft.item.crafting.IRecipe;
-import net.minecraft.item.crafting.IRecipeSerializer;
-import net.minecraft.item.crafting.IRecipeType;
-import net.minecraft.util.ResourceLocation;
-import net.minecraft.world.World;
+import net.minecraft.core.HolderLookup;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.world.level.material.Fluid;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.crafting.Recipe;
+import net.minecraft.world.item.crafting.RecipeInput;
+import net.minecraft.world.item.crafting.RecipeSerializer;
+import net.minecraft.world.item.crafting.RecipeType;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.level.Level;
 
 import java.util.Objects;
 
 /**
  * Author: MrCrayfish
  */
-public class FluidMixerRecipe implements IRecipe<FluidMixerTileEntity>
+public class FluidMixerRecipe implements Recipe<RecipeInput>
 {
     private ResourceLocation id;
     private FluidEntry[] inputs;
     private ItemStack ingredient;
     private FluidEntry result;
     private int hashCode;
+
+    public FluidMixerRecipe(ItemStack ingredient, FluidEntry result)
+    {
+        this.id = ResourceLocation.fromNamespaceAndPath("vehicle", "fluid_mixer");
+        this.inputs = new FluidEntry[0];
+        this.ingredient = ingredient;
+        this.result = result;
+    }
 
     public FluidMixerRecipe(ResourceLocation id, FluidEntry fluidOne, FluidEntry fluidTwo, ItemStack ingredient, FluidEntry result)
     {
@@ -83,33 +94,35 @@ public class FluidMixerRecipe implements IRecipe<FluidMixerTileEntity>
     {
         if(this.hashCode == 0)
         {
-            this.hashCode = Objects.hash(this.inputs[0].getFluid().getRegistryName(), this.inputs[1].getFluid().getRegistryName(), this.ingredient.getItem().getRegistryName());
+            this.hashCode = Objects.hash(BuiltInRegistries.FLUID.getKey(this.inputs[0].getFluid()), BuiltInRegistries.FLUID.getKey(this.inputs[1].getFluid()), BuiltInRegistries.ITEM.getKey(this.ingredient.getItem()));
         }
         return this.hashCode;
     }
 
     @Override
-    public boolean matches(FluidMixerTileEntity fluidMixer, World worldIn)
+    public boolean matches(RecipeInput input, Level level)
     {
-        if(fluidMixer.getEnderSapTank().isEmpty() || fluidMixer.getBlazeTank().isEmpty())
+        if(!(input instanceof FluidMixerBlockEntity be))
             return false;
-        Fluid inputOne = fluidMixer.getEnderSapTank().getFluid().getFluid();
+        if(be.getEnderSapTank().isEmpty() || be.getBlazeTank().isEmpty())
+            return false;
+        Fluid inputFluid = be.getEnderSapTank().getFluid().getFluid();
         int index = -1;
         for(int i = 0; i < 2; i++)
         {
-            if(inputOne.equals(this.inputs[i].getFluid()))
+            if(inputFluid.equals(this.inputs[i].getFluid()))
             {
                 index = i == 1 ? 0 : 1;
             }
         }
         if(index == -1) return false;
-        Fluid inputTwo = fluidMixer.getBlazeTank().getFluid().getFluid();
+        Fluid inputTwo = be.getBlazeTank().getFluid().getFluid();
         if(!inputTwo.equals(this.inputs[index].getFluid())) return false;
-        return InventoryUtil.areItemStacksEqualIgnoreCount(fluidMixer.getItem(FluidMixerTileEntity.SLOT_INGREDIENT), this.ingredient);
+        return InventoryUtil.areItemStacksEqualIgnoreCount(be.getItem(1), this.ingredient);
     }
 
     @Override
-    public ItemStack assemble(FluidMixerTileEntity inv)
+    public ItemStack assemble(RecipeInput input, HolderLookup.Provider registries)
     {
         return ItemStack.EMPTY;
     }
@@ -121,26 +134,23 @@ public class FluidMixerRecipe implements IRecipe<FluidMixerTileEntity>
     }
 
     @Override
-    public ItemStack getResultItem()
+    public ItemStack getResultItem(HolderLookup.Provider registries)
     {
         return ItemStack.EMPTY;
     }
 
-    @Override
     public ResourceLocation getId()
     {
         return this.id;
     }
 
-    @Override
-    public IRecipeSerializer<?> getSerializer()
+    public RecipeSerializer<?> getSerializer()
     {
         return ModRecipeSerializers.FLUID_MIXER.get();
     }
 
-    @Override
-    public IRecipeType<?> getType()
+    public RecipeType<?> getType()
     {
-        return RecipeType.FLUID_MIXER;
+        return com.mrcrayfish.vehicle.crafting.RecipeType.FLUID_MIXER.get();
     }
 }

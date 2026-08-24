@@ -1,11 +1,11 @@
 package com.mrcrayfish.vehicle.network.message;
 
 import com.mrcrayfish.vehicle.network.play.ServerPlayHandler;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.player.ServerPlayerEntity;
-import net.minecraft.network.PacketBuffer;
-import net.minecraft.util.ResourceLocation;
-import net.minecraftforge.fml.network.NetworkEvent;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraftforge.event.network.CustomPayloadEvent;
 
 import java.util.function.Supplier;
 
@@ -26,25 +26,25 @@ public class MessageInteractCosmetic implements IMessage<MessageInteractCosmetic
     }
 
     @Override
-    public void encode(MessageInteractCosmetic message, PacketBuffer buffer)
+    public void encode(MessageInteractCosmetic message, FriendlyByteBuf buffer)
     {
         buffer.writeInt(message.entityId);
         buffer.writeResourceLocation(message.cosmeticId);
     }
 
     @Override
-    public MessageInteractCosmetic decode(PacketBuffer buffer)
+    public MessageInteractCosmetic decode(FriendlyByteBuf buffer)
     {
         return new MessageInteractCosmetic(buffer.readInt(), buffer.readResourceLocation());
     }
 
     @Override
     @SuppressWarnings("ConstantConditions")
-    public void handle(MessageInteractCosmetic message, Supplier<NetworkEvent.Context> supplier)
+    public void handle(MessageInteractCosmetic message, Supplier<CustomPayloadEvent.Context> supplier)
     {
         supplier.get().enqueueWork(() ->
         {
-            ServerPlayerEntity player = supplier.get().getSender();
+            ServerPlayer player = supplier.get().getSender();
             if(player != null)
             {
                 ServerPlayHandler.handleInteractCosmeticMessage(player, message);

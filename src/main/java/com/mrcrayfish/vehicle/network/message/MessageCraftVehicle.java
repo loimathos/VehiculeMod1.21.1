@@ -1,10 +1,10 @@
 package com.mrcrayfish.vehicle.network.message;
 
 import com.mrcrayfish.vehicle.network.play.ServerPlayHandler;
-import net.minecraft.entity.player.ServerPlayerEntity;
-import net.minecraft.network.PacketBuffer;
-import net.minecraft.util.math.BlockPos;
-import net.minecraftforge.fml.network.NetworkEvent;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.core.BlockPos;
+import net.minecraftforge.event.network.CustomPayloadEvent;
 
 import java.util.function.Supplier;
 
@@ -25,24 +25,24 @@ public class MessageCraftVehicle implements IMessage<MessageCraftVehicle>
     }
 
     @Override
-    public void encode(MessageCraftVehicle message, PacketBuffer buffer)
+    public void encode(MessageCraftVehicle message, FriendlyByteBuf buffer)
     {
         buffer.writeUtf(message.vehicleId, 128);
         buffer.writeBlockPos(message.pos);
     }
 
     @Override
-    public MessageCraftVehicle decode(PacketBuffer buffer)
+    public MessageCraftVehicle decode(FriendlyByteBuf buffer)
     {
         return new MessageCraftVehicle(buffer.readUtf(128), buffer.readBlockPos());
     }
 
     @Override
-    public void handle(MessageCraftVehicle message, Supplier<NetworkEvent.Context> supplier)
+    public void handle(MessageCraftVehicle message, Supplier<CustomPayloadEvent.Context> supplier)
     {
         supplier.get().enqueueWork(() ->
         {
-            ServerPlayerEntity player = supplier.get().getSender();
+            ServerPlayer player = supplier.get().getSender();
             if(player != null)
             {
                 ServerPlayHandler.handleCraftVehicleMessage(player, message);

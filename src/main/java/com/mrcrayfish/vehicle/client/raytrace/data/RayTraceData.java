@@ -3,7 +3,7 @@ package com.mrcrayfish.vehicle.client.raytrace.data;
 import com.mrcrayfish.vehicle.client.raytrace.ITriangleList;
 import com.mrcrayfish.vehicle.client.raytrace.RayTraceFunction;
 import com.mrcrayfish.vehicle.client.raytrace.TriangleList;
-import net.minecraft.util.math.vector.Matrix4f;
+import org.joml.Matrix4f;
 
 import javax.annotation.Nullable;
 
@@ -21,9 +21,7 @@ public abstract class RayTraceData
     public RayTraceData(@Nullable RayTraceFunction function)
     {
         this.function = function;
-        Matrix4f matrix = new Matrix4f();
-        matrix.setIdentity();
-        this.matrix = matrix;
+        this.matrix = new Matrix4f();
     }
 
     @Nullable

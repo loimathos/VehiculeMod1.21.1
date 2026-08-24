@@ -1,48 +1,37 @@
 package com.mrcrayfish.vehicle.crafting;
 
-import com.google.gson.JsonObject;
-import net.minecraft.item.ItemStack;
-import net.minecraft.item.crafting.IRecipeSerializer;
-import net.minecraft.network.PacketBuffer;
-import net.minecraft.util.ResourceLocation;
-import net.minecraftforge.common.crafting.CraftingHelper;
+import com.mojang.serialization.MapCodec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
+import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.crafting.RecipeSerializer;
 
-import javax.annotation.Nullable;
-
-/**
- * Author: MrCrayfish
- */
-public class FluidExtractorRecipeSerializer extends net.minecraftforge.registries.ForgeRegistryEntry<IRecipeSerializer<?>> implements IRecipeSerializer<FluidExtractorRecipe>
+public class FluidExtractorRecipeSerializer implements RecipeSerializer<FluidExtractorRecipe>
 {
-    @Override
-    public FluidExtractorRecipe fromJson(ResourceLocation recipeId, JsonObject json)
-    {
-        if(!json.has("ingredient"))
-        {
-            throw new com.google.gson.JsonSyntaxException("Missing ingredient, expected to find a item");
-        }
-        ItemStack ingredient = CraftingHelper.getItemStack(json.getAsJsonObject("ingredient"), false);
-        if(!json.has("result"))
-        {
-            throw new com.google.gson.JsonSyntaxException("Missing result, expected to find a fluid entry");
-        }
-        FluidEntry result = FluidEntry.fromJson(json.getAsJsonObject("result"));
-        return new FluidExtractorRecipe(recipeId, ingredient, result);
-    }
+    public static final MapCodec<FluidExtractorRecipe> CODEC = RecordCodecBuilder.mapCodec(builder -> builder.group(
+        ItemStack.CODEC.fieldOf("ingredient").forGetter(FluidExtractorRecipe::getIngredient)
+    ).apply(builder, (ingredient) -> new FluidExtractorRecipe(ingredient, null)));
 
-    @Nullable
+    public static final StreamCodec<RegistryFriendlyByteBuf, FluidExtractorRecipe> STREAM_CODEC = StreamCodec.of(
+        (buf, recipe) -> {
+            ItemStack.STREAM_CODEC.encode(buf, recipe.getIngredient());
+        },
+        (buf) -> {
+            ItemStack ingredient = ItemStack.STREAM_CODEC.decode(buf);
+            return new FluidExtractorRecipe(ingredient, null);
+        }
+    );
+
     @Override
-    public FluidExtractorRecipe fromNetwork(ResourceLocation recipeId, PacketBuffer buffer)
+    public MapCodec<FluidExtractorRecipe> codec()
     {
-        ItemStack ingredient = buffer.readItem();
-        FluidEntry result = FluidEntry.read(buffer);
-        return new FluidExtractorRecipe(recipeId, ingredient, result);
+        return CODEC;
     }
 
     @Override
-    public void toNetwork(PacketBuffer buffer, FluidExtractorRecipe recipe)
+    public StreamCodec<RegistryFriendlyByteBuf, FluidExtractorRecipe> streamCodec()
     {
-        buffer.writeItem(recipe.getIngredient());
-        recipe.getResult().write(buffer);
+        return STREAM_CODEC;
     }
 }

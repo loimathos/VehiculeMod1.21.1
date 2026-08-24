@@ -1,5 +1,9 @@
 package com.mrcrayfish.vehicle.entity.trailer;
 
+import net.minecraft.nbt.Tag;
+
+import net.minecraft.world.Containers;
+
 import com.google.common.collect.ImmutableMap;
 import com.mrcrayfish.vehicle.Config;
 import com.mrcrayfish.vehicle.client.raytrace.EntityRayTracer;
@@ -13,32 +17,31 @@ import com.mrcrayfish.vehicle.network.PacketHandler;
 import com.mrcrayfish.vehicle.network.message.MessageAttachTrailer;
 import com.mrcrayfish.vehicle.network.message.MessageSyncStorage;
 import com.mrcrayfish.vehicle.util.InventoryUtil;
-import net.minecraft.block.Block;
-import net.minecraft.block.CropsBlock;
-import net.minecraft.block.FarmlandBlock;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.CropBlock;
+import net.minecraft.world.level.block.FarmBlock;
 import net.minecraft.client.Minecraft;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.EntityType;
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.entity.player.ServerPlayerEntity;
-import net.minecraft.inventory.InventoryHelper;
-import net.minecraft.inventory.container.SimpleNamedContainerProvider;
-import net.minecraft.item.BlockNamedItem;
-import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.CompoundNBT;
-import net.minecraft.util.ActionResultType;
-import net.minecraft.util.Hand;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.vector.Vector3d;
-import net.minecraft.util.text.StringTextComponent;
-import net.minecraft.world.World;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.ContainerHelper;
+import net.minecraft.world.SimpleMenuProvider;
+import net.minecraft.world.item.BlockItem;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.world.InteractionResult;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.core.BlockPos;
+import net.minecraft.world.phys.Vec3;
+import net.minecraft.util.Mth;
+
+import net.minecraft.world.level.Level;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
-import net.minecraftforge.common.Tags;
-import net.minecraftforge.common.util.Constants;
-import net.minecraftforge.fml.network.NetworkHooks;
-import net.minecraftforge.fml.network.PacketDistributor;
+
+import net.minecraftforge.network.PacketDistributor;
 
 import java.util.Map;
 
@@ -52,7 +55,7 @@ public class SeederTrailerEntity extends TrailerEntity implements IStorage
     private int inventoryTimer;
     private StorageInventory inventory;
 
-    public SeederTrailerEntity(EntityType<? extends SeederTrailerEntity> type, World worldIn)
+    public SeederTrailerEntity(EntityType<? extends SeederTrailerEntity> type, Level worldIn)
     {
         super(type, worldIn);
         this.initInventory();
@@ -65,13 +68,13 @@ public class SeederTrailerEntity extends TrailerEntity implements IStorage
     }
 
     @Override
-    public ActionResultType interact(PlayerEntity player, Hand hand)
+    public InteractionResult interact(Player player, InteractionHand hand)
     {
         ItemStack heldItem = player.getItemInHand(hand);
-        if((heldItem.isEmpty() || !(heldItem.getItem() instanceof SprayCanItem)) && player instanceof ServerPlayerEntity)
+        if((heldItem.isEmpty() || !(heldItem.getItem() instanceof SprayCanItem)) && player instanceof ServerPlayer)
         {
-            IStorage.openStorage((ServerPlayerEntity) player, this, INVENTORY_STORAGE_KEY);
-            return ActionResultType.SUCCESS;
+            IStorage.openStorage((ServerPlayer) player, this, INVENTORY_STORAGE_KEY);
+            return InteractionResult.SUCCESS;
         }
         return super.interact(player, hand);
     }
@@ -80,10 +83,10 @@ public class SeederTrailerEntity extends TrailerEntity implements IStorage
     public void tick()
     {
         super.tick();
-        if(!this.level.isClientSide && Config.SERVER.trailerInventorySyncCooldown.get() > 0 && inventoryTimer++ == Config.SERVER.trailerInventorySyncCooldown.get())
+        if(!this.level().isClientSide && Config.SERVER.trailerInventorySyncCooldown.get() > 0 && inventoryTimer++ == Config.SERVER.trailerInventorySyncCooldown.get())
         {
             this.inventoryTimer = 0;
-            PacketHandler.getPlayChannel().send(PacketDistributor.TRACKING_ENTITY.with(() -> SeederTrailerEntity.this), new MessageSyncStorage(this, INVENTORY_STORAGE_KEY));
+            PacketHandler.getPlayChannel().send(new MessageSyncStorage(this, INVENTORY_STORAGE_KEY), PacketDistributor.TRACKING_ENTITY.with(this));
         }
     }
 
@@ -92,16 +95,16 @@ public class SeederTrailerEntity extends TrailerEntity implements IStorage
     {
         super.onUpdateVehicle();
 
-        Vector3d lookVec = this.getLookAngle();
+        Vec3 lookVec = this.getLookAngle();
         this.plantSeed(lookVec.yRot((float) Math.toRadians(90F)).scale(0.85));
-        this.plantSeed(Vector3d.ZERO);
+        this.plantSeed(Vec3.ZERO);
         this.plantSeed(lookVec.yRot((float) Math.toRadians(-90F)).scale(0.85));
     }
 
-    private void plantSeed(Vector3d vec)
+    private void plantSeed(Vec3 vec)
     {
-        BlockPos pos = new BlockPos(xo + vec.x, yo + 0.25, zo + vec.z);
-        if(level.isEmptyBlock(pos) && level.getBlockState(pos.below()).getBlock() instanceof FarmlandBlock)
+        BlockPos pos = new BlockPos(Mth.floor(xo + vec.x), (int)(yo + 0.25), Mth.floor(zo + vec.z));
+        if(this.level().isEmptyBlock(pos) && this.level().getBlockState(pos.below()).getBlock() instanceof FarmBlock)
         {
             ItemStack seed = this.getSeed();
             if(seed.isEmpty() && this.getPullingEntity() instanceof StorageTrailerEntity)
@@ -110,8 +113,8 @@ public class SeederTrailerEntity extends TrailerEntity implements IStorage
             }
             if(this.isSeed(seed))
             {
-                Block seedBlock = ((BlockNamedItem) seed.getItem()).getBlock();
-                this.level.setBlockAndUpdate(pos, seedBlock.defaultBlockState());
+                Block seedBlock = ((BlockItem) seed.getItem()).getBlock();
+                this.level().setBlockAndUpdate(pos, seedBlock.defaultBlockState());
                 seed.shrink(1);
             }
         }
@@ -132,7 +135,7 @@ public class SeederTrailerEntity extends TrailerEntity implements IStorage
 
     private boolean isSeed(ItemStack stack)
     {
-        return !stack.isEmpty() && stack.getItem() instanceof BlockNamedItem && ((BlockNamedItem) stack.getItem()).getBlock() instanceof CropsBlock;
+        return !stack.isEmpty() && stack.getItem() instanceof BlockItem && ((BlockItem) stack.getItem()).getBlock() instanceof CropBlock;
     }
 
     private ItemStack getSeedFromStorage(StorageTrailerEntity storageTrailer)
@@ -161,10 +164,10 @@ public class SeederTrailerEntity extends TrailerEntity implements IStorage
     }
 
     @Override
-    protected void readAdditionalSaveData(CompoundNBT compound)
+    protected void readAdditionalSaveData(CompoundTag compound)
     {
         super.readAdditionalSaveData(compound);
-        if(compound.contains(INVENTORY_STORAGE_KEY, Constants.NBT.TAG_LIST))
+        if(compound.contains(INVENTORY_STORAGE_KEY, Tag.TAG_LIST))
         {
             this.initInventory();
             InventoryUtil.readInventoryToNBT(compound, INVENTORY_STORAGE_KEY, this.inventory);
@@ -172,7 +175,7 @@ public class SeederTrailerEntity extends TrailerEntity implements IStorage
     }
 
     @Override
-    protected void addAdditionalSaveData(CompoundNBT compound)
+    protected void addAdditionalSaveData(CompoundTag compound)
     {
         super.addAdditionalSaveData(compound);
         if(this.inventory != null)
@@ -185,7 +188,7 @@ public class SeederTrailerEntity extends TrailerEntity implements IStorage
     {
         StorageInventory original = this.inventory;
         this.inventory = new StorageInventory(this, this.getDisplayName(), 3, stack ->
-                !stack.isEmpty() && stack.getItem().is(Tags.Items.SEEDS));
+                !stack.isEmpty() && stack.getItem() instanceof net.minecraft.world.item.BlockItem && ((net.minecraft.world.item.BlockItem) stack.getItem()).getBlock() instanceof net.minecraft.world.level.block.CropBlock);
         // Copies the inventory if it exists already over to the new instance
         if(original != null)
         {
@@ -206,7 +209,7 @@ public class SeederTrailerEntity extends TrailerEntity implements IStorage
         super.onVehicleDestroyed(entity);
         if(this.inventory != null)
         {
-            InventoryHelper.dropContents(this.level, this, this.inventory);
+            Containers.dropContents(this.level(), this, this.inventory);
         }
     }
 
@@ -228,8 +231,8 @@ public class SeederTrailerEntity extends TrailerEntity implements IStorage
             return createScaledBoundingBox(-7.0, 1.5, 6.0, 7.0, 3.5, 17.0, 0.0625);
         }, (entity, rightClick) -> {
             if(rightClick) {
-                PacketHandler.getPlayChannel().sendToServer(new MessageAttachTrailer(entity.getId()));
-                Minecraft.getInstance().player.swing(Hand.MAIN_HAND);
+                PacketHandler.getPlayChannel().send(new MessageAttachTrailer(entity.getId()), PacketDistributor.SERVER.noArg());
+                Minecraft.getInstance().player.swing(InteractionHand.MAIN_HAND);
             }
         }, entity -> true);
     }

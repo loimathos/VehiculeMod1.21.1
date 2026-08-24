@@ -8,11 +8,11 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonSyntaxException;
 import com.mrcrayfish.vehicle.common.cosmetic.actions.Action;
 import com.mrcrayfish.vehicle.util.ExtraJSONUtils;
-import net.minecraft.resources.IResource;
-import net.minecraft.resources.IResourceManager;
-import net.minecraft.util.JSONUtils;
-import net.minecraft.util.ResourceLocation;
-import net.minecraft.util.math.vector.Vector3d;
+import net.minecraft.server.packs.resources.Resource;
+import net.minecraft.server.packs.resources.ResourceManager;
+import net.minecraft.util.GsonHelper;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.phys.Vec3;
 import org.apache.commons.lang3.tuple.Pair;
 
 import java.io.IOException;
@@ -35,15 +35,15 @@ import java.util.stream.StreamSupport;
  */
 public class CosmeticProperties
 {
-    public static final Vector3d DEFAULT_OFFSET = Vector3d.ZERO;
+    public static final Vec3 DEFAULT_OFFSET = Vec3.ZERO;
 
     private final ResourceLocation id;
-    private final Vector3d offset;
+    private final Vec3 offset;
     private final List<Supplier<Action>> actions;
     private List<ResourceLocation> modelLocations = new ArrayList<>();
     private Map<ResourceLocation, List<ResourceLocation>> disabledCosmetics = new HashMap<>();
 
-    public CosmeticProperties(ResourceLocation id, Vector3d offset, List<Supplier<Action>> actions)
+    public CosmeticProperties(ResourceLocation id, Vec3 offset, List<Supplier<Action>> actions)
     {
         this.id = id;
         this.offset = offset;
@@ -52,13 +52,13 @@ public class CosmeticProperties
 
     public CosmeticProperties(JsonObject object)
     {
-        this.id = new ResourceLocation(JSONUtils.getAsString(object, "id"));
+        this.id = ResourceLocation.parse(GsonHelper.getAsString(object, "id"));
         this.offset = ExtraJSONUtils.getAsVector3d(object, "offset", DEFAULT_OFFSET);
         List<Supplier<Action>> actions = new ArrayList<>();
-        JsonArray array = JSONUtils.getAsJsonArray(object, "actions", new JsonArray());
+        JsonArray array = GsonHelper.getAsJsonArray(object, "actions", new JsonArray());
         StreamSupport.stream(array.spliterator(), false).filter(JsonElement::isJsonObject).forEach(element -> {
             JsonObject action = element.getAsJsonObject();
-            ResourceLocation type = new ResourceLocation(JSONUtils.getAsString(action, "id"));
+            ResourceLocation type = ResourceLocation.parse(GsonHelper.getAsString(action, "id"));
             Supplier<Action> actionSupplier = CosmeticActions.getSupplier(type, action);
             Objects.requireNonNull(actionSupplier, "Unregistered cosmetic action: " + type);
             actions.add(actionSupplier);
@@ -71,7 +71,7 @@ public class CosmeticProperties
         return this.id;
     }
 
-    public Vector3d getOffset()
+    public Vec3 getOffset()
     {
         return this.offset;
     }
@@ -121,45 +121,47 @@ public class CosmeticProperties
         object.add("actions", actions);
     }
 
-    public static void deserializeModels(ResourceLocation cosmeticLocation, IResourceManager manager, Map<ResourceLocation, List<Pair<ResourceLocation, List<ResourceLocation>>>> modelMap)
+    public static void deserializeModels(ResourceLocation cosmeticLocation, ResourceManager manager, Map<ResourceLocation, List<Pair<ResourceLocation, List<ResourceLocation>>>> modelMap)
     {
-        try
+        manager.getResource(cosmeticLocation).ifPresent(resource ->
         {
-            IResource resource = manager.getResource(cosmeticLocation);
-            deserializeModels(resource.getInputStream(), modelMap);
-        }
-        catch(IOException e)
-        {
-            e.printStackTrace();
-        }
+            try(InputStream is = resource.open())
+            {
+                deserializeModels(is, modelMap);
+            }
+            catch(IOException e)
+            {
+                e.printStackTrace();
+            }
+        });
     }
 
     public static void deserializeModels(InputStream is, Map<ResourceLocation, List<Pair<ResourceLocation, List<ResourceLocation>>>> modelMap)
     {
-        JsonObject object = JSONUtils.parse(new InputStreamReader(is, StandardCharsets.UTF_8));
-        boolean replace = JSONUtils.getAsBoolean(object, "replace", false);
+        JsonObject object = GsonHelper.parse(new InputStreamReader(is, StandardCharsets.UTF_8));
+        boolean replace = GsonHelper.getAsBoolean(object, "replace", false);
         if(replace) modelMap.clear();
-        JsonObject validModelsObject = JSONUtils.getAsJsonObject(object, "valid_models", new JsonObject());
+        JsonObject validModelsObject = GsonHelper.getAsJsonObject(object, "valid_models", new JsonObject());
         validModelsObject.entrySet().stream().filter(entry -> entry.getValue().isJsonArray()).forEach(entry ->
         {
             JsonArray modelArray = entry.getValue().getAsJsonArray();
-            ResourceLocation cosmeticId = new ResourceLocation(entry.getKey());
+            ResourceLocation cosmeticId = ResourceLocation.parse(entry.getKey());
             modelArray.forEach(modelElement ->
             {
                 if(modelElement.isJsonPrimitive() && modelElement.getAsJsonPrimitive().isString())
                 {
-                    ResourceLocation location = new ResourceLocation(modelElement.getAsString());
+                    ResourceLocation location = ResourceLocation.parse(modelElement.getAsString());
                     modelMap.computeIfAbsent(cosmeticId, id -> new ArrayList<>()).add(Pair.of(location, Collections.emptyList()));
                 }
                 else if(modelElement.isJsonObject())
                 {
                     JsonObject modelObject = modelElement.getAsJsonObject();
-                    ResourceLocation location = new ResourceLocation(JSONUtils.getAsString(modelObject, "model"));
-                    JsonArray disabledArray = JSONUtils.getAsJsonArray(modelObject, "disables", new JsonArray());
+                    ResourceLocation location = ResourceLocation.parse(GsonHelper.getAsString(modelObject, "model"));
+                    JsonArray disabledArray = GsonHelper.getAsJsonArray(modelObject, "disables", new JsonArray());
                     List<ResourceLocation> disabledCosmetics = StreamSupport.stream(disabledArray.spliterator(), false)
                             .filter(JsonElement::isJsonPrimitive)
                             .filter(e -> e.getAsJsonPrimitive().isString())
-                            .map(e -> new ResourceLocation(e.getAsString()))
+                            .map(e -> ResourceLocation.parse(e.getAsString()))
                             .collect(Collectors.toList());
                     modelMap.computeIfAbsent(cosmeticId, id -> new ArrayList<>()).add(Pair.of(location, disabledCosmetics));
                 }
@@ -179,7 +181,7 @@ public class CosmeticProperties
     public static class Builder
     {
         private final ResourceLocation id;
-        private Vector3d offset = DEFAULT_OFFSET;
+        private Vec3 offset = DEFAULT_OFFSET;
         private List<ResourceLocation> models = new ArrayList<>();
         private Map<ResourceLocation, List<ResourceLocation>> disabledCosmetics = new HashMap<>();
         private List<Supplier<Action>> actions = new ArrayList<>();
@@ -189,7 +191,7 @@ public class CosmeticProperties
             this.id = id;
         }
 
-        public Builder setOffset(Vector3d offset)
+        public Builder setOffset(Vec3 offset)
         {
             this.offset = offset;
             return this;
@@ -197,7 +199,7 @@ public class CosmeticProperties
 
         public Builder setOffset(double x, double y, double z)
         {
-            this.offset = new Vector3d(x, y, z);
+            this.offset = new Vec3(x, y, z);
             return this;
         }
 

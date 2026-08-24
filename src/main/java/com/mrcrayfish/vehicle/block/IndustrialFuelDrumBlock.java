@@ -1,17 +1,21 @@
 package com.mrcrayfish.vehicle.block;
 
+
+import net.minecraft.world.level.block.EntityBlock;
 import com.mrcrayfish.vehicle.Config;
-import com.mrcrayfish.vehicle.tileentity.IndustrialFuelDrumTileEntity;
-import net.minecraft.block.BlockState;
-import net.minecraft.tileentity.TileEntity;
-import net.minecraft.world.IBlockReader;
+import com.mrcrayfish.vehicle.blockentity.IndustrialFuelDrumBlockEntity;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.BlockGetter;
+
+import net.minecraft.core.BlockPos;
 
 import javax.annotation.Nullable;
 
 /**
  * Author: MrCrayfish
  */
-public class IndustrialFuelDrumBlock extends FuelDrumBlock
+public class IndustrialFuelDrumBlock extends FuelDrumBlock implements EntityBlock
 {
     @Override
     public int getCapacity()
@@ -21,8 +25,8 @@ public class IndustrialFuelDrumBlock extends FuelDrumBlock
 
     @Nullable
     @Override
-    public TileEntity createTileEntity(BlockState state, IBlockReader world)
+    public BlockEntity newBlockEntity(BlockPos pos, BlockState state)
     {
-        return new IndustrialFuelDrumTileEntity();
+        return new IndustrialFuelDrumBlockEntity(pos, state);
     }
 }

@@ -2,11 +2,10 @@ package com.mrcrayfish.vehicle.client.model;
 
 import com.mrcrayfish.vehicle.Reference;
 import com.mrcrayfish.vehicle.client.render.complex.ComplexModel;
-import net.minecraft.util.ResourceLocation;
+import net.minecraft.client.resources.model.ModelResourceLocation;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.client.event.ModelBakeEvent;
-import net.minecraftforge.client.event.ModelRegistryEvent;
-import net.minecraftforge.client.model.ModelLoader;
+import net.minecraftforge.client.event.ModelEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 
@@ -35,19 +34,19 @@ public class ComponentManager
     }
 
     @SubscribeEvent
-    public static void setupModels(ModelRegistryEvent event)
+    public static void setupModels(ModelEvent.RegisterAdditional event)
     {
         LOADERS.forEach((modId, loader) ->
         {
             loader.getModels().forEach(model ->
             {
-                ModelLoader.addSpecialModel(model.getModelLocation());
+                event.register(new ModelResourceLocation(model.getModelLocation(), "inventory"));
             });
         });
     }
 
     @SubscribeEvent
-    public static void onBakeEvent(ModelBakeEvent event)
+    public static void onBakeEvent(ModelEvent.ModifyBakingResult event)
     {
         LOADERS.forEach((modId, loader) ->
         {

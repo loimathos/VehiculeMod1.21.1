@@ -1,7 +1,7 @@
 package com.mrcrayfish.vehicle.client.model;
 
 import com.google.common.collect.ImmutableList;
-import net.minecraft.util.ResourceLocation;
+import net.minecraft.resources.ResourceLocation;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -18,7 +18,7 @@ public class ComponentLoader
 
     public ComponentModel create(String path)
     {
-        ComponentModel model = new ComponentModel(new ResourceLocation(this.modId, path));
+        ComponentModel model = new ComponentModel(ResourceLocation.fromNamespaceAndPath(this.modId, path));
         this.registeredModels.add(model);
         return model;
     }

@@ -1,9 +1,9 @@
 package com.mrcrayfish.vehicle.network.message;
 
 import com.mrcrayfish.vehicle.network.play.ServerPlayHandler;
-import net.minecraft.entity.player.ServerPlayerEntity;
-import net.minecraft.network.PacketBuffer;
-import net.minecraftforge.fml.network.NetworkEvent;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.network.FriendlyByteBuf;
+import net.minecraftforge.event.network.CustomPayloadEvent;
 
 import java.util.function.Supplier;
 
@@ -24,24 +24,24 @@ public class MessageAttachChest implements IMessage<MessageAttachChest>
     }
 
     @Override
-    public void encode(MessageAttachChest message, PacketBuffer buffer)
+    public void encode(MessageAttachChest message, FriendlyByteBuf buffer)
     {
         buffer.writeInt(message.entityId);
         buffer.writeUtf(message.key);
     }
 
     @Override
-    public MessageAttachChest decode(PacketBuffer buffer)
+    public MessageAttachChest decode(FriendlyByteBuf buffer)
     {
         return new MessageAttachChest(buffer.readInt(), buffer.readUtf());
     }
 
     @Override
-    public void handle(MessageAttachChest message, Supplier<NetworkEvent.Context> supplier)
+    public void handle(MessageAttachChest message, Supplier<CustomPayloadEvent.Context> supplier)
     {
         supplier.get().enqueueWork(() ->
         {
-            ServerPlayerEntity player = supplier.get().getSender();
+            ServerPlayer player = supplier.get().getSender();
             if(player != null)
             {
                 ServerPlayHandler.handleAttachChestMessage(player, message);

@@ -1,34 +1,36 @@
 package com.mrcrayfish.vehicle.util;
 
-import com.mojang.blaze3d.matrix.MatrixStack;
+import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.blaze3d.vertex.IVertexBuilder;
+import com.mojang.blaze3d.vertex.VertexConsumer;
+import com.mojang.blaze3d.vertex.DefaultVertexFormat;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.renderer.BufferBuilder;
-import net.minecraft.client.renderer.IRenderTypeBuffer;
+import com.mojang.blaze3d.vertex.BufferBuilder;
+import com.mojang.blaze3d.vertex.BufferUploader;
+import com.mojang.blaze3d.vertex.VertexFormat;
+import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
-import net.minecraft.client.renderer.Tessellator;
-import net.minecraft.client.renderer.texture.AtlasTexture;
+import com.mojang.blaze3d.vertex.Tesselator;
+import net.minecraft.client.renderer.texture.TextureAtlas;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
-import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
-import net.minecraft.fluid.Fluid;
-import net.minecraft.util.Direction;
-import net.minecraft.util.ResourceLocation;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.vector.Matrix4f;
-import net.minecraft.world.World;
+import net.minecraft.client.renderer.block.model.BakedQuad;
+import net.minecraft.world.level.material.Fluid;
+import net.minecraft.core.Direction;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.core.BlockPos;
+import org.joml.Matrix4f;
+import net.minecraft.world.level.Level;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
-import net.minecraftforge.client.ForgeHooksClient;
+import net.minecraftforge.client.extensions.common.IClientFluidTypeExtensions;
 import net.minecraftforge.fluids.FluidStack;
 import net.minecraftforge.fluids.capability.IFluidHandler;
 import net.minecraftforge.fluids.capability.templates.FluidTank;
-import org.lwjgl.opengl.GL11;
-
 import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.stream.Stream;
+import net.minecraft.core.registries.BuiltInRegistries;
 
 /**
  * Author: MrCrayfish
@@ -46,7 +48,7 @@ public class FluidUtils
     @OnlyIn(Dist.CLIENT)
     public static int getAverageFluidColor(Fluid fluid)
     {
-        Integer cachedColor = CACHE_FLUID_COLOR.get(fluid.getRegistryName());
+        Integer cachedColor = CACHE_FLUID_COLOR.get(BuiltInRegistries.FLUID.getKey(fluid));
         if(cachedColor != null)
         {
             return cachedColor;
@@ -54,19 +56,19 @@ public class FluidUtils
         else
         {
             int fluidColor = -1;
-            TextureAtlasSprite sprite = Minecraft.getInstance().getTextureAtlas(AtlasTexture.LOCATION_BLOCKS).apply(fluid.getFluid().getAttributes().getStillTexture());
+            TextureAtlasSprite sprite = Minecraft.getInstance().getModelManager().getAtlas(TextureAtlas.LOCATION_BLOCKS).getSprite(IClientFluidTypeExtensions.of(fluid).getStillTexture());
             if(sprite != null)
             {
                 long totalRed = 0;
                 long totalGreen = 0;
                 long totalBlue = 0;
-                int pixelCount = sprite.getWidth() * sprite.getHeight();
+                int pixelCount = sprite.contents().width() * sprite.contents().height();
                 int red, green, blue;
-                for(int i = 0; i < sprite.getHeight(); i++)
+                for(int i = 0; i < sprite.contents().height(); i++)
                 {
-                    for(int j = 0; j < sprite.getWidth(); j++)
+                    for(int j = 0; j < sprite.contents().width(); j++)
                     {
-                        int color = sprite.getPixelRGBA(0, j, i);
+                        int color = sprite.contents().getOriginalImage().getPixelRGBA(j, i);
                         red = color & 255;
                         green = color >> 8 & 255;
                         blue = color >> 16 & 255;
@@ -77,7 +79,7 @@ public class FluidUtils
                 }
                 fluidColor = (((int) Math.sqrt(totalRed / pixelCount) & 255) << 16) | (((int) Math.sqrt(totalGreen / pixelCount) & 255) << 8) | (((int) Math.sqrt(totalBlue / pixelCount) & 255));
             }
-            CACHE_FLUID_COLOR.put(fluid.getRegistryName(), fluidColor);
+            CACHE_FLUID_COLOR.put(BuiltInRegistries.FLUID.getKey(fluid), fluidColor);
             return fluidColor;
         }
     }
@@ -103,7 +105,7 @@ public class FluidUtils
         if(fluid == null || fluid.isEmpty())
             return;
 
-        TextureAtlasSprite sprite = Minecraft.getInstance().getTextureAtlas(AtlasTexture.LOCATION_BLOCKS).apply(fluid.getFluid().getAttributes().getStillTexture());
+        TextureAtlasSprite sprite = Minecraft.getInstance().getModelManager().getAtlas(TextureAtlas.LOCATION_BLOCKS).getSprite(IClientFluidTypeExtensions.of(fluid.getFluid()).getStillTexture(fluid));
         if(sprite != null)
         {
             float minU = sprite.getU0();
@@ -113,7 +115,7 @@ public class FluidUtils
             float deltaV = maxV - minV;
             double tankLevel = percent * height;
 
-            Minecraft.getInstance().getTextureManager().bind(AtlasTexture.LOCATION_BLOCKS);
+            RenderSystem.setShaderTexture(0, TextureAtlas.LOCATION_BLOCKS);
 
             RenderSystem.enableBlend();
             int count = 1 + ((int) Math.ceil(tankLevel)) / 16;
@@ -130,24 +132,22 @@ public class FluidUtils
     @OnlyIn(Dist.CLIENT)
     private static void drawQuad(double x, double y, double width, double height, float minU, float minV, float maxU, float maxV)
     {
-        Tessellator tessellator = Tessellator.getInstance();
-        BufferBuilder buffer = tessellator.getBuilder();
-        buffer.begin(GL11.GL_QUADS, DefaultVertexFormats.POSITION_TEX);
-        buffer.vertex(x, y + height, 0).uv(minU, maxV).endVertex();
-        buffer.vertex(x + width, y + height, 0).uv(maxU, maxV).endVertex();
-        buffer.vertex(x + width, y, 0).uv(maxU, minV).endVertex();
-        buffer.vertex(x, y, 0).uv(minU, minV).endVertex();
-        tessellator.end();
+        BufferBuilder buffer = Tesselator.getInstance().begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_TEX);
+        buffer.addVertex((float)x, (float)(y + height), 0.0F).setUv(minU, maxV);
+        buffer.addVertex((float)(x + width), (float)(y + height), 0.0F).setUv(maxU, maxV);
+        buffer.addVertex((float)(x + width), (float)y, 0.0F).setUv(maxU, minV);
+        buffer.addVertex((float)x, (float)y, 0.0F).setUv(minU, minV);
+        BufferUploader.drawWithShader(buffer.buildOrThrow());
     }
 
     @OnlyIn(Dist.CLIENT)
-    public static void drawFluidInWorld(FluidTank tank, World world, BlockPos pos, MatrixStack matrixStack, IRenderTypeBuffer renderTypeBuffer, float x, float y, float z, float width, float height, float depth, int light, FluidSides sides)
+    public static void drawFluidInWorld(FluidTank tank, Level world, BlockPos pos, PoseStack matrixStack, MultiBufferSource renderTypeBuffer, float x, float y, float z, float width, float height, float depth, int light, FluidSides sides)
     {
         if(tank.isEmpty())
             return;
 
-        TextureAtlasSprite sprite = ForgeHooksClient.getFluidSprites(world, pos, tank.getFluid().getFluid().defaultFluidState())[0];
-        int waterColor = tank.getFluid().getFluid().getAttributes().getColor(world, pos);
+        TextureAtlasSprite sprite = Minecraft.getInstance().getModelManager().getAtlas(TextureAtlas.LOCATION_BLOCKS).getSprite(IClientFluidTypeExtensions.of(tank.getFluid().getFluid()).getStillTexture(tank.getFluid()));
+        int waterColor = IClientFluidTypeExtensions.of(tank.getFluid().getFluid()).getTintColor(tank.getFluid());
         float red = (float) (waterColor >> 16 & 255) / 255.0F;
         float green = (float) (waterColor >> 8 & 255) / 255.0F;
         float blue = (float) (waterColor & 255) / 255.0F;
@@ -157,53 +157,53 @@ public class FluidUtils
         float minV = sprite.getV0();
         float maxV = Math.min(minV + (sprite.getV1() - minV) * height, sprite.getV1());
 
-        IVertexBuilder buffer = renderTypeBuffer.getBuffer(RenderType.translucent());
+        VertexConsumer buffer = renderTypeBuffer.getBuffer(RenderType.translucent());
         Matrix4f matrix = matrixStack.last().pose();
 
         //left side
         if(sides.test(Direction.WEST))
         {
-            buffer.vertex(matrix, x + width, y, z).color(red - 0.25F, green - 0.25F, blue - 0.25F, 1.0F).uv(maxU, minV).uv2(light).normal(0.0F, 1.0F, 0.0F).endVertex();
-            buffer.vertex(matrix, x, y, z).color(red - 0.25F, green - 0.25F, blue - 0.25F, 1.0F).uv(minU, minV).uv2(light).normal(0.0F, 1.0F, 0.0F).endVertex();
-            buffer.vertex(matrix, x, y + height, z).color(red - 0.25F, green - 0.25F, blue - 0.25F, 1.0F).uv(minU, maxV).uv2(light).normal(0.0F, 1.0F, 0.0F).endVertex();
-            buffer.vertex(matrix, x + width, y + height, z).color(red - 0.25F, green - 0.25F, blue - 0.25F, 1.0F).uv(maxU, maxV).uv2(light).normal(0.0F, 1.0F, 0.0F).endVertex();
+            buffer.addVertex(matrix, x + width, y, z).setColor(red - 0.25F, green - 0.25F, blue - 0.25F, 1.0F).setUv(maxU, minV).setUv2(light & 0xFFFF, light >> 16 & 0xFFFF).setNormal(0.0F, 1.0F, 0.0F);
+            buffer.addVertex(matrix, x, y, z).setColor(red - 0.25F, green - 0.25F, blue - 0.25F, 1.0F).setUv(minU, minV).setUv2(light & 0xFFFF, light >> 16 & 0xFFFF).setNormal(0.0F, 1.0F, 0.0F);
+            buffer.addVertex(matrix, x, y + height, z).setColor(red - 0.25F, green - 0.25F, blue - 0.25F, 1.0F).setUv(minU, maxV).setUv2(light & 0xFFFF, light >> 16 & 0xFFFF).setNormal(0.0F, 1.0F, 0.0F);
+            buffer.addVertex(matrix, x + width, y + height, z).setColor(red - 0.25F, green - 0.25F, blue - 0.25F, 1.0F).setUv(maxU, maxV).setUv2(light & 0xFFFF, light >> 16 & 0xFFFF).setNormal(0.0F, 1.0F, 0.0F);
         }
 
         //right side
         if(sides.test(Direction.EAST))
         {
-            buffer.vertex(matrix, x, y, z + depth).color(red - 0.25F, green - 0.25F, blue - 0.25F, 1.0F).uv(maxU, minV).uv2(light).normal(0.0F, 1.0F, 0.0F).endVertex();
-            buffer.vertex(matrix, x + width, y, z + depth).color(red - 0.25F, green - 0.25F, blue - 0.25F, 1.0F).uv(minU, minV).uv2(light).normal(0.0F, 1.0F, 0.0F).endVertex();
-            buffer.vertex(matrix, x + width, y + height, z + depth).color(red - 0.25F, green - 0.25F, blue - 0.25F, 1.0F).uv(minU, maxV).uv2(light).normal(0.0F, 1.0F, 0.0F).endVertex();
-            buffer.vertex(matrix, x, y + height, z + depth).color(red - 0.25F, green - 0.25F, blue - 0.25F, 1.0F).uv(maxU, maxV).uv2(light).normal(0.0F, 1.0F, 0.0F).endVertex();
+            buffer.addVertex(matrix, x, y, z + depth).setColor(red - 0.25F, green - 0.25F, blue - 0.25F, 1.0F).setUv(maxU, minV).setUv2(light & 0xFFFF, light >> 16 & 0xFFFF).setNormal(0.0F, 1.0F, 0.0F);
+            buffer.addVertex(matrix, x + width, y, z + depth).setColor(red - 0.25F, green - 0.25F, blue - 0.25F, 1.0F).setUv(minU, minV).setUv2(light & 0xFFFF, light >> 16 & 0xFFFF).setNormal(0.0F, 1.0F, 0.0F);
+            buffer.addVertex(matrix, x + width, y + height, z + depth).setColor(red - 0.25F, green - 0.25F, blue - 0.25F, 1.0F).setUv(minU, maxV).setUv2(light & 0xFFFF, light >> 16 & 0xFFFF).setNormal(0.0F, 1.0F, 0.0F);
+            buffer.addVertex(matrix, x, y + height, z + depth).setColor(red - 0.25F, green - 0.25F, blue - 0.25F, 1.0F).setUv(maxU, maxV).setUv2(light & 0xFFFF, light >> 16 & 0xFFFF).setNormal(0.0F, 1.0F, 0.0F);
         }
 
         maxU = Math.min(minU + (sprite.getU1() - minU) * depth, sprite.getU1());
 
         if(sides.test(Direction.SOUTH))
         {
-            buffer.vertex(matrix, x + width, y, z + depth).color(red * side, green * side, blue * side, 1.0F).uv(maxU, minV).uv2(light).normal(0.0F, 1.0F, 0.0F).endVertex();
-            buffer.vertex(matrix, x + width, y, z).color(red * side, green * side, blue * side, 1.0F).uv(minU, minV).uv2(light).normal(0.0F, 1.0F, 0.0F).endVertex();
-            buffer.vertex(matrix, x + width, y + height, z).color(red * side, green * side, blue * side, 1.0F).uv(minU, maxV).uv2(light).normal(0.0F, 1.0F, 0.0F).endVertex();
-            buffer.vertex(matrix, x + width, y + height, z + depth).color(red * side, green * side, blue * side, 1.0F).uv(maxU, maxV).uv2(light).normal(0.0F, 1.0F, 0.0F).endVertex();
+            buffer.addVertex(matrix, x + width, y, z + depth).setColor(red * side, green * side, blue * side, 1.0F).setUv(maxU, minV).setUv2(light & 0xFFFF, light >> 16 & 0xFFFF).setNormal(0.0F, 1.0F, 0.0F);
+            buffer.addVertex(matrix, x + width, y, z).setColor(red * side, green * side, blue * side, 1.0F).setUv(minU, minV).setUv2(light & 0xFFFF, light >> 16 & 0xFFFF).setNormal(0.0F, 1.0F, 0.0F);
+            buffer.addVertex(matrix, x + width, y + height, z).setColor(red * side, green * side, blue * side, 1.0F).setUv(minU, maxV).setUv2(light & 0xFFFF, light >> 16 & 0xFFFF).setNormal(0.0F, 1.0F, 0.0F);
+            buffer.addVertex(matrix, x + width, y + height, z + depth).setColor(red * side, green * side, blue * side, 1.0F).setUv(maxU, maxV).setUv2(light & 0xFFFF, light >> 16 & 0xFFFF).setNormal(0.0F, 1.0F, 0.0F);
         }
 
         if(sides.test(Direction.NORTH))
         {
-            buffer.vertex(matrix, x, y, z).color(red * side, green * side, blue * side, 1.0F).uv(minU, minV).uv2(light).normal(0.0F, 1.0F, 0.0F).endVertex();
-            buffer.vertex(matrix, x, y, z + depth).color(red * side, green * side, blue * side, 1.0F).uv(maxU, minV).uv2(light).normal(0.0F, 1.0F, 0.0F).endVertex();
-            buffer.vertex(matrix, x, y + height, z + depth).color(red * side, green * side, blue * side, 1.0F).uv(maxU, maxV).uv2(light).normal(0.0F, 1.0F, 0.0F).endVertex();
-            buffer.vertex(matrix, x, y + height, z).color(red * side, green * side, blue * side, 1.0F).uv(minU, maxV).uv2(light).normal(0.0F, 1.0F, 0.0F).endVertex();
+            buffer.addVertex(matrix, x, y, z).setColor(red * side, green * side, blue * side, 1.0F).setUv(minU, minV).setUv2(light & 0xFFFF, light >> 16 & 0xFFFF).setNormal(0.0F, 1.0F, 0.0F);
+            buffer.addVertex(matrix, x, y, z + depth).setColor(red * side, green * side, blue * side, 1.0F).setUv(maxU, minV).setUv2(light & 0xFFFF, light >> 16 & 0xFFFF).setNormal(0.0F, 1.0F, 0.0F);
+            buffer.addVertex(matrix, x, y + height, z + depth).setColor(red * side, green * side, blue * side, 1.0F).setUv(maxU, maxV).setUv2(light & 0xFFFF, light >> 16 & 0xFFFF).setNormal(0.0F, 1.0F, 0.0F);
+            buffer.addVertex(matrix, x, y + height, z).setColor(red * side, green * side, blue * side, 1.0F).setUv(minU, maxV).setUv2(light & 0xFFFF, light >> 16 & 0xFFFF).setNormal(0.0F, 1.0F, 0.0F);
         }
 
         maxV = Math.min(minV + (sprite.getV1() - minV) * width, sprite.getV1());
 
         if(sides.test(Direction.UP))
         {
-            buffer.vertex(matrix, x, y + height, z).color(red, green, blue, 1.0F).uv(maxU, minV).uv2(light).normal(0.0F, 1.0F, 0.0F).endVertex();
-            buffer.vertex(matrix, x, y + height, z + depth).color(red, green, blue, 1.0F).uv(minU, minV).uv2(light).normal(0.0F, 1.0F, 0.0F).endVertex();
-            buffer.vertex(matrix, x + width, y + height, z + depth).color(red, green, blue, 1.0F).uv(minU, maxV).uv2(light).normal(0.0F, 1.0F, 0.0F).endVertex();
-            buffer.vertex(matrix, x + width, y + height, z).color(red, green, blue, 1.0F).uv(maxU, maxV).uv2(light).normal(0.0F, 1.0F, 0.0F).endVertex();
+            buffer.addVertex(matrix, x, y + height, z).setColor(red, green, blue, 1.0F).setUv(maxU, minV).setUv2(light & 0xFFFF, light >> 16 & 0xFFFF).setNormal(0.0F, 1.0F, 0.0F);
+            buffer.addVertex(matrix, x, y + height, z + depth).setColor(red, green, blue, 1.0F).setUv(minU, minV).setUv2(light & 0xFFFF, light >> 16 & 0xFFFF).setNormal(0.0F, 1.0F, 0.0F);
+            buffer.addVertex(matrix, x + width, y + height, z + depth).setColor(red, green, blue, 1.0F).setUv(minU, maxV).setUv2(light & 0xFFFF, light >> 16 & 0xFFFF).setNormal(0.0F, 1.0F, 0.0F);
+            buffer.addVertex(matrix, x + width, y + height, z).setColor(red, green, blue, 1.0F).setUv(maxU, maxV).setUv2(light & 0xFFFF, light >> 16 & 0xFFFF).setNormal(0.0F, 1.0F, 0.0F);
         }
     }
 

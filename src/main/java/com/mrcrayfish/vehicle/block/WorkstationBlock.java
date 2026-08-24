@@ -1,25 +1,27 @@
 package com.mrcrayfish.vehicle.block;
 
-import com.mrcrayfish.vehicle.tileentity.WorkstationTileEntity;
+
+import net.minecraft.world.level.block.EntityBlock;
+import com.mrcrayfish.vehicle.blockentity.WorkstationBlockEntity;
 import com.mrcrayfish.vehicle.util.VoxelShapeHelper;
-import net.minecraft.block.AbstractBlock;
-import net.minecraft.block.Block;
-import net.minecraft.block.BlockState;
-import net.minecraft.block.material.Material;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.entity.player.ServerPlayerEntity;
-import net.minecraft.inventory.container.INamedContainerProvider;
-import net.minecraft.tileentity.TileEntity;
-import net.minecraft.util.ActionResultType;
-import net.minecraft.util.Hand;
-import net.minecraft.util.Util;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.BlockRayTraceResult;
-import net.minecraft.util.math.shapes.ISelectionContext;
-import net.minecraft.util.math.shapes.VoxelShape;
-import net.minecraft.world.IBlockReader;
-import net.minecraft.world.World;
-import net.minecraftforge.fml.network.NetworkHooks;
+import net.minecraft.world.level.block.state.BlockBehaviour;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.state.BlockState;
+// // Removed in 1.21.1
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.MenuProvider;
+import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.InteractionResult;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.Util;
+import net.minecraft.core.BlockPos;
+import net.minecraft.world.phys.BlockHitResult;
+import net.minecraft.world.phys.shapes.CollisionContext;
+import net.minecraft.world.phys.shapes.VoxelShape;
+import net.minecraft.world.level.BlockGetter;
+import net.minecraft.world.level.Level;
+
 
 import javax.annotation.Nullable;
 import java.util.ArrayList;
@@ -28,7 +30,7 @@ import java.util.List;
 /**
  * Author: MrCrayfish
  */
-public class WorkstationBlock extends RotatedObjectBlock
+public class WorkstationBlock extends RotatedObjectBlock implements EntityBlock
 {
     private static final VoxelShape SHAPE = Util.make(() -> {
         List<VoxelShape> shapes = new ArrayList<>();
@@ -42,40 +44,34 @@ public class WorkstationBlock extends RotatedObjectBlock
 
     public WorkstationBlock()
     {
-        super(AbstractBlock.Properties.of(Material.METAL).strength(1.0F));
+        super(BlockBehaviour.Properties.of().strength(1.0F));
     }
 
     @Override
-    public VoxelShape getShape(BlockState state, IBlockReader reader, BlockPos pos, ISelectionContext context)
+    public VoxelShape getShape(BlockState state, BlockGetter reader, BlockPos pos, CollisionContext context)
     {
         return SHAPE;
     }
 
     @Override
-    public ActionResultType use(BlockState state, World world, BlockPos pos, PlayerEntity playerEntity, Hand hand, BlockRayTraceResult result)
+    protected InteractionResult useWithoutItem(BlockState state, Level world, BlockPos pos, Player playerEntity, BlockHitResult result)
     {
         if(!world.isClientSide)
         {
-            TileEntity tileEntity = world.getBlockEntity(pos);
-            if(tileEntity instanceof INamedContainerProvider)
+            BlockEntity tileEntity = world.getBlockEntity(pos);
+            if(tileEntity instanceof MenuProvider)
             {
-                NetworkHooks.openGui((ServerPlayerEntity) playerEntity, (INamedContainerProvider) tileEntity, pos);
-                return ActionResultType.SUCCESS;
+                playerEntity.openMenu((MenuProvider) tileEntity);
+                return InteractionResult.SUCCESS;
             }
         }
-        return ActionResultType.SUCCESS;
-    }
-
-    @Override
-    public boolean hasTileEntity(BlockState state)
-    {
-        return true;
+        return InteractionResult.SUCCESS;
     }
 
     @Nullable
     @Override
-    public TileEntity createTileEntity(BlockState state, IBlockReader world)
+    public BlockEntity newBlockEntity(BlockPos pos, BlockState state)
     {
-        return new WorkstationTileEntity();
+        return new WorkstationBlockEntity(pos, state);
     }
 }

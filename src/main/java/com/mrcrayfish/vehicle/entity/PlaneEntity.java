@@ -1,5 +1,7 @@
 package com.mrcrayfish.vehicle.entity;
 
+
+import com.mojang.math.Axis;
 import com.mrcrayfish.vehicle.client.VehicleHelper;
 import com.mrcrayfish.vehicle.common.SurfaceHelper;
 import com.mrcrayfish.vehicle.common.entity.Transform;
@@ -9,20 +11,20 @@ import com.mrcrayfish.vehicle.network.PacketHandler;
 import com.mrcrayfish.vehicle.network.datasync.VehicleDataValue;
 import com.mrcrayfish.vehicle.network.message.MessagePlaneInput;
 import com.mrcrayfish.vehicle.util.CommonUtils;
-import net.minecraft.entity.EntityType;
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.nbt.CompoundNBT;
-import net.minecraft.network.PacketBuffer;
-import net.minecraft.network.datasync.DataParameter;
-import net.minecraft.network.datasync.DataSerializers;
-import net.minecraft.network.datasync.EntityDataManager;
-import net.minecraft.util.math.MathHelper;
-import net.minecraft.util.math.vector.Vector3d;
-import net.minecraft.util.math.vector.Vector3f;
-import net.minecraft.world.World;
+import net.minecraft.client.player.LocalPlayer;
+import net.minecraft.world.entity.EntityType;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.syncher.EntityDataAccessor;
+import net.minecraft.network.syncher.EntityDataSerializers;
+import net.minecraft.network.syncher.SynchedEntityData;
+import net.minecraft.util.Mth;
+import net.minecraft.world.phys.Vec3;
+import org.joml.Vector3f;
+import net.minecraft.world.level.Level;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
+import net.minecraftforge.network.PacketDistributor;
 
 import javax.annotation.Nullable;
 import java.util.Optional;
@@ -32,17 +34,17 @@ import java.util.Optional;
  */
 public abstract class PlaneEntity extends PoweredVehicleEntity
 {
-    protected static final DataParameter<Float> LIFT = EntityDataManager.defineId(PlaneEntity.class, DataSerializers.FLOAT);
-    protected static final DataParameter<Float> FORWARD_INPUT = EntityDataManager.defineId(PlaneEntity.class, DataSerializers.FLOAT);
-    protected static final DataParameter<Float> SIDE_INPUT = EntityDataManager.defineId(PlaneEntity.class, DataSerializers.FLOAT);
-    protected static final DataParameter<Float> PLANE_ROLL = EntityDataManager.defineId(PlaneEntity.class, DataSerializers.FLOAT);
+    protected static final EntityDataAccessor<Float> LIFT = SynchedEntityData.defineId(PlaneEntity.class, EntityDataSerializers.FLOAT);
+    protected static final EntityDataAccessor<Float> FORWARD_INPUT = SynchedEntityData.defineId(PlaneEntity.class, EntityDataSerializers.FLOAT);
+    protected static final EntityDataAccessor<Float> SIDE_INPUT = SynchedEntityData.defineId(PlaneEntity.class, EntityDataSerializers.FLOAT);
+    protected static final EntityDataAccessor<Float> PLANE_ROLL = SynchedEntityData.defineId(PlaneEntity.class, EntityDataSerializers.FLOAT);
 
     protected final VehicleDataValue<Float> lift = new VehicleDataValue<>(this, LIFT);
     protected final VehicleDataValue<Float> forwardInput = new VehicleDataValue<>(this, FORWARD_INPUT);
     protected final VehicleDataValue<Float> sideInput = new VehicleDataValue<>(this, SIDE_INPUT);
     protected final VehicleDataValue<Float> planeRoll = new VehicleDataValue<>(this, PLANE_ROLL);
 
-    protected Vector3d velocity = Vector3d.ZERO;
+    protected Vec3 velocity = Vec3.ZERO;
     protected float propellerSpeed;
     protected float flapAngle;
     protected float elevatorAngle;
@@ -62,25 +64,25 @@ public abstract class PlaneEntity extends PoweredVehicleEntity
     @OnlyIn(Dist.CLIENT)
     protected float prevElevatorAngle;
 
-    protected PlaneEntity(EntityType<?> entityType, World worldIn)
+    protected PlaneEntity(EntityType<?> entityType, Level worldIn)
     {
         super(entityType, worldIn);
     }
 
     @Override
-    public void defineSynchedData()
+    public void defineSynchedData(SynchedEntityData.Builder builder)
     {
-        super.defineSynchedData();
-        this.entityData.define(LIFT, 0F);
-        this.entityData.define(FORWARD_INPUT, 0F);
-        this.entityData.define(SIDE_INPUT, 0F);
-        this.entityData.define(PLANE_ROLL, 0F);
+        super.defineSynchedData(builder);
+        builder.define(LIFT, 0F);
+        builder.define(FORWARD_INPUT, 0F);
+        builder.define(SIDE_INPUT, 0F);
+        builder.define(PLANE_ROLL, 0F);
     }
 
     @Override
     public void updateVehicleMotion()
     {
-        this.motion = Vector3d.ZERO;
+        this.motion = Vec3.ZERO;
 
         this.updatePropellerSpeed();
 
@@ -90,7 +92,7 @@ public abstract class PlaneEntity extends PoweredVehicleEntity
         {
             float oldPlaneRoll = this.planeRoll.get(this);
             float newPlaneRoll = oldPlaneRoll - this.flapAngle * this.getFlapSensitivity();
-            newPlaneRoll = MathHelper.wrapDegrees(newPlaneRoll);
+            newPlaneRoll = Mth.wrapDegrees(newPlaneRoll);
             this.planeRoll.set(this, newPlaneRoll);
         }
         else
@@ -109,33 +111,34 @@ public abstract class PlaneEntity extends PoweredVehicleEntity
         this.elevatorAngle += ((this.getMaxElevatorAngle() * this.getLift()) - this.elevatorAngle) * this.getElevatorStrength();
 
         // Adds delta pitch and yaw to the plane based on the flaps and roll of the plane
-        Vector3f elevatorDirection = new Vector3f(Vector3d.directionFromRotation(this.elevatorAngle * elevatorForce * this.getElevatorSensitivity(), 0));
-        elevatorDirection.transform(Vector3f.ZP.rotationDegrees(this.planeRoll.get(this)));
-        this.xRot += CommonUtils.pitch(elevatorDirection);
-        this.yRot -= CommonUtils.yaw(elevatorDirection);
+        Vec3 elevatorDir = Vec3.directionFromRotation(this.elevatorAngle * elevatorForce * this.getElevatorSensitivity(), 0);
+        Vector3f elevatorDirection = new Vector3f((float) elevatorDir.x, (float) elevatorDir.y, (float) elevatorDir.z);
+        elevatorDirection.rotate(Axis.ZP.rotationDegrees(this.planeRoll.get(this)));
+        this.setXRot(this.getXRot() + CommonUtils.pitch(elevatorDirection));
+        this.setYRot(this.getYRot() - CommonUtils.yaw(elevatorDirection));
 
         // Makes the plane turn slightly when roll is turned to the side
         float planeRoll = this.planeRoll.get(this) % 360;
         float absPlaneRoll = Math.abs(planeRoll);
         if(absPlaneRoll >= 0 && absPlaneRoll <= 90)
         {
-            float forwardFactor = 1.0F - MathHelper.degreesDifferenceAbs(this.xRot, 0F) / 90F;
-            float turnStrength = 1.0F - (MathHelper.degreesDifferenceAbs(absPlaneRoll, 45F) / 45F);
+            float forwardFactor = 1.0F - Mth.degreesDifferenceAbs(this.getXRot(), 0F) / 90F;
+            float turnStrength = 1.0F - (Mth.degreesDifferenceAbs(absPlaneRoll, 45F) / 45F);
             turnStrength *= Math.signum(planeRoll);
             float turnAmount = turnStrength * forwardFactor * this.getMaxTurnAngle();
-            this.yRot += turnAmount;
+            this.setYRot(this.getYRot() + turnAmount);
         }
 
         // Makes the plane fall the closer it is to being sideways
-        float fallAmount = 1.0F - MathHelper.degreesDifferenceAbs(absPlaneRoll, 90F) / 90F;
-        this.xRot += Math.abs(fallAmount);
+        float fallAmount = 1.0F - Mth.degreesDifferenceAbs(absPlaneRoll, 90F) / 90F;
+        this.setXRot(this.getXRot() + Math.abs(fallAmount));
 
         // Updates the accelerations of the plane with drag and friction applied
-        Vector3d forward = Vector3d.directionFromRotation(this.getRotationVector());
-        Vector3d acceleration = forward.scale(forwardForce).scale(enginePower).scale(0.05);
-        Vector3d dragForce = this.velocity.scale(this.velocity.length()).scale(-drag);
+        Vec3 forward = Vec3.directionFromRotation(this.getRotationVector());
+        Vec3 acceleration = forward.scale(forwardForce).scale(enginePower).scale(0.05);
+        Vec3 dragForce = this.velocity.scale(this.velocity.length()).scale(-drag);
         acceleration = acceleration.add(dragForce);
-        Vector3d frictionForce = this.velocity.scale(-friction).scale(0.05);
+        Vec3 frictionForce = this.velocity.scale(-friction).scale(0.05);
         acceleration = acceleration.add(frictionForce);
         this.velocity = this.velocity.add(acceleration);
 
@@ -146,21 +149,21 @@ public abstract class PlaneEntity extends PoweredVehicleEntity
         this.velocity = CommonUtils.clampSpeed(this.velocity.scale(20)).scale(0.05);
 
         // Different physics when on the ground
-        if(this.isOnGround() && this.getFrontAxleOffset() != null && this.getRearAxleOffset() != null)
+        if(this.onGround() && this.getFrontAxleOffset() != null && this.getRearAxleOffset() != null)
         {
             // Gets the new position of the wheels
             Transform bodyPosition = properties.getBodyTransform();
             double frontAxleOffset = (bodyPosition.getZ() + this.getFrontAxleOffset().z) * 0.0625 * bodyPosition.getScale();
             double rearAxleOffset = (bodyPosition.getZ() + this.getRearAxleOffset().z) * 0.0625 * bodyPosition.getScale();
-            Vector3d worldFrontWheel = this.position().add(forward.scale(frontAxleOffset));
-            Vector3d worldRearWheel = this.position().add(forward.scale(rearAxleOffset));
+            Vec3 worldFrontWheel = this.position().add(forward.scale(frontAxleOffset));
+            Vec3 worldRearWheel = this.position().add(forward.scale(rearAxleOffset));
             worldFrontWheel = worldFrontWheel.add(this.velocity.yRot((float) Math.toRadians(this.getSteeringAngle())));
             worldRearWheel = worldRearWheel.add(this.velocity);
 
             // Updates the delta movement based on the new wheel positions
-            Vector3d heading = worldFrontWheel.subtract(worldRearWheel).normalize();
-            Vector3d nextPosition = worldRearWheel.add(heading.scale(-rearAxleOffset));
-            Vector3d nextMovement = nextPosition.subtract(this.position());
+            Vec3 heading = worldFrontWheel.subtract(worldRearWheel).normalize();
+            Vec3 nextPosition = worldRearWheel.add(heading.scale(-rearAxleOffset));
+            Vec3 nextMovement = nextPosition.subtract(this.position());
             this.motion = this.motion.add(nextMovement);
 
             // Updates the velocity based on the new heading
@@ -171,8 +174,8 @@ public abstract class PlaneEntity extends PoweredVehicleEntity
 
             // Calculates the difference from the old yaw to the new yaw
             float vehicleDeltaYaw = CommonUtils.yaw(forward) - CommonUtils.yaw(heading);
-            vehicleDeltaYaw = MathHelper.wrapDegrees(vehicleDeltaYaw);
-            this.yRot -= vehicleDeltaYaw;
+            vehicleDeltaYaw = Mth.wrapDegrees(vehicleDeltaYaw);
+            this.setYRot(this.getYRot() - vehicleDeltaYaw);
         }
         else
         {
@@ -183,19 +186,19 @@ public abstract class PlaneEntity extends PoweredVehicleEntity
         // Updates the pitch and yaw based on the velocity
         if(this.isFlying())
         {
-            float pitchDelta = MathHelper.degreesDifference(90F, Math.abs(this.xRotO));
-            float yawDelta = (float) Math.floor(Math.abs(CommonUtils.yaw(this.motion) - this.yRot));
+            float pitchDelta = Mth.degreesDifference(90F, Math.abs(this.xRotO));
+            float yawDelta = (float) Math.floor(Math.abs(CommonUtils.yaw(this.motion) - this.getYRot()));
             boolean flipped = this.motion.multiply(1, 0, 1).length() > 0 && yawDelta > 45F && yawDelta <= 180F;
-            this.xRot = -CommonUtils.pitch(this.motion);
-            this.yRot = this.motion.multiply(1, 0, 1).length() > 0 ? CommonUtils.yaw(this.motion) : this.yRot;
+            this.setXRot(-CommonUtils.pitch(this.motion));
+            this.setYRot(this.motion.multiply(1, 0, 1).length() > 0 ? CommonUtils.yaw(this.motion) : this.getYRot());
             if(flipped)
             {
-                pitchDelta += MathHelper.degreesDifference(90F, Math.abs(this.xRot));
-                this.xRotO = this.xRot + pitchDelta * -Math.signum(this.xRot);
-                this.yRotO = MathHelper.wrapDegrees(this.yRotO + yawDelta);
+                pitchDelta += Mth.degreesDifference(90F, Math.abs(this.getXRot()));
+                this.xRotO = this.getXRot() + pitchDelta * -Math.signum(this.getXRot());
+                this.yRotO = Mth.wrapDegrees(this.yRotO + yawDelta);
                 this.planeRoll.set(this, this.planeRoll.get(this) + 180F);
                 this.getPassengers().forEach(this::updatePassengerPosition);
-                if(this.level.isClientSide())
+                if(this.level().isClientSide())
                 {
                     this.bodyRotationPitch = this.xRotO;
                     this.bodyRotationYaw = this.yRotO;
@@ -206,7 +209,7 @@ public abstract class PlaneEntity extends PoweredVehicleEntity
         }
         else
         {
-            this.xRot = 0F;
+            this.setXRot(0F);
         }
     }
 
@@ -217,14 +220,14 @@ public abstract class PlaneEntity extends PoweredVehicleEntity
             float enginePower = this.getEnginePower();
             enginePower *= this.getEngineTier().map(IEngineTier::getPowerMultiplier).orElse(1.0F);
             float maxRotorSpeed = this.getMaxRotorSpeed();
-            float angleOfAttack = (MathHelper.clamp(this.xRot, -90F, 90F) + 90F) / 180F;
+            float angleOfAttack = (Mth.clamp(this.getXRot(), -90F, 90F) + 90F) / 180F;
             enginePower *= angleOfAttack;
 
             // Makes the plane slow down the closer it points up
-            if(this.xRot < 0)
+            if(this.getXRot() < 0)
             {
                 float upFactor = 1.0F - (float) Math.pow(1.0F - angleOfAttack / 0.5F, 5);
-                maxRotorSpeed = MathHelper.clamp(maxRotorSpeed * upFactor, Math.min(maxRotorSpeed, 90F), Math.max(maxRotorSpeed, 90F));
+                maxRotorSpeed = Mth.clamp(maxRotorSpeed * upFactor, Math.min(maxRotorSpeed, 90F), Math.max(maxRotorSpeed, 90F));
             }
             else
             {
@@ -243,16 +246,16 @@ public abstract class PlaneEntity extends PoweredVehicleEntity
             else
             {
                 float brakeForce = this.getThrottle() < 0 ? 0.1F : 0.05F;
-                this.propellerSpeed = MathHelper.lerp(brakeForce, this.propellerSpeed, maxRotorSpeed);
+                this.propellerSpeed = Mth.lerp(brakeForce, this.propellerSpeed, maxRotorSpeed);
             }
         }
         else
         {
             float maxRotorSpeed = this.isFlying() ? 90F : 0F;
-            this.propellerSpeed = MathHelper.lerp(0.05F, this.propellerSpeed, maxRotorSpeed);
+            this.propellerSpeed = Mth.lerp(0.05F, this.propellerSpeed, maxRotorSpeed);
         }
 
-        if(this.level.isClientSide())
+        if(this.level().isClientSide())
         {
             this.propellerRotation += this.propellerSpeed;
         }
@@ -285,13 +288,12 @@ public abstract class PlaneEntity extends PoweredVehicleEntity
         this.prevFlapAngle = this.flapAngle;
         this.prevElevatorAngle = this.elevatorAngle;
 
-        LivingEntity entity = (LivingEntity) this.getControllingPassenger();
-        if(entity instanceof PlayerEntity && ((PlayerEntity) entity).isLocalPlayer())
+        if(this.getControllingPassenger() instanceof LocalPlayer localPlayer)
         {
             this.setLift(VehicleHelper.getElevator());
-            this.setForwardInput(entity.zza);
-            this.setSideInput(entity.xxa);
-            PacketHandler.getPlayChannel().sendToServer(new MessagePlaneInput(this.lift.getLocalValue(), entity.zza, entity.xxa));
+            this.setForwardInput(localPlayer.input.forwardImpulse);
+            this.setSideInput(localPlayer.input.leftImpulse);
+            PacketHandler.getPlayChannel().send(new MessagePlaneInput(this.lift.getLocalValue(), localPlayer.input.forwardImpulse, localPlayer.input.leftImpulse), PacketDistributor.SERVER.noArg());
         }
     }
 
@@ -300,7 +302,7 @@ public abstract class PlaneEntity extends PoweredVehicleEntity
     {
         if(this.isFlying())
         {
-            this.bodyRotationPitch = this.xRot;
+            this.bodyRotationPitch = this.getXRot();
             this.bodyRotationRoll = this.planeRoll.get(this);
         }
         else
@@ -308,11 +310,11 @@ public abstract class PlaneEntity extends PoweredVehicleEntity
             this.bodyRotationPitch *= 0.75F;
             this.bodyRotationRoll *= 0.75F;
         }
-        this.bodyRotationYaw = this.yRot;
+        this.bodyRotationYaw = this.getYRot();
     }
 
     @Override
-    protected void addAdditionalSaveData(CompoundNBT compound)
+    protected void addAdditionalSaveData(CompoundTag compound)
     {
         super.addAdditionalSaveData(compound);
         compound.putFloat("Lift", this.getLift());
@@ -320,7 +322,7 @@ public abstract class PlaneEntity extends PoweredVehicleEntity
         compound.putFloat("PropellerSpeed", this.propellerSpeed);
         compound.putFloat("FlapAngle", this.flapAngle);
         compound.putFloat("ElevatorAngle", this.elevatorAngle);
-        CompoundNBT velocity = new CompoundNBT();
+        CompoundTag velocity = new CompoundTag();
         velocity.putDouble("X", this.velocity.x);
         velocity.putDouble("Y", this.velocity.y);
         velocity.putDouble("Z", this.velocity.z);
@@ -328,7 +330,7 @@ public abstract class PlaneEntity extends PoweredVehicleEntity
     }
 
     @Override
-    protected void readAdditionalSaveData(CompoundNBT compound)
+    protected void readAdditionalSaveData(CompoundTag compound)
     {
         super.readAdditionalSaveData(compound);
         this.setLift(compound.getFloat("Lift"));
@@ -336,12 +338,12 @@ public abstract class PlaneEntity extends PoweredVehicleEntity
         this.propellerSpeed = compound.getFloat("PropellerSpeed");
         this.flapAngle = compound.getFloat("FlapAngle");
         this.elevatorAngle = compound.getFloat("ElevatorAngle");
-        CompoundNBT velocity = compound.getCompound("Velocity");
-        this.velocity = new Vector3d(velocity.getDouble("X"), velocity.getDouble("Y"), velocity.getDouble("Z"));
+        CompoundTag velocity = compound.getCompound("Velocity");
+        this.velocity = new Vec3(velocity.getDouble("X"), velocity.getDouble("Y"), velocity.getDouble("Z"));
     }
 
     @Override
-    public void writeSpawnData(PacketBuffer buffer)
+    public void writeSpawnData(FriendlyByteBuf buffer)
     {
         super.writeSpawnData(buffer);
         buffer.writeDouble(this.velocity.x);
@@ -354,10 +356,10 @@ public abstract class PlaneEntity extends PoweredVehicleEntity
     }
 
     @Override
-    public void readSpawnData(PacketBuffer buffer)
+    public void readSpawnData(FriendlyByteBuf buffer)
     {
         super.readSpawnData(buffer);
-        this.velocity = new Vector3d(buffer.readDouble(), buffer.readDouble(), buffer.readDouble());
+        this.velocity = new Vec3(buffer.readDouble(), buffer.readDouble(), buffer.readDouble());
         this.planeRoll.set(this, buffer.readFloat());
         this.propellerSpeed = buffer.readFloat();
         this.flapAngle = buffer.readFloat();
@@ -396,7 +398,7 @@ public abstract class PlaneEntity extends PoweredVehicleEntity
 
     public boolean isFlying()
     {
-        return !this.onGround;
+        return !this.onGround();
     }
 
     /**
@@ -472,7 +474,6 @@ public abstract class PlaneEntity extends PoweredVehicleEntity
     /*
      * Overridden to prevent players from taking fall damage when landing a plane
      */
-    @Override
     public boolean causeFallDamage(float distance, float damageMultiplier)
     {
         return false;
@@ -482,7 +483,7 @@ public abstract class PlaneEntity extends PoweredVehicleEntity
     @OnlyIn(Dist.CLIENT)
     protected void updateEngineSound()
     {
-        this.enginePitch = this.getMinEnginePitch() + (this.getMaxEnginePitch() - this.getMinEnginePitch()) * MathHelper.clamp(this.propellerSpeed / 200F, 0.0F, 2.0F);
+        this.enginePitch = this.getMinEnginePitch() + (this.getMaxEnginePitch() - this.getMinEnginePitch()) * Mth.clamp(this.propellerSpeed / 200F, 0.0F, 2.0F);
         this.engineVolume = this.getControllingPassenger() != null && this.isEnginePowered() ? 0.2F + 0.8F * (this.propellerSpeed / 80F) : 0.001F;
     }
 
@@ -507,9 +508,9 @@ public abstract class PlaneEntity extends PoweredVehicleEntity
     @Override
     protected void updateTurning()
     {
-        if(this.level.isClientSide())
+        if(this.level().isClientSide())
         {
-            float targetAngle = this.isOnGround() ? this.getSteeringAngle() : 0F;
+            float targetAngle = this.onGround() ? this.getSteeringAngle() : 0F;
             this.renderWheelAngle = this.renderWheelAngle + (targetAngle - this.renderWheelAngle) * 0.3F;
         }
     }
@@ -521,11 +522,11 @@ public abstract class PlaneEntity extends PoweredVehicleEntity
         VehicleProperties properties = this.getProperties();
         double wheelCircumference = 24.0;
         double vehicleScale = properties.getBodyTransform().getScale();
-        Vector3d forward = Vector3d.directionFromRotation(this.getRotationVector());
-        Vector3d horizontalMotion = this.motion.multiply(1, 0, 1);
+        Vec3 forward = Vec3.directionFromRotation(this.getRotationVector());
+        Vec3 horizontalMotion = this.motion.multiply(1, 0, 1);
         double direction = forward.dot(horizontalMotion.normalize());
 
-        if(this.isOnGround())
+        if(this.onGround())
         {
             this.wheelRotationSpeed = (float) (horizontalMotion.length() * direction * 20);
         }
@@ -546,6 +547,6 @@ public abstract class PlaneEntity extends PoweredVehicleEntity
     @Override
     public float getWheelRotation(@Nullable Wheel wheel, float partialTicks)
     {
-        return MathHelper.lerp(partialTicks, this.prevWheelRotation, this.wheelRotation);
+        return Mth.lerp(partialTicks, this.prevWheelRotation, this.wheelRotation);
     }
 }

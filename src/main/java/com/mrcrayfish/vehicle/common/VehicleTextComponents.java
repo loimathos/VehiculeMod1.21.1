@@ -1,13 +1,12 @@
 package com.mrcrayfish.vehicle.common;
 
-import net.minecraft.util.text.ITextComponent;
-import net.minecraft.util.text.TranslationTextComponent;
+import net.minecraft.network.chat.Component;
 
 /**
  * Author: MrCrayfish
  */
 public class VehicleTextComponents
 {
-    public static final ITextComponent TRUNK = new TranslationTextComponent("container.vehicle.storage.trunk");
-    public static final ITextComponent GLOVE_BOX = new TranslationTextComponent("container.vehicle.storage.glove_box");
+    public static final Component TRUNK = Component.translatable("container.vehicle.storage.trunk");
+    public static final Component GLOVE_BOX = Component.translatable("container.vehicle.storage.glove_box");
 }

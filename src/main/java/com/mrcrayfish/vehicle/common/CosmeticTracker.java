@@ -11,16 +11,16 @@ import com.mrcrayfish.vehicle.network.PacketHandler;
 import com.mrcrayfish.vehicle.network.message.MessageSyncActionData;
 import com.mrcrayfish.vehicle.network.message.MessageSyncCosmetics;
 import net.minecraft.client.Minecraft;
-import net.minecraft.nbt.CompoundNBT;
-import net.minecraft.nbt.ListNBT;
-import net.minecraft.network.PacketBuffer;
-import net.minecraft.util.ResourceLocation;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.ListTag;
+import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
-import net.minecraftforge.common.util.Constants;
+import net.minecraft.nbt.Tag;
 import net.minecraftforge.fml.DistExecutor;
 import net.minecraftforge.fml.loading.FMLLoader;
-import net.minecraftforge.fml.network.PacketDistributor;
+import net.minecraftforge.network.PacketDistributor;
 import org.apache.commons.lang3.tuple.Pair;
 
 import javax.annotation.Nullable;
@@ -57,9 +57,9 @@ public class CosmeticTracker
 
     public void tick(VehicleEntity vehicle)
     {
-        if(!vehicle.level.isClientSide() && this.dirty)
+        if(!vehicle.level().isClientSide() && this.dirty)
         {
-            PacketHandler.getPlayChannel().send(PacketDistributor.TRACKING_ENTITY.with(() -> vehicle), new MessageSyncCosmetics(vehicle.getId(), this.getDirtyEntries()));
+            PacketHandler.getPlayChannel().send(new MessageSyncCosmetics(vehicle.getId(), this.getDirtyEntries()), PacketDistributor.TRACKING_ENTITY.with(vehicle));
             this.resetDirty();
         }
 
@@ -68,21 +68,21 @@ public class CosmeticTracker
             entry.getActions().forEach(action ->
             {
                 action.tick(vehicle);
-                if(!vehicle.level.isClientSide() && action.isDirty())
+                if(!vehicle.level().isClientSide() && action.isDirty())
                 {
                     this.dirtyActions.computeIfAbsent(cosmeticId, id -> new ArrayList<>()).add(action);
                 }
             });
         });
 
-        if(!vehicle.level.isClientSide())
+        if(!vehicle.level().isClientSide())
         {
             if(!this.dirtyActions.isEmpty())
             {
                 this.dirtyActions.forEach((cosmeticId, actions) ->
                 {
-                    List<Pair<ResourceLocation, CompoundNBT>> actionData = actions.stream().map(action -> Pair.of(CosmeticActions.getId(action.getClass()), action.save(true))).collect(Collectors.toList());
-                    PacketHandler.getPlayChannel().send(PacketDistributor.TRACKING_ENTITY.with(() -> vehicle), new MessageSyncActionData(vehicle.getId(), cosmeticId, actionData));
+                    List<Pair<ResourceLocation, CompoundTag>> actionData = actions.stream().map(action -> Pair.of(CosmeticActions.getId(action.getClass()), action.save(true))).collect(Collectors.toList());
+                    PacketHandler.getPlayChannel().send(new MessageSyncActionData(vehicle.getId(), cosmeticId, actionData), PacketDistributor.TRACKING_ENTITY.with(vehicle));
                     actions.forEach(Action::clean);
                 });
                 this.dirtyActions.clear();
@@ -158,15 +158,15 @@ public class CosmeticTracker
         this.selectedCosmetics.forEach((cosmeticId, entry) -> entry.dirty = false);
     }
 
-    public CompoundNBT write()
+    public CompoundTag write()
     {
-        CompoundNBT tag = new CompoundNBT();
-        ListNBT list = new ListNBT();
+        CompoundTag tag = new CompoundTag();
+        ListTag list = new ListTag();
         this.selectedCosmetics.forEach((cosmeticId, entry) -> {
-            CompoundNBT cosmeticTag = new CompoundNBT();
+            CompoundTag cosmeticTag = new CompoundTag();
             cosmeticTag.putString("Id", cosmeticId.toString());
             cosmeticTag.putString("Model", entry.getModelLocation().toString());
-            CompoundNBT actions = new CompoundNBT();
+            CompoundTag actions = new CompoundTag();
             entry.getActions().forEach(action -> {
                 ResourceLocation id = CosmeticActions.getId(action.getClass());
                 actions.put(id.toString(), action.save(false));
@@ -178,17 +178,17 @@ public class CosmeticTracker
         return tag;
     }
 
-    public void read(CompoundNBT tag)
+    public void read(CompoundTag tag)
     {
-        if(tag.contains("Cosmetics", Constants.NBT.TAG_LIST))
+        if(tag.contains("Cosmetics", Tag.TAG_LIST))
         {
-            ListNBT list = tag.getList("Cosmetics", Constants.NBT.TAG_COMPOUND);
+            ListTag list = tag.getList("Cosmetics", Tag.TAG_COMPOUND);
             list.forEach(nbt -> {
-                CompoundNBT cosmeticTag = (CompoundNBT) nbt;
-                ResourceLocation cosmeticId = new ResourceLocation(cosmeticTag.getString("Id"));
-                ResourceLocation modelLocation = new ResourceLocation(cosmeticTag.getString("Model"));
+                CompoundTag cosmeticTag = (CompoundTag) nbt;
+                ResourceLocation cosmeticId = ResourceLocation.parse(cosmeticTag.getString("Id"));
+                ResourceLocation modelLocation = ResourceLocation.parse(cosmeticTag.getString("Model"));
                 this.setSelectedModel(cosmeticId, modelLocation);
-                CompoundNBT actions = cosmeticTag.getCompound("Actions");
+                CompoundTag actions = cosmeticTag.getCompound("Actions");
                 this.selectedCosmetics.get(cosmeticId).getActions().forEach(action -> {
                     ResourceLocation id = CosmeticActions.getId(action.getClass());
                     action.load(actions.getCompound(id.toString()), false);
@@ -197,7 +197,7 @@ public class CosmeticTracker
         }
     }
 
-    public void write(PacketBuffer buffer)
+    public void write(FriendlyByteBuf buffer)
     {
         buffer.writeInt(this.selectedCosmetics.size());
         this.selectedCosmetics.forEach((cosmeticId, entry) -> {
@@ -211,7 +211,7 @@ public class CosmeticTracker
         });
     }
 
-    public void read(PacketBuffer buffer)
+    public void read(FriendlyByteBuf buffer)
     {
         int size = buffer.readInt();
         for(int i = 0; i < size; i++)
@@ -222,17 +222,17 @@ public class CosmeticTracker
             int actionLength = buffer.readInt();
             if(actionLength > 0)
             {
-                Map<ResourceLocation, CompoundNBT> dataMap = new HashMap<>();
+                Map<ResourceLocation, CompoundTag> dataMap = new HashMap<>();
                 for(int j = 0; j < actionLength; j++)
                 {
                     ResourceLocation id = buffer.readResourceLocation();
-                    CompoundNBT data = buffer.readNbt();
+                    CompoundTag data = buffer.readNbt();
                     dataMap.put(id, data);
                 }
                 this.selectedCosmetics.get(cosmeticId).getActions().forEach(action ->
                 {
                     ResourceLocation id = CosmeticActions.getId(action.getClass());
-                    CompoundNBT data = dataMap.get(id);
+                    CompoundTag data = dataMap.get(id);
                     if(data != null)
                     {
                         action.load(data, false);

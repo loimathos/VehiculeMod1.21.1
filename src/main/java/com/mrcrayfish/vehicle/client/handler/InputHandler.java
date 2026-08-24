@@ -8,6 +8,7 @@ import com.mrcrayfish.vehicle.network.message.MessageHitchTrailer;
 import net.minecraft.client.Minecraft;
 import net.minecraftforge.client.event.InputEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
+import net.minecraftforge.network.PacketDistributor;
 import org.lwjgl.glfw.GLFW;
 
 /**
@@ -16,7 +17,7 @@ import org.lwjgl.glfw.GLFW;
 public class InputHandler
 {
     @SubscribeEvent
-    public void onKeyInput(InputEvent.KeyInputEvent event)
+    public void onKeyInput(InputEvent.Key event)
     {
         Minecraft minecraft = Minecraft.getInstance();
         if(minecraft.player == null || minecraft.screen != null)
@@ -29,7 +30,7 @@ public class InputHandler
         {
             if(minecraft.player.getVehicle() instanceof VehicleEntity)
             {
-                PacketHandler.getPlayChannel().sendToServer(new MessageCycleSeats());
+                PacketHandler.getPlayChannel().send(new MessageCycleSeats(), PacketDistributor.SERVER.noArg());
             }
         }
 
@@ -40,7 +41,7 @@ public class InputHandler
                 VehicleEntity vehicle = (VehicleEntity) minecraft.player.getVehicle();
                 if(vehicle.canTowTrailers())
                 {
-                    PacketHandler.getPlayChannel().sendToServer(new MessageHitchTrailer(vehicle.getTrailer() == null));
+                    PacketHandler.getPlayChannel().send(new MessageHitchTrailer(vehicle.getTrailer() == null), PacketDistributor.SERVER.noArg());
                 }
             }
         }

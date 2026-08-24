@@ -2,25 +2,33 @@ package com.mrcrayfish.vehicle.crafting;
 
 import com.google.common.collect.ImmutableList;
 import com.mrcrayfish.vehicle.init.ModRecipeSerializers;
-import com.mrcrayfish.vehicle.tileentity.WorkstationTileEntity;
 import com.mrcrayfish.vehicle.util.InventoryUtil;
-import net.minecraft.entity.EntityType;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.item.ItemStack;
-import net.minecraft.item.crafting.IRecipe;
-import net.minecraft.item.crafting.IRecipeSerializer;
-import net.minecraft.item.crafting.IRecipeType;
-import net.minecraft.util.ResourceLocation;
-import net.minecraft.world.World;
+import net.minecraft.core.HolderLookup;
+import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.crafting.Recipe;
+import net.minecraft.world.item.crafting.RecipeInput;
+import net.minecraft.world.item.crafting.RecipeSerializer;
+import net.minecraft.world.item.crafting.RecipeType;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.level.Level;
 
 /**
  * Author: MrCrayfish
  */
-public class WorkstationRecipe implements IRecipe<WorkstationTileEntity>
+public class WorkstationRecipe implements Recipe<RecipeInput>
 {
     private ResourceLocation id;
     private EntityType<?> vehicle;
     private ImmutableList<WorkstationIngredient> materials;
+
+    public WorkstationRecipe(EntityType<?> vehicle, java.util.List<WorkstationIngredient> materials)
+    {
+        this.id = ResourceLocation.fromNamespaceAndPath("vehicle", "workstation");
+        this.vehicle = vehicle;
+        this.materials = ImmutableList.copyOf(materials);
+    }
 
     public WorkstationRecipe(ResourceLocation id, EntityType<?> vehicle, ImmutableList<WorkstationIngredient> materials)
     {
@@ -40,13 +48,13 @@ public class WorkstationRecipe implements IRecipe<WorkstationTileEntity>
     }
 
     @Override
-    public boolean matches(WorkstationTileEntity inv, World worldIn)
+    public boolean matches(RecipeInput input, Level level)
     {
         return false;
     }
 
     @Override
-    public ItemStack assemble(WorkstationTileEntity inv)
+    public ItemStack assemble(RecipeInput input, HolderLookup.Provider registries)
     {
         return ItemStack.EMPTY;
     }
@@ -58,30 +66,27 @@ public class WorkstationRecipe implements IRecipe<WorkstationTileEntity>
     }
 
     @Override
-    public ItemStack getResultItem()
+    public ItemStack getResultItem(HolderLookup.Provider registries)
     {
         return ItemStack.EMPTY;
     }
 
-    @Override
     public ResourceLocation getId()
     {
         return this.id;
     }
 
-    @Override
-    public IRecipeSerializer<?> getSerializer()
+    public RecipeSerializer<?> getSerializer()
     {
         return ModRecipeSerializers.WORKSTATION.get();
     }
 
-    @Override
-    public IRecipeType<?> getType()
+    public RecipeType<?> getType()
     {
-        return RecipeType.WORKSTATION;
+        return com.mrcrayfish.vehicle.crafting.RecipeType.WORKSTATION.get();
     }
 
-    public boolean hasMaterials(PlayerEntity player)
+    public boolean hasMaterials(Player player)
     {
         for(WorkstationIngredient ingredient : this.getMaterials())
         {
@@ -93,7 +98,7 @@ public class WorkstationRecipe implements IRecipe<WorkstationTileEntity>
         return true;
     }
 
-    public void consumeMaterials(PlayerEntity player)
+    public void consumeMaterials(Player player)
     {
         for(WorkstationIngredient ingredient : this.getMaterials())
         {

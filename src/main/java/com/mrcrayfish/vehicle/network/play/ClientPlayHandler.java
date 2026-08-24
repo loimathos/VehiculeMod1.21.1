@@ -1,5 +1,7 @@
 package com.mrcrayfish.vehicle.network.play;
 
+import net.minecraft.nbt.Tag;
+
 import com.mrcrayfish.vehicle.common.CosmeticTracker;
 import com.mrcrayfish.vehicle.common.entity.HeldVehicleDataHandler;
 import com.mrcrayfish.vehicle.common.inventory.IStorage;
@@ -12,15 +14,14 @@ import com.mrcrayfish.vehicle.network.message.MessageSyncHeldVehicle;
 import com.mrcrayfish.vehicle.network.message.MessageSyncPlayerSeat;
 import com.mrcrayfish.vehicle.network.message.MessageSyncStorage;
 import net.minecraft.client.Minecraft;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.nbt.CompoundNBT;
-import net.minecraft.world.World;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.world.level.Level;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
-import net.minecraftforge.common.util.Constants;
 import net.minecraftforge.common.util.LazyOptional;
-import net.minecraftforge.fluids.capability.CapabilityFluidHandler;
+import net.minecraftforge.common.capabilities.ForgeCapabilities;
 import net.minecraftforge.fluids.capability.IFluidHandler;
 import net.minecraftforge.fluids.capability.templates.FluidTank;
 
@@ -32,7 +33,7 @@ public class ClientPlayHandler
 {
     public static void handleSyncStorage(MessageSyncStorage message)
     {
-        World world = Minecraft.getInstance().level;
+        Level world = Minecraft.getInstance().level;
         if(world == null)
             return;
 
@@ -42,21 +43,21 @@ public class ClientPlayHandler
 
         IStorage storage = (IStorage) entity;
         String[] keys = message.getKeys();
-        CompoundNBT[] tags = message.getTags();
+        CompoundTag[] tags = message.getTags();
         for(int i = 0; i < keys.length; i++)
         {
             StorageInventory inventory = storage.getStorageInventory(keys[i]);
             if(inventory != null)
             {
-                CompoundNBT tag = tags[i];
-                inventory.fromTag(tag.getList("Inventory", Constants.NBT.TAG_COMPOUND));
+                CompoundTag tag = tags[i];
+                inventory.fromTag(tag.getList("Inventory", Tag.TAG_COMPOUND));
             }
         }
     }
 
     public static void handleEntityFluid(MessageEntityFluid message)
     {
-        World world = Minecraft.getInstance().level;
+        Level world = Minecraft.getInstance().level;
         if(world == null)
             return;
 
@@ -64,7 +65,7 @@ public class ClientPlayHandler
         if(entity == null)
             return;
 
-        LazyOptional<IFluidHandler> optional = entity.getCapability(CapabilityFluidHandler.FLUID_HANDLER_CAPABILITY);
+        LazyOptional<IFluidHandler> optional = entity.getCapability(ForgeCapabilities.FLUID_HANDLER);
         optional.ifPresent(handler ->
         {
             if(handler instanceof FluidTank)
@@ -77,19 +78,19 @@ public class ClientPlayHandler
 
     public static void handleSyncPlayerSeat(MessageSyncPlayerSeat message)
     {
-        PlayerEntity player = Minecraft.getInstance().player;
+        Player player = Minecraft.getInstance().player;
         if(player != null)
         {
-            Entity entity = player.getCommandSenderWorld().getEntity(message.getEntityId());
+            Entity entity = player.level().getEntity(message.getEntityId());
             if(entity instanceof VehicleEntity)
             {
                 VehicleEntity vehicle = (VehicleEntity) entity;
                 int oldSeatIndex = vehicle.getSeatTracker().getSeatIndex(message.getUuid());
                 vehicle.getSeatTracker().setSeatIndex(message.getSeatIndex(), message.getUuid());
                 Entity passenger = vehicle.getPassengers().stream().filter(e -> e.getUUID().equals(message.getUuid())).findFirst().orElse(null);
-                if(passenger instanceof PlayerEntity)
+                if(passenger instanceof Player)
                 {
-                    vehicle.onPlayerChangeSeat((PlayerEntity) passenger, oldSeatIndex, message.getSeatIndex());
+                    vehicle.onPlayerChangeSeat((Player) passenger, oldSeatIndex, message.getSeatIndex());
                 }
             }
         }
@@ -97,20 +98,20 @@ public class ClientPlayHandler
 
     public static void handleSyncHeldVehicle(MessageSyncHeldVehicle message)
     {
-        World world = Minecraft.getInstance().level;
+        Level world = Minecraft.getInstance().level;
         if(world != null)
         {
             Entity entity = world.getEntity(message.getEntityId());
-            if(entity instanceof PlayerEntity)
+            if(entity instanceof Player)
             {
-                HeldVehicleDataHandler.setHeldVehicle((PlayerEntity) entity, message.getVehicleTag());
+                HeldVehicleDataHandler.setHeldVehicle((Player) entity, message.getVehicleTag());
             }
         }
     }
 
     public static void handleSyncCosmetics(MessageSyncCosmetics message)
     {
-        World world = Minecraft.getInstance().level;
+        Level world = Minecraft.getInstance().level;
         if(world == null)
             return;
 
@@ -126,7 +127,7 @@ public class ClientPlayHandler
 
     public static void handleSyncActionData(MessageSyncActionData message)
     {
-        World world = Minecraft.getInstance().level;
+        Level world = Minecraft.getInstance().level;
         if(world == null)
             return;
 

@@ -1,12 +1,12 @@
 package com.mrcrayfish.vehicle.client.render;
 
-import com.mojang.blaze3d.matrix.MatrixStack;
+import com.mojang.blaze3d.vertex.PoseStack;
 import com.mrcrayfish.vehicle.common.entity.Transform;
 import com.mrcrayfish.vehicle.entity.BoatEntity;
 import com.mrcrayfish.vehicle.entity.properties.VehicleProperties;
 import com.mrcrayfish.vehicle.entity.vehicle.GoKartEntity;
-import net.minecraft.client.renderer.IRenderTypeBuffer;
-import net.minecraft.entity.EntityType;
+import net.minecraft.client.renderer.MultiBufferSource;
+import net.minecraft.world.entity.EntityType;
 
 import javax.annotation.Nullable;
 
@@ -21,15 +21,15 @@ public abstract class AbstractBoatRenderer<T extends BoatEntity> extends Abstrac
     }
 
     @Override
-    public void setupTransformsAndRender(@Nullable T vehicle, MatrixStack matrixStack, IRenderTypeBuffer renderTypeBuffer, float partialTicks, int light)
+    public void setupTransformsAndRender(@Nullable T vehicle, PoseStack matrixStack, MultiBufferSource renderTypeBuffer, float partialTicks, int light)
     {
         matrixStack.pushPose();
 
         VehicleProperties properties = this.vehiclePropertiesProperty.get(vehicle);
         Transform bodyPosition = properties.getBodyTransform();
-        matrixStack.mulPose(Axis.POSITIVE_X.rotationDegrees((float) bodyPosition.getRotX()));
-        matrixStack.mulPose(Axis.POSITIVE_Y.rotationDegrees((float) bodyPosition.getRotY()));
-        matrixStack.mulPose(Axis.POSITIVE_Z.rotationDegrees((float) bodyPosition.getRotZ()));
+        matrixStack.mulPose(Axis.XP.rotationDegrees((float) bodyPosition.getRotX()));
+        matrixStack.mulPose(Axis.YP.rotationDegrees((float) bodyPosition.getRotY()));
+        matrixStack.mulPose(Axis.ZP.rotationDegrees((float) bodyPosition.getRotZ()));
 
         //TODO add back boat rotation
         /*if(vehicle != null)
@@ -37,10 +37,10 @@ public abstract class AbstractBoatRenderer<T extends BoatEntity> extends Abstrac
             //Applies leaning rotation caused by turning
             float currentSpeedNormal = (vehicle.prevCurrentSpeed + (vehicle.currentSpeed - vehicle.prevCurrentSpeed) * partialTicks) / vehicle.getMaxSpeed();
             float turnAngleNormal = (vehicle.prevTurnAngle + (vehicle.turnAngle - vehicle.prevTurnAngle) * partialTicks) / vehicle.getMaxSteeringAngle();
-            matrixStack.mulPose(Axis.POSITIVE_Z.rotationDegrees(turnAngleNormal * currentSpeedNormal * -15F));
+            matrixStack.mulPose(Axis.ZP.rotationDegrees(turnAngleNormal * currentSpeedNormal * -15F));
 
             //Makes the boat tilt up the faster it goes
-            matrixStack.mulPose(Axis.POSITIVE_X.rotationDegrees(-8F * Math.min(1.0F, currentSpeedNormal)));
+            matrixStack.mulPose(Axis.XP.rotationDegrees(-8F * Math.min(1.0F, currentSpeedNormal)));
         }*/
 
         //this.renderRotationLine(matrixStack, 0xFF0000);

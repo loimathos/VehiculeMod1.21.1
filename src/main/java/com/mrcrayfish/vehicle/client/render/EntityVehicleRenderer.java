@@ -1,6 +1,8 @@
 package com.mrcrayfish.vehicle.client.render;
 
-import com.mojang.blaze3d.matrix.MatrixStack;
+
+import com.mojang.math.Axis;
+import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mrcrayfish.vehicle.Config;
 import com.mrcrayfish.vehicle.client.raytrace.EntityRayTracer;
@@ -10,17 +12,19 @@ import com.mrcrayfish.vehicle.entity.PoweredVehicleEntity;
 import com.mrcrayfish.vehicle.entity.VehicleEntity;
 import com.mrcrayfish.vehicle.entity.properties.VehicleProperties;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.renderer.BufferBuilder;
-import net.minecraft.client.renderer.IRenderTypeBuffer;
-import net.minecraft.client.renderer.Tessellator;
+import com.mojang.blaze3d.vertex.BufferBuilder;
+import com.mojang.blaze3d.vertex.BufferUploader;
+import com.mojang.blaze3d.vertex.DefaultVertexFormat;
+import com.mojang.blaze3d.vertex.VertexFormat;
+import net.minecraft.client.renderer.MultiBufferSource;
+import com.mojang.blaze3d.vertex.Tesselator;
 import net.minecraft.client.renderer.entity.EntityRenderer;
-import net.minecraft.client.renderer.entity.EntityRendererManager;
-import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
-import net.minecraft.util.ResourceLocation;
-import net.minecraft.util.math.MathHelper;
-import net.minecraft.util.math.vector.Vector3d;
-import net.minecraft.util.math.vector.Vector3f;
-import org.lwjgl.opengl.GL11;
+import net.minecraft.client.renderer.entity.EntityRendererProvider;
+import net.minecraft.client.renderer.block.model.BakedQuad;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.util.Mth;
+import net.minecraft.world.phys.Vec3;
+import org.joml.Vector3f;
 
 import javax.annotation.Nullable;
 
@@ -31,7 +35,7 @@ public class EntityVehicleRenderer<T extends VehicleEntity> extends EntityRender
 {
     private final AbstractVehicleRenderer<T> wrapper;
 
-    public EntityVehicleRenderer(EntityRendererManager renderManager, AbstractVehicleRenderer<T> wrapper)
+    public EntityVehicleRenderer(EntityRendererProvider.Context renderManager, AbstractVehicleRenderer<T> wrapper)
     {
         super(renderManager);
         this.wrapper = wrapper;
@@ -44,7 +48,7 @@ public class EntityVehicleRenderer<T extends VehicleEntity> extends EntityRender
     }
 
     @Override
-    public void render(T entity, float entityYaw, float partialTicks, MatrixStack matrixStack, IRenderTypeBuffer renderTypeBuffer, int light)
+    public void render(T entity, float entityYaw, float partialTicks, PoseStack matrixStack, MultiBufferSource renderTypeBuffer, int light)
     {
         if(!entity.isAlive())
             return;
@@ -54,7 +58,7 @@ public class EntityVehicleRenderer<T extends VehicleEntity> extends EntityRender
 
         matrixStack.pushPose();
         this.wrapper.applyPreRotations(entity, matrixStack, partialTicks);
-        matrixStack.mulPose(Vector3f.YP.rotationDegrees(-entityYaw));
+        matrixStack.mulPose(Axis.YP.rotationDegrees(-entityYaw));
         this.setupBreakAnimation(entity, matrixStack, partialTicks);
         this.wrapper.setupTransformsAndRender(entity, matrixStack, renderTypeBuffer, partialTicks, light);
         this.drawDebugging(entity, matrixStack);
@@ -63,16 +67,16 @@ public class EntityVehicleRenderer<T extends VehicleEntity> extends EntityRender
         EntityRayTracer.instance().renderRayTraceElements(entity, matrixStack, renderTypeBuffer, entityYaw);
     }
 
-    private void setupBreakAnimation(VehicleEntity vehicle, MatrixStack matrixStack, float partialTicks)
+    private void setupBreakAnimation(VehicleEntity vehicle, PoseStack matrixStack, float partialTicks)
     {
         float timeSinceHit = (float) vehicle.getTimeSinceHit() - partialTicks;
         if(timeSinceHit > 0.0F)
         {
-            matrixStack.mulPose(Vector3f.ZP.rotationDegrees(MathHelper.sin(timeSinceHit) * timeSinceHit));
+            matrixStack.mulPose(Axis.ZP.rotationDegrees(Mth.sin(timeSinceHit) * timeSinceHit));
         }
     }
 
-    private void drawDebugging(T entity, MatrixStack stack)
+    private void drawDebugging(T entity, PoseStack stack)
     {
         if(!Config.CLIENT.renderDebugging.get())
             return;
@@ -86,33 +90,29 @@ public class EntityVehicleRenderer<T extends VehicleEntity> extends EntityRender
         }
     }
 
-    private void drawAxle(@Nullable Vector3d position, VehicleProperties properties, MatrixStack stack)
+    private void drawAxle(@Nullable Vec3 position, VehicleProperties properties, PoseStack stack)
     {
         if(position != null)
         {
             Transform body = properties.getBodyTransform();
             double offset = properties.getWheels().stream().findFirst().map(wheel -> wheel.getOffset().y).orElse(0.0);
-            Vector3d wheelOffset = new Vector3d(0, properties.getWheelOffset(), 0).add(0, offset, 0);
-            Vector3d axle = position.add(wheelOffset).add(body.getTranslate()).scale(0.0625).scale(body.getScale());
+            Vec3 wheelOffset = new Vec3(0, properties.getWheelOffset(), 0).add(0, offset, 0);
+            Vec3 axle = position.add(wheelOffset).add(body.getTranslate()).scale(0.0625).scale(body.getScale());
             this.drawLine(stack, axle.add(-1, 0, 0), axle.add(1, 0, 0), 0xC300FF);
         }
     }
 
-    private void drawLine(MatrixStack stack, Vector3d from, Vector3d to, int color)
+    private void drawLine(PoseStack stack, Vec3 from, Vec3 to, int color)
     {
         float red = (float) (color >> 16 & 255) / 255.0F;
         float green = (float) (color >> 8 & 255) / 255.0F;
         float blue = (float) (color & 255) / 255.0F;
-        RenderSystem.disableTexture();
         RenderSystem.lineWidth(Math.max(2.0F, (float) Minecraft.getInstance().getWindow().getWidth() / 1920.0F * 2.0F));
         RenderSystem.enableDepthTest();
-        Tessellator tessellator = Tessellator.getInstance();
-        BufferBuilder buffer = tessellator.getBuilder();
-        buffer.begin(GL11.GL_LINES, DefaultVertexFormats.POSITION_COLOR);
-        buffer.vertex(stack.last().pose(), (float) from.x, (float) from.y, (float) from.z).color(red, green, blue, 1.0F).endVertex();
-        buffer.vertex(stack.last().pose(), (float) to.x, (float) to.y, (float) to.z).color(red, green, blue, 1.0F).endVertex();
-        tessellator.end();
+        BufferBuilder buffer = Tesselator.getInstance().begin(VertexFormat.Mode.LINES, DefaultVertexFormat.POSITION_COLOR);
+        buffer.addVertex(stack.last().pose(), (float) from.x, (float) from.y, (float) from.z).setColor(red, green, blue, 1.0F);
+        buffer.addVertex(stack.last().pose(), (float) to.x, (float) to.y, (float) to.z).setColor(red, green, blue, 1.0F);
+        BufferUploader.drawWithShader(buffer.buildOrThrow());
         RenderSystem.disableDepthTest();
-        RenderSystem.enableTexture();
     }
 }

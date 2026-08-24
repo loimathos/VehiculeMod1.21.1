@@ -1,6 +1,6 @@
 {
 	"credit": "Model by MrCrayfish (https://twitter.com/MrCrayfish) using Blockbench. All Rights Reserved.",
-	"loader": "framework:open_model",
+	"loader": "vehicle:open_model",
 	"texture_size": [64, 64],
 	"textures": {
 		"2": "vehicle:vehicle/go_kart/base",

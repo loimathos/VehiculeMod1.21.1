@@ -1,9 +1,11 @@
 package com.mrcrayfish.vehicle.client.screen.toolbar.widget;
 
 import net.minecraft.client.Minecraft;
-import net.minecraft.util.text.StringTextComponent;
-import net.minecraftforge.fml.client.gui.widget.Slider;
+import net.minecraft.network.chat.Component;
+import net.minecraftforge.client.gui.widget.ForgeSlider;
 import org.lwjgl.glfw.GLFW;
+
+import java.util.function.Consumer;
 
 /**
  * A class that fixes a bug with the Forge slider. The slider won't stop sliding if the mouse
@@ -11,13 +13,14 @@ import org.lwjgl.glfw.GLFW;
  *
  * Author: MrCrayfish
  */
-public class ImprovedSlider extends Slider
+public class ImprovedSlider extends ForgeSlider
 {
-    private ISlider handler;
+    private boolean dragging;
+    private Consumer<ForgeSlider> handler;
 
-    public ImprovedSlider(int xPos, int yPos, int width, int height, String prefix, String suf, double minVal, double maxVal, double currentVal, boolean showDec, boolean drawStr, ISlider handler)
+    public ImprovedSlider(int xPos, int yPos, int width, int height, String prefix, String suf, double minVal, double maxVal, double currentVal, boolean showDec, boolean drawStr, Consumer<ForgeSlider> handler)
     {
-        super(xPos, yPos, width, height, new StringTextComponent(prefix), new StringTextComponent(suf), minVal, maxVal, currentVal, showDec, drawStr, b -> {});
+        super(xPos, yPos, width, height, Component.literal(prefix), Component.literal(suf), minVal, maxVal, currentVal, 1.0, 0, drawStr);
         this.handler = handler;
     }
 
@@ -40,10 +43,12 @@ public class ImprovedSlider extends Slider
     }
 
     @Override
-    public void updateSlider()
+    protected void applyValue()
     {
-        super.updateSlider();
-        this.handler.onChangeSliderValue(this);
+        if(this.handler != null)
+        {
+            this.handler.accept(this);
+        }
 
         /* Fixes the slider not being released when mouse is released outside of slider area */
         Minecraft mc = Minecraft.getInstance();

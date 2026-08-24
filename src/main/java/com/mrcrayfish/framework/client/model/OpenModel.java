@@ -5,45 +5,35 @@ import com.google.gson.JsonDeserializationContext;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParseException;
-import com.mojang.datafixers.util.Pair;
 import com.mrcrayfish.vehicle.Reference;
 import com.mrcrayfish.vehicle.util.ExtraJSONUtils;
-import net.minecraft.client.renderer.model.BlockModel;
-import net.minecraft.client.renderer.model.BlockPart;
-import net.minecraft.client.renderer.model.BlockPartRotation;
-import net.minecraft.client.renderer.model.IBakedModel;
-import net.minecraft.client.renderer.model.IModelTransform;
-import net.minecraft.client.renderer.model.IUnbakedModel;
-import net.minecraft.client.renderer.model.ItemOverrideList;
-import net.minecraft.client.renderer.model.ModelBakery;
-import net.minecraft.client.renderer.model.RenderMaterial;
+import net.minecraft.client.renderer.block.model.BlockModel;
+import net.minecraft.client.renderer.block.model.BlockElement;
+import net.minecraft.client.renderer.block.model.BlockElementRotation;
+import net.minecraft.client.resources.model.BakedModel;
+import net.minecraft.client.resources.model.ModelState;
+import net.minecraft.client.resources.model.UnbakedModel;
+import net.minecraft.client.renderer.block.model.ItemOverrides;
+import net.minecraft.client.resources.model.ModelBaker;
+import net.minecraft.client.resources.model.Material;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
-import net.minecraft.resources.IResourceManager;
-import net.minecraft.util.JSONUtils;
-import net.minecraft.util.ResourceLocation;
-import net.minecraft.util.math.vector.Vector3f;
+import net.minecraft.util.GsonHelper;
+import net.minecraft.resources.ResourceLocation;
+import org.joml.Vector3f;
 import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.client.event.ModelRegistryEvent;
-import net.minecraftforge.client.model.IModelConfiguration;
-import net.minecraftforge.client.model.IModelLoader;
-import net.minecraftforge.client.model.ModelLoaderRegistry;
-import net.minecraftforge.client.model.geometry.IModelGeometry;
+import net.minecraftforge.client.event.ModelEvent;
+import net.minecraftforge.client.model.geometry.IGeometryBakingContext;
+import net.minecraftforge.client.model.geometry.IGeometryLoader;
+import net.minecraftforge.client.model.geometry.IUnbakedGeometry;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
-import java.util.Set;
 import java.util.function.Function;
 
-/**
- * Open Model format from Framework. Allows larger models and removes rotation step restriction.
- *
- * Author: MrCrayfish
- */
-public class OpenModel implements IModelGeometry<OpenModel>
+public class OpenModel implements IUnbakedGeometry<OpenModel>
 {
     private final BlockModel model;
 
@@ -53,51 +43,45 @@ public class OpenModel implements IModelGeometry<OpenModel>
     }
 
     @Override
-    public IBakedModel bake(IModelConfiguration owner, ModelBakery bakery, Function<RenderMaterial, TextureAtlasSprite> spriteGetter, IModelTransform modelTransform, ItemOverrideList overrides, ResourceLocation modelLocation)
+    public BakedModel bake(IGeometryBakingContext context, ModelBaker baker, Function<Material, TextureAtlasSprite> spriteGetter, ModelState modelState, ItemOverrides overrides)
     {
-        return this.model.bake(bakery, this.model, spriteGetter, modelTransform, modelLocation, true);
+        return this.model.bake(baker, this.model, spriteGetter, modelState, context.useBlockLight());
     }
 
     @Override
-    public Collection<RenderMaterial> getTextures(IModelConfiguration owner, Function<ResourceLocation, IUnbakedModel> modelGetter, Set<Pair<String, String>> missingTextureErrors)
+    public void resolveParents(Function<ResourceLocation, UnbakedModel> modelGetter, IGeometryBakingContext context)
     {
-        return this.model.getMaterials(modelGetter, missingTextureErrors);
+        this.model.resolveParents(modelGetter);
     }
 
     @Mod.EventBusSubscriber(modid = Reference.MOD_ID, bus = Mod.EventBusSubscriber.Bus.MOD, value = Dist.CLIENT)
-    public static class Loader implements IModelLoader<OpenModel>
+    public static class Loader implements IGeometryLoader<OpenModel>
     {
         @Override
-        public void onResourceManagerReload(IResourceManager manager) {}
-
-        @Override
-        public OpenModel read(JsonDeserializationContext context, JsonObject object)
+        public OpenModel read(JsonObject object, JsonDeserializationContext context)
         {
             return new OpenModel(Deserializer.INSTANCE.deserialize(object, BlockModel.class, context));
         }
 
         @SubscribeEvent
-        public static void onModelRegister(ModelRegistryEvent event)
+        public static void onModelRegister(ModelEvent.RegisterGeometryLoaders event)
         {
-            ModelLoaderRegistry.registerLoader(new ResourceLocation("framework", "open_model"), new Loader());
+            event.register("open_model", new Loader());
         }
     }
 
     public static class Deserializer extends BlockModel.Deserializer
     {
-        private static final BlockPart.Deserializer BLOCK_PART_DESERIALIZER = new BlockPart.Deserializer();
+        private static final BlockElement.Deserializer BLOCK_PART_DESERIALIZER = new BlockElement.Deserializer();
         private static final Deserializer INSTANCE = new Deserializer();
 
-        /**
-         * Reads the bl
-         */
         @Override
-        protected List<BlockPart> getElements(JsonDeserializationContext context, JsonObject object)
+        protected List<BlockElement> getElements(JsonDeserializationContext context, JsonObject object)
         {
             try
             {
-                List<BlockPart> list = new ArrayList<>();
-                for(JsonElement element : Objects.requireNonNull(JSONUtils.getAsJsonArray(object, "components", new JsonArray())))
+                List<BlockElement> list = new ArrayList<>();
+                for(JsonElement element : Objects.requireNonNull(GsonHelper.getAsJsonArray(object, "components", new JsonArray())))
                 {
                     list.add(this.readBlockElement(element, context));
                 }
@@ -109,20 +93,15 @@ public class OpenModel implements IModelGeometry<OpenModel>
             }
         }
 
-        /**
-         * Reads a block element without restrictions on the size and rotation angle.
-         */
-        private BlockPart readBlockElement(JsonElement element, JsonDeserializationContext context)
+        private BlockElement readBlockElement(JsonElement element, JsonDeserializationContext context)
         {
             JsonObject object = element.getAsJsonObject();
 
-            // Get copy of custom size and angle properties
             Vector3f from = ExtraJSONUtils.getAsVector3f(object, "from");
             Vector3f to = ExtraJSONUtils.getAsVector3f(object, "to");
-            JsonObject rotation = JSONUtils.getAsJsonObject(object, "rotation", new JsonObject());
-            float angle = JSONUtils.getAsFloat(rotation, "angle", 0F);
+            JsonObject rotation = GsonHelper.getAsJsonObject(object, "rotation", new JsonObject());
+            float angle = GsonHelper.getAsFloat(rotation, "angle", 0F);
 
-            // Make valid for vanilla block element deserializer
             JsonArray zero = new JsonArray();
             zero.add(0F);
             zero.add(0F);
@@ -131,10 +110,9 @@ public class OpenModel implements IModelGeometry<OpenModel>
             object.add("to", zero);
             rotation.addProperty("angle", 0F);
 
-            // Read vanilla element and construct new element with custom properties
-            BlockPart e = BLOCK_PART_DESERIALIZER.deserialize(element, BlockPart.class, context);
-            BlockPartRotation r = e.rotation != null ? new BlockPartRotation(e.rotation.origin, e.rotation.axis, angle, e.rotation.rescale) : null;
-            return new BlockPart(from, to, e.faces, r, e.shade);
+            BlockElement e = BLOCK_PART_DESERIALIZER.deserialize(element, BlockElement.class, context);
+            BlockElementRotation r = e.rotation != null ? new BlockElementRotation(e.rotation.origin(), e.rotation.axis(), angle, e.rotation.rescale()) : null;
+            return new BlockElement(from, to, e.faces, r, e.shade);
         }
     }
 }

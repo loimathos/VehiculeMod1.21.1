@@ -1,5 +1,9 @@
 package com.mrcrayfish.vehicle.entity.trailer;
 
+import net.minecraft.nbt.Tag;
+
+import net.minecraft.world.Containers;
+
 import com.google.common.collect.ImmutableMap;
 import com.mrcrayfish.vehicle.client.raytrace.EntityRayTracer;
 import com.mrcrayfish.vehicle.common.inventory.IStorage;
@@ -11,19 +15,19 @@ import com.mrcrayfish.vehicle.network.message.MessageAttachTrailer;
 import com.mrcrayfish.vehicle.network.message.MessageOpenStorage;
 import com.mrcrayfish.vehicle.util.InventoryUtil;
 import net.minecraft.client.Minecraft;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.EntityType;
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.inventory.InventoryHelper;
-import net.minecraft.item.BoneMealItem;
-import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.CompoundNBT;
-import net.minecraft.util.Hand;
-import net.minecraft.util.text.StringTextComponent;
-import net.minecraft.world.World;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.ContainerHelper;
+import net.minecraft.world.item.BoneMealItem;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.world.InteractionHand;
+
+import net.minecraft.world.level.Level;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
-import net.minecraftforge.common.util.Constants;
+import net.minecraftforge.network.PacketDistributor;
 
 import java.util.Map;
 
@@ -36,7 +40,7 @@ public class StorageTrailerEntity extends TrailerEntity implements IStorage
 
     private StorageInventory inventory;
 
-    public StorageTrailerEntity(EntityType<? extends StorageTrailerEntity> type, World worldIn)
+    public StorageTrailerEntity(EntityType<? extends StorageTrailerEntity> type, Level worldIn)
     {
         super(type, worldIn);
         this.initInventory();
@@ -49,10 +53,10 @@ public class StorageTrailerEntity extends TrailerEntity implements IStorage
     }
 
     @Override
-    protected void readAdditionalSaveData(CompoundNBT compound)
+    protected void readAdditionalSaveData(CompoundTag compound)
     {
         super.readAdditionalSaveData(compound);
-        if(compound.contains(INVENTORY_STORAGE_KEY, Constants.NBT.TAG_LIST))
+        if(compound.contains(INVENTORY_STORAGE_KEY, Tag.TAG_LIST))
         {
             this.initInventory();
             InventoryUtil.readInventoryToNBT(compound, INVENTORY_STORAGE_KEY, this.inventory);
@@ -60,7 +64,7 @@ public class StorageTrailerEntity extends TrailerEntity implements IStorage
     }
 
     @Override
-    protected void addAdditionalSaveData(CompoundNBT compound)
+    protected void addAdditionalSaveData(CompoundTag compound)
     {
         super.addAdditionalSaveData(compound);
         if(this.inventory != null)
@@ -94,7 +98,7 @@ public class StorageTrailerEntity extends TrailerEntity implements IStorage
         super.onVehicleDestroyed(entity);
         if(this.inventory != null)
         {
-            InventoryHelper.dropContents(this.level, this, this.inventory);
+            Containers.dropContents(this.level(), this, this.inventory);
         }
     }
 
@@ -105,8 +109,8 @@ public class StorageTrailerEntity extends TrailerEntity implements IStorage
             return createScaledBoundingBox(-6.0, -0.5, 9.0, 6.0, 3.5, 17.0, 0.0625);
         }, (entity, rightClick) -> {
             if(rightClick) {
-                PacketHandler.getPlayChannel().sendToServer(new MessageAttachTrailer(entity.getId()));
-                Minecraft.getInstance().player.swing(Hand.MAIN_HAND);
+                PacketHandler.getPlayChannel().send(new MessageAttachTrailer(entity.getId()), PacketDistributor.SERVER.noArg());
+                Minecraft.getInstance().player.swing(InteractionHand.MAIN_HAND);
             }
         }, entity -> true);
 
@@ -116,8 +120,8 @@ public class StorageTrailerEntity extends TrailerEntity implements IStorage
             return createScaledBoundingBox(-0.4375, 0.125 * bodyScale, -0.4375, 0.4375, 0.9125 * bodyScale, 0.4375, chestScale);
         }, (entity, rightClick) -> {
             if(rightClick) {
-                PacketHandler.getPlayChannel().sendToServer(new MessageOpenStorage(entity.getId(), INVENTORY_STORAGE_KEY));
-                Minecraft.getInstance().player.swing(Hand.MAIN_HAND);
+                PacketHandler.getPlayChannel().send(new MessageOpenStorage(entity.getId(), INVENTORY_STORAGE_KEY), PacketDistributor.SERVER.noArg());
+                Minecraft.getInstance().player.swing(InteractionHand.MAIN_HAND);
             }
         }, entity -> true);
     }

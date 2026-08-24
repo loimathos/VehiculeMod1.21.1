@@ -4,8 +4,8 @@ import com.mrcrayfish.obfuscate.common.data.Serializers;
 import com.mrcrayfish.obfuscate.common.data.SyncedDataKey;
 import com.mrcrayfish.obfuscate.common.data.SyncedPlayerData;
 import com.mrcrayfish.vehicle.Reference;
-import net.minecraft.util.ResourceLocation;
-import net.minecraft.util.math.BlockPos;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.core.BlockPos;
 
 import java.util.Optional;
 
@@ -14,14 +14,14 @@ import java.util.Optional;
  */
 public class ModDataKeys
 {
-    public static final SyncedDataKey<Integer> TRAILER = SyncedDataKey.builder(Serializers.INTEGER)
-            .id(new ResourceLocation(Reference.MOD_ID, "trailer"))
+    public static final SyncedDataKey<Integer> TRAILER = SyncedDataKey.<Integer>builder(Serializers.INTEGER)
+            .id(ResourceLocation.fromNamespaceAndPath(Reference.MOD_ID, "trailer"))
             .defaultValueSupplier(() -> -1)
             .resetOnDeath()
             .build();
 
-    public static final SyncedDataKey<Optional<BlockPos>> GAS_PUMP = SyncedDataKey.builder(com.mrcrayfish.vehicle.common.data.Serializers.OPTIONAL_BLOCK_POS)
-            .id(new ResourceLocation(Reference.MOD_ID, "gas_pump"))
+    public static final SyncedDataKey<Optional<BlockPos>> GAS_PUMP = SyncedDataKey.<Optional<BlockPos>>builder(com.mrcrayfish.vehicle.common.data.Serializers.OPTIONAL_BLOCK_POS)
+            .id(ResourceLocation.fromNamespaceAndPath(Reference.MOD_ID, "gas_pump"))
             .defaultValueSupplier(Optional::empty)
             .resetOnDeath()
             .build();

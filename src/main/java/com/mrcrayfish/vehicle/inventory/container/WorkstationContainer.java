@@ -3,30 +3,30 @@ package com.mrcrayfish.vehicle.inventory.container;
 import com.mrcrayfish.vehicle.init.ModContainers;
 import com.mrcrayfish.vehicle.item.EngineItem;
 import com.mrcrayfish.vehicle.item.WheelItem;
-import com.mrcrayfish.vehicle.tileentity.WorkstationTileEntity;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.inventory.IInventory;
-import net.minecraft.inventory.container.Container;
-import net.minecraft.inventory.container.Slot;
-import net.minecraft.item.DyeItem;
-import net.minecraft.item.ItemStack;
-import net.minecraft.util.math.BlockPos;
+import com.mrcrayfish.vehicle.blockentity.WorkstationBlockEntity;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.Container;
+import net.minecraft.world.inventory.AbstractContainerMenu;
+import net.minecraft.world.inventory.Slot;
+import net.minecraft.world.item.DyeItem;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.core.BlockPos;
 
 /**
  * Author: MrCrayfish
  */
-public class WorkstationContainer extends Container
+public class WorkstationContainer extends AbstractContainerMenu
 {
-    private WorkstationTileEntity workstationTileEntity;
+    private WorkstationBlockEntity workstationBlockEntity;
     private BlockPos pos;
 
-    public WorkstationContainer(int windowId, IInventory playerInventory, WorkstationTileEntity workstationTileEntity)
+    public WorkstationContainer(int windowId, Container playerInventory, WorkstationBlockEntity workstationBlockEntity)
     {
         super(ModContainers.WORKSTATION.get(), windowId);
-        this.workstationTileEntity = workstationTileEntity;
-        this.pos = workstationTileEntity.getBlockPos();
+        this.workstationBlockEntity = workstationBlockEntity;
+        this.pos = workstationBlockEntity.getBlockPos();
 
-        this.addSlot(new Slot(workstationTileEntity, 0, 173, 30)
+        this.addSlot(new Slot(workstationBlockEntity, 0, 173, 30)
         {
             @Override
             public boolean mayPlace(ItemStack stack)
@@ -41,7 +41,7 @@ public class WorkstationContainer extends Container
             }
         });
 
-        this.addSlot(new Slot(workstationTileEntity, 1, 193, 30)
+        this.addSlot(new Slot(workstationBlockEntity, 1, 193, 30)
         {
             @Override
             public boolean mayPlace(ItemStack stack)
@@ -56,7 +56,7 @@ public class WorkstationContainer extends Container
             }
         });
 
-        this.addSlot(new Slot(workstationTileEntity, 2, 213, 30)
+        this.addSlot(new Slot(workstationBlockEntity, 2, 213, 30)
         {
             @Override
             public boolean mayPlace(ItemStack stack)
@@ -86,13 +86,13 @@ public class WorkstationContainer extends Container
     }
 
     @Override
-    public boolean stillValid(PlayerEntity playerIn)
+    public boolean stillValid(Player playerIn)
     {
         return true;
     }
 
     @Override
-    public ItemStack quickMoveStack(PlayerEntity playerIn, int index)
+    public ItemStack quickMoveStack(Player playerIn, int index)
     {
         ItemStack stack = ItemStack.EMPTY;
         Slot slot = this.slots.get(index);
@@ -170,8 +170,8 @@ public class WorkstationContainer extends Container
         return pos;
     }
 
-    public WorkstationTileEntity getTileEntity()
+    public WorkstationBlockEntity getBlockEntity()
     {
-        return workstationTileEntity;
+        return workstationBlockEntity;
     }
 }

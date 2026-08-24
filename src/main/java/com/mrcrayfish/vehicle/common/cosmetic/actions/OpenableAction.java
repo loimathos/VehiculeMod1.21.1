@@ -1,25 +1,26 @@
 package com.mrcrayfish.vehicle.common.cosmetic.actions;
 
 import com.google.gson.JsonObject;
-import com.mojang.blaze3d.matrix.MatrixStack;
+import com.mojang.blaze3d.vertex.PoseStack;
 import com.mrcrayfish.vehicle.client.raytrace.MatrixTransform;
 import com.mrcrayfish.vehicle.entity.VehicleEntity;
 import com.mrcrayfish.vehicle.util.Axis;
 import com.mrcrayfish.vehicle.util.EasingHelper;
 import net.minecraft.client.Minecraft;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.nbt.CompoundNBT;
-import net.minecraft.util.ResourceLocation;
-import net.minecraft.util.SoundCategory;
-import net.minecraft.util.SoundEvent;
-import net.minecraft.util.math.MathHelper;
-import net.minecraft.util.math.vector.Vector3d;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.sounds.SoundSource;
+import net.minecraft.sounds.SoundEvent;
+import net.minecraft.util.Mth;
+import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.registries.ForgeRegistries;
 
 import javax.annotation.Nullable;
 import java.util.List;
+
 
 /**
  * Author: MrCrayfish
@@ -48,14 +49,14 @@ public class OpenableAction extends Action
     }
 
     @Override
-    public void onInteract(VehicleEntity vehicle, PlayerEntity player)
+    public void onInteract(VehicleEntity vehicle, Player player)
     {
         this.state = !this.state;
         this.setDirty();
     }
 
     @Override
-    public void load(CompoundNBT tag, boolean sync)
+    public void load(CompoundTag tag, boolean sync)
     {
         this.state = tag.getBoolean("Open");
         if(!sync && this.state)
@@ -65,9 +66,9 @@ public class OpenableAction extends Action
     }
 
     @Override
-    public CompoundNBT save(boolean sync)
+    public CompoundTag save(boolean sync)
     {
-        CompoundNBT tag = new CompoundNBT();
+        CompoundTag tag = new CompoundTag();
         tag.putBoolean("Open", this.state);
         return tag;
     }
@@ -89,7 +90,7 @@ public class OpenableAction extends Action
     @Override
     public void tick(VehicleEntity vehicle)
     {
-        if(vehicle.level.isClientSide())
+        if(vehicle.level().isClientSide())
         {
             this.prevAnimationTick = this.animationTick;
             if(this.state)
@@ -121,13 +122,13 @@ public class OpenableAction extends Action
 
     @Override
     @OnlyIn(Dist.CLIENT)
-    public void beforeRender(MatrixStack matrixStack, VehicleEntity vehicle, float partialTicks)
+    public void beforeRender(PoseStack matrixStack, VehicleEntity vehicle, float partialTicks)
     {
         if(this.animationTick != 0 || this.prevAnimationTick != 0)
         {
-            float progress = MathHelper.lerp(partialTicks, this.prevAnimationTick, this.animationTick) / (float) this.animationLength;
+            float progress = Mth.lerp(partialTicks, this.prevAnimationTick, this.animationTick) / (float) this.animationLength;
             progress = (float) EasingHelper.easeOutBack(progress);
-            matrixStack.mulPose(this.axis.getAxis().rotationDegrees(this.angle * progress));
+            matrixStack.mulPose(this.axis.getMojangAxis().rotationDegrees(this.angle * progress));
         }
     }
 
@@ -139,7 +140,7 @@ public class OpenableAction extends Action
         {
             float progress = (float) this.prevAnimationTick / (float) this.animationLength;
             progress = (float) EasingHelper.easeOutBack(progress);
-            transforms.add(MatrixTransform.rotate(this.axis.getAxis().rotationDegrees(this.angle * progress)));
+            transforms.add(MatrixTransform.rotate(this.axis.getMojangAxis().rotationDegrees(this.angle * progress)));
         }
     }
 
@@ -151,9 +152,9 @@ public class OpenableAction extends Action
             SoundEvent event = ForgeRegistries.SOUND_EVENTS.getValue(sound);
             if(event != null)
             {
-                Vector3d position = vehicle.position();
-                float pitch = 0.8F + 0.2F * vehicle.level.random.nextFloat();
-                vehicle.level.playSound(Minecraft.getInstance().player, position.x, position.y, position.z, event, SoundCategory.NEUTRAL, 1.0F, pitch);
+                Vec3 position = vehicle.position();
+                float pitch = 0.8F + 0.2F * vehicle.level().random.nextFloat();
+                vehicle.level().playSound(Minecraft.getInstance().player, position.x, position.y, position.z, event, SoundSource.NEUTRAL, 1.0F, pitch);
             }
         }
     }
