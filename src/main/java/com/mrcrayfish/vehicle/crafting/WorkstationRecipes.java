@@ -14,6 +14,10 @@ public class WorkstationRecipes
     @Nullable
     public static WorkstationRecipe getRecipe(EntityType<?> entityType, Level world)
     {
+        if (entityType == null || world == null || world.getRecipeManager() == null)
+        {
+            return null;
+        }
         return world.getRecipeManager().getAllRecipesFor(RecipeType.WORKSTATION.get()).stream()
                 .map(RecipeHolder::value)
                 .filter(recipe -> recipe.getVehicle() == entityType)

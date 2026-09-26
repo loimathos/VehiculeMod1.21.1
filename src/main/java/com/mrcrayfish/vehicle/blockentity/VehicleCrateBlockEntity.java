@@ -214,7 +214,7 @@ public class VehicleCrateBlockEntity extends BlockEntitySynced
         }
         if(compound.contains("EngineStack", Tag.TAG_COMPOUND))
         {
-            this.engineStack = ItemStack.parse(registries, compound.getCompound("EngineStack")).orElse(ItemStack.EMPTY);
+            this.engineStack = CommonUtils.readItemStackFromTag(compound, "EngineStack", registries);
         }
         else if(compound.getBoolean("Creative"))
         {
@@ -224,13 +224,13 @@ public class VehicleCrateBlockEntity extends BlockEntitySynced
         }
         if(compound.contains("WheelStack", Tag.TAG_COMPOUND))
         {
-            this.wheelStack = ItemStack.parse(registries, compound.getCompound("WheelStack")).orElse(ItemStack.EMPTY);
+            this.wheelStack = CommonUtils.readItemStackFromTag(compound, "WheelStack", registries);
         }
         else
         {
             this.wheelStack = new ItemStack(ModItems.STANDARD_WHEEL.get());
         }
-        if(compound.contains("Opener", Tag.TAG_STRING))
+        if(compound.hasUUID("Opener"))
         {
             this.opener = compound.getUUID("Opener");
         }
@@ -253,11 +253,11 @@ public class VehicleCrateBlockEntity extends BlockEntitySynced
         }
         if(!this.engineStack.isEmpty())
         {
-            CommonUtils.writeItemStackToTag(compound, "EngineStack", this.engineStack);
+            CommonUtils.writeItemStackToTag(compound, "EngineStack", this.engineStack, registries);
         }
         if(!this.wheelStack.isEmpty())
         {
-            CommonUtils.writeItemStackToTag(compound, "WheelStack", this.wheelStack);
+            CommonUtils.writeItemStackToTag(compound, "WheelStack", this.wheelStack, registries);
         }
         compound.putInt("Color", this.color);
         compound.putBoolean("Opened", this.opened);

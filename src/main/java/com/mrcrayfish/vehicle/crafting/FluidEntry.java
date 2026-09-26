@@ -12,8 +12,30 @@ import net.minecraft.core.registries.BuiltInRegistries;
 /**
  * Author: MrCrayfish
  */
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
+import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.codec.StreamCodec;
+
 public class FluidEntry
 {
+    public static final Codec<FluidEntry> CODEC = RecordCodecBuilder.create(builder -> builder.group(
+        BuiltInRegistries.FLUID.byNameCodec().fieldOf("fluid").forGetter(FluidEntry::getFluid),
+        Codec.INT.fieldOf("amount").forGetter(FluidEntry::getAmount)
+    ).apply(builder, FluidEntry::new));
+
+    public static final StreamCodec<RegistryFriendlyByteBuf, FluidEntry> STREAM_CODEC = StreamCodec.of(
+        (buf, entry) -> {
+            buf.writeResourceLocation(BuiltInRegistries.FLUID.getKey(entry.getFluid()));
+            buf.writeVarInt(entry.getAmount());
+        },
+        (buf) -> {
+            Fluid fluid = BuiltInRegistries.FLUID.get(buf.readResourceLocation());
+            int amount = buf.readVarInt();
+            return new FluidEntry(fluid, amount);
+        }
+    );
+
     private Fluid fluid;
     private int amount;
 

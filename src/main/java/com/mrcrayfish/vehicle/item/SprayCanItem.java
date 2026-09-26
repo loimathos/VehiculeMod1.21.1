@@ -6,6 +6,7 @@ import net.minecraft.world.item.component.CustomData;
 import net.minecraft.nbt.Tag;
 
 import com.mrcrayfish.vehicle.Config;
+import com.mrcrayfish.vehicle.util.CommonUtils;
 import com.mrcrayfish.vehicle.util.RenderUtil;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.world.item.TooltipFlag;
@@ -57,23 +58,18 @@ public class SprayCanItem extends Item implements IDyeable
 
     public static CompoundTag getStackTag(ItemStack stack)
     {
-        if (stack.getOrDefault(DataComponents.CUSTOM_DATA, CustomData.EMPTY).copyTag() == null)
-        {
-            stack.set(DataComponents.CUSTOM_DATA, CustomData.of(new CompoundTag()));
-        }
+        CustomData customData = stack.get(DataComponents.CUSTOM_DATA);
+        CompoundTag compound = customData != null ? customData.copyTag() : new CompoundTag();
         if (stack.getItem() instanceof SprayCanItem)
         {
             SprayCanItem sprayCan = (SprayCanItem) stack.getItem();
-            CompoundTag compound = stack.getOrDefault(DataComponents.CUSTOM_DATA, CustomData.EMPTY).copyTag();
-            if (compound != null)
+            if (!compound.contains("RemainingSprays", Tag.TAG_INT))
             {
-                if (!compound.contains("RemainingSprays", Tag.TAG_INT))
-                {
-                    compound.putInt("RemainingSprays", sprayCan.getCapacity(stack));
-                }
+                compound.putInt("RemainingSprays", sprayCan.getCapacity(stack));
+                CommonUtils.setStackTag(stack, compound);
             }
         }
-        return stack.getOrDefault(DataComponents.CUSTOM_DATA, CustomData.EMPTY).copyTag();
+        return compound;
     }
 
     @Override
@@ -85,18 +81,27 @@ public class SprayCanItem extends Item implements IDyeable
             int remainingSprays = compound.getInt("RemainingSprays");
             return this.hasColor(stack) && remainingSprays < this.getCapacity(stack);
         }
-        return true;
+        return false;
     }
 
     @Override
     public int getBarWidth(ItemStack stack)
     {
         CompoundTag compound = stack.getOrDefault(DataComponents.CUSTOM_DATA, CustomData.EMPTY).copyTag();
-        if (compound != null && compound.contains("RemainingSprays", Tag.TAG_INT))
+        int remainingSprays = (compound != null && compound.contains("RemainingSprays", Tag.TAG_INT))
+                ? compound.getInt("RemainingSprays")
+                : this.getCapacity(stack);
+        return Math.round(13.0F * remainingSprays / (float) this.getCapacity(stack));
+    }
+
+    @Override
+    public int getBarColor(ItemStack stack)
+    {
+        if(this.hasColor(stack))
         {
-            return Math.round(13.0F * compound.getInt("RemainingSprays") / (float) this.getCapacity(stack));
+            return this.getColor(stack);
         }
-        return 0;
+        return super.getBarColor(stack);
     }
 
     public float getRemainingSprays(ItemStack stack)
@@ -106,7 +111,7 @@ public class SprayCanItem extends Item implements IDyeable
         {
             return compound.getInt("RemainingSprays") / (float) this.getCapacity(stack);
         }
-        return 0.0F;
+        return this.hasColor(stack) ? 1.0F : 0.0F;
     }
 
     public int getCapacity(ItemStack stack)
@@ -121,7 +126,6 @@ public class SprayCanItem extends Item implements IDyeable
 
     public void refill(ItemStack stack)
     {
-        CompoundTag compound = getStackTag(stack);
-        compound.putInt("RemainingSprays", this.getCapacity(stack));
+        CommonUtils.updateStackTag(stack, compound -> compound.putInt("RemainingSprays", this.getCapacity(stack)));
     }
 }

@@ -37,7 +37,12 @@ public abstract class TrailerEntity extends VehicleEntity
     public TrailerEntity(EntityType<?> entityType, Level worldIn)
     {
         super(entityType, worldIn);
-        /* maxUpStep is now a getter-only method in 1.21.1; set via EntityType registration */
+    }
+
+    @Override
+    public float maxUpStep()
+    {
+        return 1.0F;
     }
 
     @Override

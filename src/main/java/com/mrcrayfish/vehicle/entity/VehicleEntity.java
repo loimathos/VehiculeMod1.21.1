@@ -181,27 +181,20 @@ public abstract class VehicleEntity extends Entity implements IEntityAdditionalS
             }
 
             ItemStack heldItem = player.getItemInHand(hand);
-            if(heldItem.getItem() instanceof SprayCanItem)
+            if(heldItem.getItem() instanceof SprayCanItem sprayCan)
             {
                 if(this.getProperties().canBePainted())
                 {
-                    CompoundTag compound = heldItem.getOrDefault(DataComponents.CUSTOM_DATA, CustomData.EMPTY).copyTag();
-                    if(compound != null)
+                    CompoundTag compound = CommonUtils.getOrCreateStackTag(heldItem);
+                    int remainingSprays = compound.contains("RemainingSprays", Tag.TAG_INT) ? compound.getInt("RemainingSprays") : sprayCan.getCapacity(heldItem);
+                    if(compound.contains("Color", Tag.TAG_INT) && remainingSprays > 0)
                     {
-                        if(!compound.contains("RemainingSprays", Tag.TAG_INT))
+                        int color = compound.getInt("Color");
+                        if(this.getColor() != color)
                         {
-                            compound.putInt("RemainingSprays", ModItems.SPRAY_CAN.get().getCapacity(heldItem));
-                        }
-                        int remainingSprays = compound.getInt("RemainingSprays");
-                        if(compound.contains("Color", Tag.TAG_INT) && remainingSprays > 0)
-                        {
-                            int color = compound.getInt("Color");
-                            if(this.getColor() != color)
-                            {
-                                this.setColor(compound.getInt("Color"));
-                                player.level().playSound(null, this.getX(), this.getY(), this.getZ(), ModSounds.ITEM_SPRAY_CAN_SPRAY.get(), SoundSource.PLAYERS, 1.0F, 1.0F);
-                                compound.putInt("RemainingSprays", remainingSprays - 1);
-                            }
+                            this.setColor(color);
+                            player.level().playSound(null, this.getX(), this.getY(), this.getZ(), ModSounds.ITEM_SPRAY_CAN_SPRAY.get(), SoundSource.PLAYERS, 1.0F, 1.0F);
+                            CommonUtils.updateStackTag(heldItem, tag -> tag.putInt("RemainingSprays", remainingSprays - 1));
                         }
                     }
                 }
@@ -293,7 +286,7 @@ public abstract class VehicleEntity extends Entity implements IEntityAdditionalS
         }
         if(compound.contains("WheelStack", Tag.TAG_COMPOUND))
         {
-            this.setWheelStack(ItemStack.parse(this.level().registryAccess(), compound.getCompound("WheelStack")).orElse(ItemStack.EMPTY));
+            this.setWheelStack(CommonUtils.readItemStackFromTag(compound, "WheelStack", this.level().registryAccess()));
         }
     }
 
@@ -312,7 +305,7 @@ public abstract class VehicleEntity extends Entity implements IEntityAdditionalS
 
         compound.put("SeatTracker", this.seatTracker.write());
         compound.put("CosmeticTracker", this.cosmeticTracker.write());
-        CommonUtils.writeItemStackToTag(compound, "WheelStack", this.getWheelStack());
+        CommonUtils.writeItemStackToTag(compound, "WheelStack", this.getWheelStack(), this.level().registryAccess());
     }
 
     @Override
@@ -449,7 +442,7 @@ public abstract class VehicleEntity extends Entity implements IEntityAdditionalS
                 boolean isCreativeMode = trueSource instanceof Player && ((Player) trueSource).isCreative();
                 if(isCreativeMode || this.getHealth() < 0.0F)
                 {
-                    this.onVehicleDestroyed((LivingEntity) trueSource);
+                    this.onVehicleDestroyed(trueSource instanceof LivingEntity ? (LivingEntity) trueSource : null);
                     this.remove(Entity.RemovalReason.DISCARDED);
                 }
 
@@ -474,7 +467,7 @@ public abstract class VehicleEntity extends Entity implements IEntityAdditionalS
         return true;
     }
 
-    protected void onVehicleDestroyed(LivingEntity entity)
+    protected void onVehicleDestroyed(@Nullable LivingEntity entity)
     {
         this.level().playSound(null, this.getX(), this.getY(), this.getZ(), ModSounds.ENTITY_VEHICLE_DESTROYED.get(), SoundSource.AMBIENT, 1.0F, 0.5F);
 
@@ -867,7 +860,8 @@ public abstract class VehicleEntity extends Entity implements IEntityAdditionalS
         return super.getPassengerRidingPosition(passenger);
     }
 
-    protected void updatePassengerPosition(Entity passenger)
+    @Override
+    protected void positionRider(Entity passenger, Entity.MoveFunction moveFunction)
     {
         if(this.hasPassenger(passenger))
         {
@@ -879,7 +873,7 @@ public abstract class VehicleEntity extends Entity implements IEntityAdditionalS
                 {
                     Seat seat = properties.getSeats().get(seatIndex);
                     Vec3 seatVec = seat.getPosition().add(0, properties.getAxleOffset() + properties.getWheelOffset(), 0).scale(properties.getBodyTransform().getScale()).multiply(-1, 1, 1).add(properties.getBodyTransform().getTranslate()).scale(0.0625).yRot(-(this.getYRot() + 180) * 0.017453292F);
-                    passenger.setPos(this.getX() - seatVec.x, this.getY() + seatVec.y, this.getZ() - seatVec.z);
+                    moveFunction.accept(passenger, this.getX() - seatVec.x, this.getY() + seatVec.y, this.getZ() - seatVec.z);
                     if(this.level().isClientSide() && VehicleHelper.canFollowVehicleOrientation(passenger))
                     {
                         //TODO launch the game to test this
@@ -895,9 +889,16 @@ public abstract class VehicleEntity extends Entity implements IEntityAdditionalS
                         }
                     }
                     this.clampYaw(passenger);
+                    return;
                 }
             }
         }
+        super.positionRider(passenger, moveFunction);
+    }
+
+    protected void updatePassengerPosition(Entity passenger)
+    {
+        this.positionRider(passenger, Entity::setPos);
     }
 
     public boolean canApplyYawOffset(Entity passenger)
@@ -905,11 +906,10 @@ public abstract class VehicleEntity extends Entity implements IEntityAdditionalS
         return true;
     }
 
-    @OnlyIn(Dist.CLIENT)
     protected void clampYaw(Entity passenger)
     {
         int seatIndex = this.getSeatTracker().getSeatIndex(passenger.getUUID());
-        float seatYawOffset = seatIndex != -1 ? this.getProperties().getSeats().get(seatIndex).getYawOffset() : 0F;
+        float seatYawOffset = (seatIndex >= 0 && seatIndex < this.getProperties().getSeats().size()) ? this.getProperties().getSeats().get(seatIndex).getYawOffset() : 0F;
         passenger.setYBodyRot(this.getYRot() + seatYawOffset);
         float wrappedYaw = Mth.wrapDegrees(passenger.getYRot() - this.getYRot() - seatYawOffset);
         float clampedYaw = Mth.clamp(wrappedYaw, -120.0F, 120.0F);
@@ -919,21 +919,19 @@ public abstract class VehicleEntity extends Entity implements IEntityAdditionalS
     }
 
     @Override
-    @OnlyIn(Dist.CLIENT)
     public void onPassengerTurned(Entity passenger)
     {
         this.clampYaw(passenger);
-        if(VehicleHelper.canFollowVehicleOrientation(passenger))
+        if(this.level().isClientSide() && VehicleHelper.canFollowVehicleOrientation(passenger))
         {
             this.updatePassengerOffsets(passenger);
         }
     }
 
-    @OnlyIn(Dist.CLIENT)
     private void updatePassengerOffsets(Entity passenger)
     {
         int seatIndex = this.getSeatTracker().getSeatIndex(passenger.getUUID());
-        float seatYawOffset = seatIndex != -1 ? this.getProperties().getSeats().get(seatIndex).getYawOffset() : 0F;
+        float seatYawOffset = (seatIndex >= 0 && seatIndex < this.getProperties().getSeats().size()) ? this.getProperties().getSeats().get(seatIndex).getYawOffset() : 0F;
         Vec3 vehicleForward = Vec3.directionFromRotation(new Vec2(0, this.getYRot()));
         Vec3 passengerForward = Vec3.directionFromRotation(new Vec2(passenger.getXRot(), passenger.getYHeadRot()));
         this.passengerPitchOffset = Mth.degreesDifference(CommonUtils.pitch(passengerForward), CommonUtils.pitch(vehicleForward)) - this.getXRot();

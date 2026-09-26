@@ -43,14 +43,14 @@ public class SportsCarEntity extends LandVehicleEntity implements IStorage
     protected void readAdditionalSaveData(CompoundTag compound)
     {
         super.readAdditionalSaveData(compound);
-        this.readInventories(compound);
+        this.readInventories(compound, this.level().registryAccess());
     }
 
     @Override
     protected void addAdditionalSaveData(CompoundTag compound)
     {
         super.addAdditionalSaveData(compound);
-        this.writeInventories(compound);
+        this.writeInventories(compound, this.level().registryAccess());
     }
 
     @OnlyIn(Dist.CLIENT)

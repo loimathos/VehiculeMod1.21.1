@@ -70,6 +70,7 @@ public class VehicleModels
     /* Sports Plane */
     public static final ComponentModel SPORTS_PLANE_BODY = LOADER.create("vehicle/sports_plane/base");
     public static final ComponentModel SPORTS_PLANE_WINGS = LOADER.create("vehicle/sports_plane/cosmetics/wings");
+    public static final ComponentModel SPORTS_PLANE_WING = SPORTS_PLANE_WINGS;
     public static final ComponentModel SPORTS_PLANE_SEAT = LOADER.create("vehicle/sports_plane/cosmetics/seat");
     public static final ComponentModel SPORTS_PLANE_PROPELLER = LOADER.create("vehicle/sports_plane/cosmetics/propeller");
     public static final ComponentModel SPORTS_PLANE_LEFT_AILERON = LOADER.create("vehicle/sports_plane/cosmetics/left_aileron");
@@ -86,10 +87,6 @@ public class VehicleModels
 
     public static final ComponentModel JET_SKI_BODY = LOADER.create("vehicle/jet_ski_body");
     public static final ComponentModel LAWN_MOWER_BODY = LOADER.create("vehicle/lawn_mower_body");
-    public static final ComponentModel SPORTS_PLANE = LOADER.create("vehicle/sports_plane_body");
-    public static final ComponentModel SPORTS_PLANE_WING = LOADER.create("vehicle/sports_plane_wing");
-    public static final ComponentModel SPORTS_PLANE_WHEEL_COVER = LOADER.create("vehicle/sports_plane_wheel_cover");
-    public static final ComponentModel SPORTS_PLANE_LEG = LOADER.create("vehicle/sports_plane_leg");
     public static final ComponentModel GOLF_CART_BODY = LOADER.create("vehicle/golf_cart_body");
     public static final ComponentModel OFF_ROADER_BODY = LOADER.create("vehicle/off_roader_body");
     public static final ComponentModel TRACTOR = LOADER.create("vehicle/tractor_body");

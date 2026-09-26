@@ -128,7 +128,13 @@ public abstract class PoweredVehicleEntity extends VehicleEntity implements Cont
     protected PoweredVehicleEntity(EntityType<?> entityType, Level worldIn)
     {
         super(entityType, worldIn);
-        //maxUpStep is now defined on the EntityType via registration in 1.21.1
+    }
+
+    @Override
+    public float maxUpStep()
+    {
+        PoweredProperties properties = this.getPoweredProperties();
+        return properties != null && properties.canDriveUpBlocks() ? 1.0F : 0.5F;
     }
 
     public PoweredVehicleEntity(EntityType<?> entityType, Level worldIn, double posX, double posY, double posZ)
@@ -267,6 +273,7 @@ public abstract class PoweredVehicleEntity extends VehicleEntity implements Cont
                     if(!tag.hasUUID("VehicleId") || this.getUUID().equals(tag.getUUID("VehicleId")))
                     {
                         tag.putUUID("VehicleId", this.getUUID());
+                        CommonUtils.setStackTag(stack, tag);
                         if(!this.isKeyNeeded())
                         {
                             this.setKeyNeeded(true);
@@ -516,13 +523,13 @@ public abstract class PoweredVehicleEntity extends VehicleEntity implements Cont
     protected void readAdditionalSaveData(CompoundTag compound)
     {
         super.readAdditionalSaveData(compound);
-        if(compound.contains("Owner", Tag.TAG_COMPOUND))
+        if(compound.hasUUID("Owner"))
         {
             this.owner = compound.getUUID("Owner");
         }
         if(compound.contains("EngineStack", Tag.TAG_COMPOUND))
         {
-            this.setEngineStack(ItemStack.parse(this.level().registryAccess(), compound.getCompound("EngineStack")).orElse(ItemStack.EMPTY));
+            this.setEngineStack(CommonUtils.readItemStackFromTag(compound, "EngineStack", this.level().registryAccess()));
         }
         //StepHeight is now defined on EntityType registration, cannot be set at runtime
         if(compound.contains("CurrentFuel", Tag.TAG_FLOAT))
@@ -533,7 +540,7 @@ public abstract class PoweredVehicleEntity extends VehicleEntity implements Cont
         {
             this.setKeyNeeded(compound.getBoolean("KeyNeeded"));
         }
-        this.setKeyStack(CommonUtils.readItemStackFromTag(compound, "KeyStack"));
+        this.setKeyStack(CommonUtils.readItemStackFromTag(compound, "KeyStack", this.level().registryAccess()));
     }
 
     @Override
@@ -545,7 +552,7 @@ public abstract class PoweredVehicleEntity extends VehicleEntity implements Cont
             compound.putUUID("Owner", this.owner);
         }
         compound.putBoolean("HasEngine", this.hasEngine());
-        CommonUtils.writeItemStackToTag(compound, "EngineStack", this.getEngineStack());
+        CommonUtils.writeItemStackToTag(compound, "EngineStack", this.getEngineStack(), this.level().registryAccess());
         compound.putFloat("AccelerationSpeed", this.getAccelerationSpeed());
         compound.putFloat("MaxSteeringAngle", this.getMaxSteeringAngle());
         compound.putFloat("StepHeight", this.maxUpStep());
@@ -553,7 +560,7 @@ public abstract class PoweredVehicleEntity extends VehicleEntity implements Cont
         compound.putFloat("CurrentFuel", this.getCurrentEnergy());
         compound.putFloat("FuelCapacity", this.getEnergyCapacity());
         compound.putBoolean("KeyNeeded", this.isKeyNeeded());
-        CommonUtils.writeItemStackToTag(compound, "KeyStack", this.getKeyStack());
+        CommonUtils.writeItemStackToTag(compound, "KeyStack", this.getKeyStack(), this.level().registryAccess());
     }
 
     @Nullable
@@ -944,7 +951,7 @@ public abstract class PoweredVehicleEntity extends VehicleEntity implements Cont
             ItemStack key = this.getKeyStack().copy();
             if(!key.isEmpty())
             {
-                CommonUtils.getOrCreateStackTag(key).remove("VehicleId");
+                CommonUtils.updateStackTag(key, tag -> tag.remove("VehicleId"));
                 InventoryUtil.spawnItemStack(this.level(), this.getX(), this.getY(), this.getZ(), key);
             }
 

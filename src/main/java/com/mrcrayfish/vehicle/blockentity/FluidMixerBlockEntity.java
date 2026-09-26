@@ -76,6 +76,12 @@ public class FluidMixerBlockEntity extends BlockEntity implements Container, Men
     private boolean mixing = false;
 
     private String customName;
+    private int clientBlazeAmount = 0;
+    private int clientBlazeFluidId = 0;
+    private int clientEnderSapAmount = 0;
+    private int clientEnderSapFluidId = 0;
+    private int clientFueliumAmount = 0;
+    private int clientFueliumFluidId = 0;
 
     protected final ContainerData fluidMixerData = new ContainerData()
     {
@@ -96,11 +102,11 @@ public class FluidMixerBlockEntity extends BlockEntity implements Container, Men
                 case 5:
                     return tankFuelium.getFluidAmount();
                 case 6:
-                    return tankBlaze.getFluid().getFluid()/* TODO: use BuiltInRegistries */.hashCode();
+                    return BuiltInRegistries.FLUID.getId(tankBlaze.getFluid().getFluid());
                 case 7:
-                    return tankEnderSap.getFluid().getFluid()/* TODO: use BuiltInRegistries */.hashCode();
+                    return BuiltInRegistries.FLUID.getId(tankEnderSap.getFluid().getFluid());
                 case 8:
-                    return tankFuelium.getFluid().getFluid()/* TODO: use BuiltInRegistries */.hashCode();
+                    return BuiltInRegistries.FLUID.getId(tankFuelium.getFluid().getFluid());
             }
             return 0;
         }
@@ -119,31 +125,28 @@ public class FluidMixerBlockEntity extends BlockEntity implements Container, Men
                     fuelMaxProgress = value;
                     break;
                 case 3:
-                    if(!tankBlaze.isEmpty() || tankBlaze.getFluid().getFluid() != Fluids.EMPTY)
-                    {
-                        tankBlaze.getFluid().setAmount(value);
-                    }
+                    clientBlazeAmount = value;
+                    syncClientTank(tankBlaze, clientBlazeFluidId, clientBlazeAmount);
                     break;
                 case 4:
-                    if(!tankEnderSap.isEmpty() || tankEnderSap.getFluid().getFluid() != Fluids.EMPTY)
-                    {
-                        tankEnderSap.getFluid().setAmount(value);
-                    }
+                    clientEnderSapAmount = value;
+                    syncClientTank(tankEnderSap, clientEnderSapFluidId, clientEnderSapAmount);
                     break;
                 case 5:
-                    if(!tankFuelium.isEmpty() || tankFuelium.getFluid().getFluid() != Fluids.EMPTY)
-                    {
-                        tankFuelium.getFluid().setAmount(value);
-                    }
+                    clientFueliumAmount = value;
+                    syncClientTank(tankFuelium, clientFueliumFluidId, clientFueliumAmount);
                     break;
                 case 6:
-                    updateFluid(tankBlaze, value);
+                    clientBlazeFluidId = value;
+                    syncClientTank(tankBlaze, clientBlazeFluidId, clientBlazeAmount);
                     break;
                 case 7:
-                    updateFluid(tankEnderSap, value);
+                    clientEnderSapFluidId = value;
+                    syncClientTank(tankEnderSap, clientEnderSapFluidId, clientEnderSapAmount);
                     break;
                 case 8:
-                    updateFluid(tankFuelium, value);
+                    clientFueliumFluidId = value;
+                    syncClientTank(tankFuelium, clientFueliumFluidId, clientFueliumAmount);
                     break;
             }
         }
@@ -534,10 +537,17 @@ public class FluidMixerBlockEntity extends BlockEntity implements Container, Men
         return fluidMixerData;
     }
 
-    public void updateFluid(FluidTank tank, int fluidHash)
+    private void syncClientTank(FluidTank tank, int fluidId, int amount)
     {
-        Optional<Fluid> optional = ForgeRegistries.FLUIDS.getValues().stream().filter(fluid -> BuiltInRegistries.FLUID.getKey(fluid).hashCode() == fluidHash).findFirst();
-        optional.ifPresent(fluid -> tank.setFluid(new FluidStack(fluid, tank.getFluidAmount())));
+        Fluid fluid = BuiltInRegistries.FLUID.byId(fluidId);
+        if(fluid != null && fluid != Fluids.EMPTY && amount > 0)
+        {
+            tank.setFluid(new FluidStack(fluid, amount));
+        }
+        else
+        {
+            tank.setFluid(FluidStack.EMPTY);
+        }
     }
 
     public Optional<FluidMixerRecipe> getRecipe()

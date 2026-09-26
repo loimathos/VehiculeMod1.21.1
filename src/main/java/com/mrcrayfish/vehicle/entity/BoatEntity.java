@@ -9,6 +9,8 @@ import net.minecraft.world.phys.AABB;
 import net.minecraft.core.BlockPos;
 import net.minecraft.util.Mth;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.phys.Vec2;
+import com.mrcrayfish.vehicle.util.CommonUtils;
 
 import javax.annotation.Nullable;
 
@@ -17,65 +19,114 @@ import javax.annotation.Nullable;
  */
 public abstract class BoatEntity extends PoweredVehicleEntity
 {
-    protected State state;
-    protected State previousState;
+    protected State state = State.IN_AIR;
+    protected State previousState = State.IN_AIR;
     private double waterLevel;
+    protected Vec3 velocity = Vec3.ZERO;
 
     public BoatEntity(EntityType<?> entityType, Level worldIn)
     {
         super(entityType, worldIn);
     }
 
+    public float getNormalSpeed()
+    {
+        float enginePower = this.getEnginePower() * this.getEngineTier().map(IEngineTier::getPowerMultiplier).orElse(1.0F);
+        return enginePower > 0F ? (float) (this.velocity.length() * 20.0F / enginePower) : 0F;
+    }
+
     @Override
     public void updateVehicleMotion()
     {
+        this.motion = Vec3.ZERO;
 
+        boolean operating = this.canDrive() && this.getControllingPassenger() != null;
+        float throttle = operating ? this.getThrottle() : 0F;
+        float steeringAngle = this.getSteeringAngle();
+
+        if(this.state == State.IN_WATER || this.state == State.UNDER_WATER || this.state == State.UNDER_FLOWING_WATER)
+        {
+            if(this.state == State.UNDER_WATER || this.state == State.UNDER_FLOWING_WATER)
+            {
+                this.setDeltaMovement(this.getDeltaMovement().add(0, 0.08, 0));
+            }
+            else
+            {
+                float normalSpeed = this.getNormalSpeed();
+                double targetY = this.waterLevel - 0.35D + (0.25D * Math.min(1.0F, normalSpeed));
+                double floatingY = (targetY - this.getY()) / (double) this.getBbHeight();
+                this.setDeltaMovement(this.getDeltaMovement().add(0, floatingY * 0.05, 0));
+                if(Math.abs(floatingY) < 0.1 && this.getDeltaMovement().y > 0 && Math.abs(this.getDeltaMovement().y) < 0.1)
+                {
+                    this.setPos(this.getX(), targetY, this.getZ());
+                    this.setDeltaMovement(this.getDeltaMovement().multiply(1.0, 0.0, 1.0));
+                }
+                this.setDeltaMovement(this.getDeltaMovement().multiply(0.5, 0.75, 0.5));
+            }
+
+            // Steering
+            if(operating && Math.abs(steeringAngle) > 0.01F)
+            {
+                float speedFactor = (float) Mth.clamp(this.velocity.length() * 20.0 / 5.0, 0.0, 1.0);
+                if(Math.abs(throttle) > 0.01F && speedFactor < 0.25F)
+                {
+                    speedFactor = 0.25F;
+                }
+                float deltaYaw = steeringAngle * speedFactor * 0.15F * (throttle < 0 ? -1.0F : 1.0F);
+                this.setYRot(this.getYRot() - deltaYaw);
+            }
+
+            Vec3 forward = Vec3.directionFromRotation(new Vec2(0, this.getYRot()));
+            float enginePower = this.getEnginePower() * this.getEngineTier().map(IEngineTier::getPowerMultiplier).orElse(1.0F);
+            float forwardForce = enginePower * Mth.clamp(throttle, -1.0F, 1.0F);
+            if(this.isBoosting())
+            {
+                forwardForce += forwardForce * this.getSpeedMultiplier();
+            }
+            if(throttle < 0)
+            {
+                forwardForce *= 0.35F;
+            }
+
+            Vec3 acceleration = forward.scale(forwardForce).scale(0.05);
+            Vec3 drag = this.velocity.scale(this.velocity.length()).scale(-0.02);
+            Vec3 friction = this.velocity.scale(-0.05);
+            acceleration = acceleration.add(drag).add(friction);
+            this.velocity = this.velocity.add(acceleration);
+
+            // Align velocity with heading
+            if(this.velocity.length() > 0.001)
+            {
+                Vec3 heading = forward;
+                if(heading.dot(this.velocity.normalize()) > 0)
+                {
+                    this.velocity = CommonUtils.lerp(this.velocity, heading.scale(this.velocity.length()), 0.15F);
+                }
+                else
+                {
+                    this.velocity = CommonUtils.lerp(this.velocity, heading.scale(-this.velocity.length()), 0.15F);
+                }
+            }
+
+            if(this.velocity.length() < 0.005)
+            {
+                this.velocity = Vec3.ZERO;
+            }
+            this.velocity = CommonUtils.clampSpeed(this.velocity);
+            this.motion = this.motion.add(this.velocity);
+        }
+        else if(this.state == State.IN_AIR)
+        {
+            this.setDeltaMovement(this.getDeltaMovement().add(0, -0.08, 0));
+            this.velocity = this.velocity.scale(0.98);
+            this.motion = this.motion.add(this.velocity);
+        }
+        else // ON_LAND
+        {
+            this.velocity = this.velocity.scale(0.6);
+            this.motion = this.motion.add(this.velocity);
+        }
     }
-
-    //    @Override
-//    public void updateVehicleMotion()
-//    {
-//        if(this.state == State.IN_WATER || this.state == State.UNDER_WATER)
-//        {
-//            if(this.state == State.UNDER_WATER)
-//            {
-//                this.setDeltaMovement(this.getDeltaMovement().add(0, 0.08, 0));
-//            }
-//            else
-//            {
-//                //TODO fix boat movement
-//                /*double floatingY = ((this.waterLevel - 0.35D + (0.25D * Math.min(1.0F, getNormalSpeed())) - this.getY())) / (double) this.getBbHeight();
-//                this.setDeltaMovement(this.getDeltaMovement().add(0, floatingY * 0.05, 0));
-//                if(Math.abs(floatingY) < 0.1 && this.getDeltaMovement().y > 0 && Math.abs(this.getDeltaMovement().y) < 0.1)
-//                {
-//                    this.setPos(this.getX(), this.waterLevel - 0.35 + (0.25 * Math.min(1.0F, getNormalSpeed())), this.getZ());
-//                    this.setDeltaMovement(this.getDeltaMovement().multiply(1.0, 0.0, 1.0));
-//                }
-//                this.setDeltaMovement(this.getDeltaMovement().multiply(1.0, 0.75, 1.0));*/
-//            }
-//
-//            float f1 = Mth.sin(this.getYRot() * 0.017453292F) / 20F;
-//            float f2 = Mth.cos(this.getYRot() * 0.017453292F) / 20F;
-//            this.vehicleMotionX = (-currentSpeed * f1);
-//            this.vehicleMotionZ = (currentSpeed * f2);
-//            this.setDeltaMovement(this.getDeltaMovement().multiply(0.5, 1.0, 0.5));
-//        }
-//        else if(this.state == State.IN_AIR)
-//        {
-//            this.setDeltaMovement(this.getDeltaMovement().add(0, -0.08, 0));
-//            if(this.previousState == State.UNDER_WATER || this.previousState == State.IN_WATER)
-//            {
-//                this.setDeltaMovement(new Vec3(this.vehicleMotionX, this.getDeltaMovement().y, this.vehicleMotionZ));
-//                this.vehicleMotionX = 0;
-//                this.vehicleMotionZ = 0;
-//            }
-//        }
-//        else
-//        {
-//            this.vehicleMotionX *= 0.75F;
-//            this.vehicleMotionZ *= 0.75F;
-//        }
-//    }
 
     @Override
     public void onVehicleTick()

@@ -47,6 +47,7 @@ public class RenderUtil
      */
     public static void drawTexturedModalRect(int x, int y, int textureX, int textureY, int width, int height)
     {
+        RenderSystem.setShader(net.minecraft.client.renderer.GameRenderer::getPositionTexShader);
         Tesselator tessellator = Tesselator.getInstance();
         BufferBuilder bufferbuilder = tessellator.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_TEX);
         bufferbuilder.addVertex((float) x, (float) (y + height), 0.0F).setUv(((float) textureX * 0.00390625F), ((float) (textureY + height) * 0.00390625F));
@@ -61,14 +62,15 @@ public class RenderUtil
      */
     public static void drawGradientRectHorizontal(int left, int top, int right, int bottom, int leftColor, int rightColor)
     {
-        float redStart = (float)(leftColor >> 24 & 255) / 255.0F;
-        float greenStart = (float)(leftColor >> 16 & 255) / 255.0F;
-        float blueStart = (float)(leftColor >> 8 & 255) / 255.0F;
-        float alphaStart = (float)(leftColor & 255) / 255.0F;
-        float redEnd = (float)(rightColor >> 24 & 255) / 255.0F;
-        float greenEnd = (float)(rightColor >> 16 & 255) / 255.0F;
-        float blueEnd = (float)(rightColor >> 8 & 255) / 255.0F;
-        float alphaEnd = (float)(rightColor & 255) / 255.0F;
+        float redStart = (float)(leftColor >> 16 & 255) / 255.0F;
+        float greenStart = (float)(leftColor >> 8 & 255) / 255.0F;
+        float blueStart = (float)(leftColor & 255) / 255.0F;
+        float alphaStart = (float)(leftColor >> 24 & 255) / 255.0F;
+        float redEnd = (float)(rightColor >> 16 & 255) / 255.0F;
+        float greenEnd = (float)(rightColor >> 8 & 255) / 255.0F;
+        float blueEnd = (float)(rightColor & 255) / 255.0F;
+        float alphaEnd = (float)(rightColor >> 24 & 255) / 255.0F;
+        RenderSystem.setShader(net.minecraft.client.renderer.GameRenderer::getPositionColorShader);
         RenderSystem.enableBlend();
         RenderSystem.defaultBlendFunc();
         Tesselator tessellator = Tesselator.getInstance();

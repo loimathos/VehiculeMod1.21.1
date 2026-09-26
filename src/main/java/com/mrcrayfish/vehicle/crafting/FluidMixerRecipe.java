@@ -43,6 +43,19 @@ public class FluidMixerRecipe implements Recipe<RecipeInput>
         this.result = result;
     }
 
+    public FluidMixerRecipe(java.util.List<FluidEntry> inputs, ItemStack ingredient, FluidEntry result)
+    {
+        this.id = ResourceLocation.fromNamespaceAndPath("vehicle", "fluid_mixer");
+        this.inputs = inputs.toArray(new FluidEntry[0]);
+        this.ingredient = ingredient;
+        this.result = result;
+    }
+
+    public java.util.List<FluidEntry> getInputsList()
+    {
+        return java.util.Arrays.asList(this.inputs);
+    }
+
     public FluidEntry[] getInputs()
     {
         return inputs;

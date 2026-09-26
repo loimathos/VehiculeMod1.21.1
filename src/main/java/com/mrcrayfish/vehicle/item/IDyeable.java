@@ -30,8 +30,13 @@ public interface IDyeable
 
     default void setColor(ItemStack stack, int color)
     {
-        CompoundTag compound = CommonUtils.getOrCreateStackTag(stack);
-        compound.putInt("Color", color);
+        CommonUtils.updateStackTag(stack, compound -> {
+            compound.putInt("Color", color);
+            if(stack.getItem() instanceof SprayCanItem sprayCan && !compound.contains("RemainingSprays", Tag.TAG_INT))
+            {
+                compound.putInt("RemainingSprays", sprayCan.getCapacity(stack));
+            }
+        });
     }
 
     public static ItemStack dyeStack(ItemStack stack, List<DyeItem> dyes)

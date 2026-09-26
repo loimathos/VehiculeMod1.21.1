@@ -353,8 +353,8 @@ public class ServerPlayHandler
                 {
                     if(!stack.isEmpty() && stack.getItem() == ModItems.KEY.get())
                     {
-                        UUID keyUuid = CommonUtils.getOrCreateStackTag(stack).getUUID("VehicleId");
-                        if(poweredVehicle.getUUID().equals(keyUuid))
+                        CompoundTag tag = CommonUtils.getOrCreateStackTag(stack);
+                        if(tag.hasUUID("VehicleId") && poweredVehicle.getUUID().equals(tag.getUUID("VehicleId")))
                         {
                             poweredVehicle.setKeyStack(stack.copy());
                             player.setItemSlot(EquipmentSlot.MAINHAND, ItemStack.EMPTY);

@@ -86,7 +86,7 @@ public class MopedEntity extends MotorcycleEntity implements IStorage, IAttachab
         {
             this.setChest(true);
             this.initInventory();
-            this.readInventories(compound);
+            this.readInventories(compound, this.level().registryAccess());
         }
     }
 
@@ -97,7 +97,7 @@ public class MopedEntity extends MotorcycleEntity implements IStorage, IAttachab
         if(this.hasChest())
         {
             compound.putBoolean("ChestAttached", true);
-            this.writeInventories(compound);
+            this.writeInventories(compound, this.level().registryAccess());
         }
     }
 
@@ -162,11 +162,29 @@ public class MopedEntity extends MotorcycleEntity implements IStorage, IAttachab
         {
             this.setChest(true);
             this.initInventory();
-            CompoundTag itemTag = stack.getOrDefault(DataComponents.CUSTOM_DATA, CustomData.EMPTY).copyTag();
-            if(itemTag != null)
+            net.minecraft.world.item.component.ItemContainerContents containerContents = stack.get(DataComponents.CONTAINER);
+            if(containerContents != null)
             {
-                CompoundTag blockEntityTag = itemTag.getCompound("BlockEntityTag");
-                if(!blockEntityTag.isEmpty() && blockEntityTag.contains("Items", Tag.TAG_LIST))
+                NonNullList<ItemStack> chestInventory = NonNullList.withSize(27, ItemStack.EMPTY);
+                containerContents.copyInto(chestInventory);
+                for(int i = 0; i < chestInventory.size(); i++)
+                {
+                    this.inventory.setItem(i, chestInventory.get(i));
+                }
+            }
+            else
+            {
+                CustomData blockEntityData = stack.get(DataComponents.BLOCK_ENTITY_DATA);
+                CompoundTag blockEntityTag = blockEntityData != null ? blockEntityData.copyTag() : null;
+                if(blockEntityTag == null)
+                {
+                    CompoundTag itemTag = stack.getOrDefault(DataComponents.CUSTOM_DATA, CustomData.EMPTY).copyTag();
+                    if(itemTag != null && itemTag.contains("BlockEntityTag", Tag.TAG_COMPOUND))
+                    {
+                        blockEntityTag = itemTag.getCompound("BlockEntityTag");
+                    }
+                }
+                if(blockEntityTag != null && blockEntityTag.contains("Items", Tag.TAG_LIST))
                 {
                     NonNullList<ItemStack> chestInventory = NonNullList.withSize(27, ItemStack.EMPTY);
                     ContainerHelper.loadAllItems(blockEntityTag, chestInventory, this.level().registryAccess());

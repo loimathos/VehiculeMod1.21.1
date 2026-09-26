@@ -4,7 +4,6 @@
     "heldOffset": [ 6.0, 0.0, 0.0 ],
     "trailerOffset": [ 0.0, -0.094, -0.65 ],
     "displayTransform": {
-        "translate": [ 0.0, 0.0, -7.2 ],
         "scale": 1.5
     },
     "bodyTransform": {

@@ -23,13 +23,45 @@ public class CommonUtils
 {
     public static CompoundTag getOrCreateStackTag(ItemStack stack)
     {
-        if(stack.getOrDefault(DataComponents.CUSTOM_DATA, CustomData.EMPTY).copyTag() == null)
-        {
-            stack.set(DataComponents.CUSTOM_DATA, CustomData.of(new CompoundTag()));
-        }
-        return stack.getOrDefault(DataComponents.CUSTOM_DATA, CustomData.EMPTY).copyTag();
+        CustomData customData = stack.get(DataComponents.CUSTOM_DATA);
+        return customData != null ? customData.copyTag() : new CompoundTag();
     }
 
+    public static void setStackTag(ItemStack stack, CompoundTag tag)
+    {
+        if(tag == null || tag.isEmpty())
+        {
+            stack.remove(DataComponents.CUSTOM_DATA);
+        }
+        else
+        {
+            stack.set(DataComponents.CUSTOM_DATA, CustomData.of(tag));
+        }
+    }
+
+    public static void updateStackTag(ItemStack stack, java.util.function.Consumer<CompoundTag> updater)
+    {
+        CustomData.update(DataComponents.CUSTOM_DATA, stack, updater);
+    }
+
+    public static void writeItemStackToTag(CompoundTag compound, String key, ItemStack stack, net.minecraft.core.HolderLookup.Provider registries)
+    {
+        if(!stack.isEmpty())
+        {
+            compound.put(key, stack.save(registries, new CompoundTag()));
+        }
+    }
+
+    public static ItemStack readItemStackFromTag(CompoundTag compound, String key, net.minecraft.core.HolderLookup.Provider registries)
+    {
+        if(compound.contains(key, Tag.TAG_COMPOUND))
+        {
+            return ItemStack.parseOptional(registries, compound.getCompound(key));
+        }
+        return ItemStack.EMPTY;
+    }
+
+    @Deprecated
     public static void writeItemStackToTag(CompoundTag compound, String key, ItemStack stack)
     {
         if(!stack.isEmpty())
@@ -38,6 +70,7 @@ public class CommonUtils
         }
     }
 
+    @Deprecated
     public static ItemStack readItemStackFromTag(CompoundTag compound, String key)
     {
         if(compound.contains(key, Tag.TAG_COMPOUND))

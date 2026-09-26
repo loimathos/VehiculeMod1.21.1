@@ -185,7 +185,7 @@ public class FertilizerTrailerEntity extends TrailerEntity implements IStorage
         if(compound.contains(INVENTORY_STORAGE_KEY, Tag.TAG_LIST))
         {
             this.initInventory();
-            InventoryUtil.readInventoryToNBT(compound, INVENTORY_STORAGE_KEY, this.inventory);
+            InventoryUtil.readInventoryToNBT(compound, INVENTORY_STORAGE_KEY, this.inventory, this.level().registryAccess());
         }
     }
 
@@ -195,7 +195,7 @@ public class FertilizerTrailerEntity extends TrailerEntity implements IStorage
         super.addAdditionalSaveData(compound);
         if(this.inventory != null)
         {
-            InventoryUtil.writeInventoryToNBT(compound, INVENTORY_STORAGE_KEY, this.inventory);
+            InventoryUtil.writeInventoryToNBT(compound, INVENTORY_STORAGE_KEY, this.inventory, this.level().registryAccess());
         }
     }
 

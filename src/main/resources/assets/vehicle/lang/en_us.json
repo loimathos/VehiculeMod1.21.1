@@ -173,6 +173,7 @@
 
     "gui.vehicle.craft": "Craft",
     "gui.vehicle.show_remaining": "Show Remaining",
+    "gui.vehicle.no_vehicles": "No Vehicles Available",
 
     "button.categories.vehicle": "MrCrayfish's Vehicle Mod",
     "vehicle.button.accelerate": "Accelerate",

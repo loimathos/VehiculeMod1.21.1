@@ -1,0 +1,21 @@
+{
+  "type": "vehicle:fluid_mixer",
+  "input": [
+    {
+      "fluid": "vehicle:ender_sap",
+      "amount": 200
+    },
+    {
+      "fluid": "vehicle:blaze_juice",
+      "amount": 200
+    }
+  ],
+  "ingredient": {
+    "id": "minecraft:glowstone_dust",
+    "count": 1
+  },
+  "result": {
+    "fluid": "vehicle:fuelium",
+    "amount": 400
+  }
+}

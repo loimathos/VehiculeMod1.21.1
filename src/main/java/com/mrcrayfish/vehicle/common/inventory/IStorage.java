@@ -24,21 +24,33 @@ public interface IStorage
         return this.getStorageInventories().get(key);
     }
 
-    default void readInventories(CompoundTag tag)
+    default void readInventories(CompoundTag tag, net.minecraft.core.HolderLookup.Provider registries)
     {
         CompoundTag storageTag = tag.getCompound("Storage");
         this.getStorageInventories().forEach((key, storage) -> {
-            InventoryUtil.readInventoryToNBT(storageTag, key, storage);
+            InventoryUtil.readInventoryToNBT(storageTag, key, storage, registries);
         });
     }
 
-    default void writeInventories(CompoundTag tag)
+    default void writeInventories(CompoundTag tag, net.minecraft.core.HolderLookup.Provider registries)
     {
         CompoundTag storageTag = new CompoundTag();
         this.getStorageInventories().forEach((key, storage) -> {
-            InventoryUtil.writeInventoryToNBT(storageTag, key, storage);
+            InventoryUtil.writeInventoryToNBT(storageTag, key, storage, registries);
         });
         tag.put("Storage", storageTag);
+    }
+
+    @Deprecated
+    default void readInventories(CompoundTag tag)
+    {
+        this.readInventories(tag, net.minecraft.core.HolderLookup.Provider.create(java.util.stream.Stream.of()));
+    }
+
+    @Deprecated
+    default void writeInventories(CompoundTag tag)
+    {
+        this.writeInventories(tag, net.minecraft.core.HolderLookup.Provider.create(java.util.stream.Stream.of()));
     }
 
     static <T extends VehicleEntity & IStorage> void openStorage(ServerPlayer player, T storage, String key)

@@ -4,7 +4,6 @@ import com.mrcrayfish.vehicle.Config;
 import com.mrcrayfish.vehicle.util.FluidUtils;
 import com.mrcrayfish.vehicle.util.RenderUtil;
 import net.minecraft.client.gui.screens.Screen;
-import net.minecraft.client.resources.language.I18n;
 import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.CreativeModeTab;
@@ -27,6 +26,10 @@ import net.minecraftforge.fluids.capability.IFluidHandler;
 import net.minecraftforge.fluids.capability.IFluidHandlerItem;
 
 
+import com.mrcrayfish.vehicle.util.CommonUtils;
+import net.minecraft.core.Direction;
+import net.minecraft.nbt.Tag;
+import net.minecraftforge.common.capabilities.Capability;
 import javax.annotation.Nullable;
 import java.text.DecimalFormat;
 import java.util.List;
@@ -57,20 +60,31 @@ public class JerryCanItem extends Item
         }
         else
         {
-            stack.getCapability(ForgeCapabilities.FLUID_HANDLER_ITEM).ifPresent(handler ->
+            FluidStack fluidStack = FluidStack.EMPTY;
+            Optional<IFluidHandlerItem> cap = stack.getCapability(ForgeCapabilities.FLUID_HANDLER_ITEM).resolve();
+            if(cap.isPresent())
             {
-                FluidStack fluidStack = handler.getFluidInTank(0);
-                if(!fluidStack.isEmpty())
+                fluidStack = cap.get().getFluidInTank(0);
+            }
+            else
+            {
+                CompoundTag tag = CommonUtils.getOrCreateStackTag(stack);
+                if(tag.contains("Fluid", Tag.TAG_COMPOUND))
                 {
-                    tooltip.add(Component.translatable(fluidStack.getTranslationKey()).withStyle(ChatFormatting.BLUE));
-                    tooltip.add(Component.literal(this.getCurrentFuel(stack) + " / " + this.capacitySupplier.get() + "mb").withStyle(ChatFormatting.GRAY));
+                    fluidStack = FluidStack.loadFluidStackFromNBT(tag.getCompound("Fluid"));
                 }
-                else
-                {
-                    tooltip.add(Component.translatable("item.vehicle.jerry_can.empty").withStyle(ChatFormatting.RED));
-                }
-            });
-            tooltip.add(Component.literal(ChatFormatting.YELLOW + I18n.get("vehicle.info_help")));
+            }
+
+            if(!fluidStack.isEmpty())
+            {
+                tooltip.add(Component.translatable(fluidStack.getTranslationKey()).withStyle(ChatFormatting.BLUE));
+                tooltip.add(Component.literal(fluidStack.getAmount() + " / " + this.capacitySupplier.get() + "mb").withStyle(ChatFormatting.GRAY));
+            }
+            else
+            {
+                tooltip.add(Component.translatable("item.vehicle.jerry_can.empty").withStyle(ChatFormatting.RED));
+            }
+            tooltip.add(Component.translatable("vehicle.info_help").withStyle(ChatFormatting.YELLOW));
         }
     }
 
@@ -110,7 +124,16 @@ public class JerryCanItem extends Item
     public int getCurrentFuel(ItemStack stack)
     {
         Optional<IFluidHandlerItem> optional = stack.getCapability(ForgeCapabilities.FLUID_HANDLER_ITEM).resolve();
-        return optional.map(handler -> handler.getFluidInTank(0).getAmount()).orElse(0);
+        if(optional.isPresent())
+        {
+            return optional.get().getFluidInTank(0).getAmount();
+        }
+        CompoundTag tag = CommonUtils.getOrCreateStackTag(stack);
+        if(tag.contains("Fluid", Tag.TAG_COMPOUND))
+        {
+            return tag.getCompound("Fluid").getInt("Amount");
+        }
+        return 0;
     }
 
     public int getCapacity()
@@ -148,80 +171,164 @@ public class JerryCanItem extends Item
     }
 
     @Nullable
-    public ICapabilityProvider initCapabilities(ItemStack stack, @Nullable CompoundTag nbt)
+    @Override
+    public ICapabilityProvider getCapabilityProvider(ItemStack stack)
     {
-        return new ICapabilityProvider() {
-            @Override
-            public <T> LazyOptional<T> getCapability(net.minecraftforge.common.capabilities.Capability<T> cap, @Nullable net.minecraft.core.Direction side) {
-                if(cap == ForgeCapabilities.FLUID_HANDLER_ITEM) {
-                    return LazyOptional.of(() -> new IFluidHandlerItem() {
-                        private FluidStack fluid = FluidStack.EMPTY;
+        return new JerryCanFluidHandler(stack, this.capacitySupplier.get());
+    }
 
-                        @Override
-                        public ItemStack getContainer() {
-                            return stack;
-                        }
+    public static class JerryCanFluidHandler implements IFluidHandlerItem, ICapabilityProvider
+    {
+        private final LazyOptional<IFluidHandlerItem> holder = LazyOptional.of(() -> this);
+        protected final ItemStack container;
+        protected final int capacity;
 
-                        @Override
-                        public int getTanks() {
-                            return 1;
-                        }
+        public JerryCanFluidHandler(ItemStack container, int capacity)
+        {
+            this.container = container;
+            this.capacity = capacity;
+        }
 
-                        @Override
-                        public FluidStack getFluidInTank(int tank) {
-                            return fluid;
-                        }
+        @Override
+        public ItemStack getContainer()
+        {
+            return this.container;
+        }
 
-                        @Override
-                        public int getTankCapacity(int tank) {
-                            return capacitySupplier.get();
-                        }
-
-                        @Override
-                        public boolean isFluidValid(int tank, FluidStack fluidStack) {
-                            return true;
-                        }
-
-                        @Override
-                        public int fill(FluidStack resource, IFluidHandler.FluidAction action) {
-                            if(resource.isEmpty() || !isFluidValid(0, resource)) return 0;
-                            int capacity = capacitySupplier.get();
-                            if(fluid.isEmpty()) {
-                                int fillAmount = Math.min(capacity, resource.getAmount());
-                                if(action.execute()) {
-                                    fluid = new FluidStack(resource, fillAmount);
-                                }
-                                return fillAmount;
-                            }
-                            if(!fluid.isFluidEqual(resource)) return 0;
-                            int fillAmount = Math.min(capacity - fluid.getAmount(), resource.getAmount());
-                            if(action.execute()) {
-                                fluid.grow(fillAmount);
-                            }
-                            return fillAmount;
-                        }
-
-                        @Override
-                        public FluidStack drain(FluidStack resource, IFluidHandler.FluidAction action) {
-                            if(resource.isEmpty() || !resource.isFluidEqual(fluid)) return FluidStack.EMPTY;
-                            return drain(resource.getAmount(), action);
-                        }
-
-                        @Override
-                        public FluidStack drain(int maxDrain, IFluidHandler.FluidAction action) {
-                            if(fluid.isEmpty() || maxDrain <= 0) return FluidStack.EMPTY;
-                            int drained = Math.min(fluid.getAmount(), maxDrain);
-                            FluidStack result = new FluidStack(fluid, drained);
-                            if(action.execute()) {
-                                fluid.shrink(drained);
-                                if(fluid.isEmpty()) fluid = FluidStack.EMPTY;
-                            }
-                            return result;
-                        }
-                    }).cast();
-                }
-                return LazyOptional.empty();
+        public FluidStack getFluid()
+        {
+            CompoundTag tag = CommonUtils.getOrCreateStackTag(this.container);
+            if(tag.contains("Fluid", Tag.TAG_COMPOUND))
+            {
+                return FluidStack.loadFluidStackFromNBT(tag.getCompound("Fluid"));
             }
-        };
+            return FluidStack.EMPTY;
+        }
+
+        protected void setFluid(FluidStack fluid)
+        {
+            CommonUtils.updateStackTag(this.container, tag -> {
+                if(fluid.isEmpty())
+                {
+                    tag.remove("Fluid");
+                }
+                else
+                {
+                    CompoundTag fluidTag = new CompoundTag();
+                    fluid.writeToNBT(fluidTag);
+                    tag.put("Fluid", fluidTag);
+                }
+            });
+        }
+
+        @Override
+        public int getTanks()
+        {
+            return 1;
+        }
+
+        @Override
+        public FluidStack getFluidInTank(int tank)
+        {
+            return this.getFluid();
+        }
+
+        @Override
+        public int getTankCapacity(int tank)
+        {
+            return this.capacity;
+        }
+
+        @Override
+        public boolean isFluidValid(int tank, FluidStack stack)
+        {
+            return true;
+        }
+
+        @Override
+        public int fill(FluidStack resource, IFluidHandler.FluidAction action)
+        {
+            if(this.container.getCount() != 1 || resource.isEmpty() || !this.isFluidValid(0, resource))
+            {
+                return 0;
+            }
+
+            FluidStack contained = this.getFluid();
+            if(contained.isEmpty())
+            {
+                int fillAmount = Math.min(this.capacity, resource.getAmount());
+                if(action.execute())
+                {
+                    FluidStack filled = new FluidStack(resource, fillAmount);
+                    this.setFluid(filled);
+                }
+                return fillAmount;
+            }
+
+            if(!contained.isFluidEqual(resource))
+            {
+                return 0;
+            }
+
+            int fillAmount = Math.min(this.capacity - contained.getAmount(), resource.getAmount());
+            if(fillAmount > 0 && action.execute())
+            {
+                contained.grow(fillAmount);
+                this.setFluid(contained);
+            }
+            return fillAmount;
+        }
+
+        @Override
+        public FluidStack drain(FluidStack resource, IFluidHandler.FluidAction action)
+        {
+            if(this.container.getCount() != 1 || resource.isEmpty() || !resource.isFluidEqual(this.getFluid()))
+            {
+                return FluidStack.EMPTY;
+            }
+            return this.drain(resource.getAmount(), action);
+        }
+
+        @Override
+        public FluidStack drain(int maxDrain, IFluidHandler.FluidAction action)
+        {
+            if(this.container.getCount() != 1 || maxDrain <= 0)
+            {
+                return FluidStack.EMPTY;
+            }
+
+            FluidStack contained = this.getFluid();
+            if(contained.isEmpty())
+            {
+                return FluidStack.EMPTY;
+            }
+
+            int drainAmount = Math.min(contained.getAmount(), maxDrain);
+            FluidStack drained = new FluidStack(contained, drainAmount);
+
+            if(action.execute())
+            {
+                contained.shrink(drainAmount);
+                if(contained.isEmpty())
+                {
+                    this.setFluid(FluidStack.EMPTY);
+                }
+                else
+                {
+                    this.setFluid(contained);
+                }
+            }
+            return drained;
+        }
+
+        @Override
+        public <T> LazyOptional<T> getCapability(Capability<T> cap, @Nullable Direction side)
+        {
+            if(cap == ForgeCapabilities.FLUID_HANDLER_ITEM || cap == ForgeCapabilities.FLUID_HANDLER)
+            {
+                return this.holder.cast();
+            }
+            return LazyOptional.empty();
+        }
     }
 }

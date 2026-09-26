@@ -1,0 +1,11 @@
+{
+  "type": "vehicle:fluid_extractor",
+  "ingredient": {
+    "id": "minecraft:ender_pearl",
+    "count": 1
+  },
+  "result": {
+    "fluid": "vehicle:ender_sap",
+    "amount": 200
+  }
+}

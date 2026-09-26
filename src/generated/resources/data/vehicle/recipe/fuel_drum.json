@@ -1,0 +1,23 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "III",
+    "PBP",
+    "III"
+  ],
+  "key": {
+    "I": {
+      "tag": "forge:ingots/iron"
+    },
+    "B": {
+      "item": "minecraft:bucket"
+    },
+    "P": {
+      "item": "vehicle:panel"
+    }
+  },
+  "result": {
+    "item": "vehicle:fuel_drum",
+    "id": "vehicle:fuel_drum"
+  }
+}

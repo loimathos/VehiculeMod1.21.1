@@ -1,0 +1,11 @@
+{
+  "type": "vehicle:fluid_extractor",
+  "ingredient": {
+    "id": "minecraft:blaze_rod",
+    "count": 1
+  },
+  "result": {
+    "fluid": "vehicle:blaze_juice",
+    "amount": 450
+  }
+}

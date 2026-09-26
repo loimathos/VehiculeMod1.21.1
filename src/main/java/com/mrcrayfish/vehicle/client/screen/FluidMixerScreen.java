@@ -40,7 +40,6 @@ public class FluidMixerScreen extends AbstractContainerScreen<FluidMixerContaine
     @Override
     public void render(GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTicks)
     {
-        this.renderBackground(guiGraphics, mouseX, mouseY, partialTicks);
         super.render(guiGraphics, mouseX, mouseY, partialTicks);
 
         int startX = (this.width - this.imageWidth) / 2;
@@ -100,8 +99,8 @@ public class FluidMixerScreen extends AbstractContainerScreen<FluidMixerContaine
     @Override
     protected void renderLabels(GuiGraphics guiGraphics, int mouseX, int mouseY)
     {
-        guiGraphics.drawString(this.minecraft.font, this.fluidMixerTileEntity.getDisplayName().getString(), 8, 6, 4210752);
-        guiGraphics.drawString(this.minecraft.font, this.playerInventory.getDisplayName().getString(), 8, this.imageHeight - 96 + 2, 4210752);
+        guiGraphics.drawString(this.minecraft.font, this.fluidMixerTileEntity.getDisplayName().getString(), 8, 6, 4210752, false);
+        guiGraphics.drawString(this.minecraft.font, this.playerInventory.getDisplayName().getString(), 8, this.imageHeight - 96 + 2, 4210752, false);
     }
 
     @Override

@@ -115,28 +115,39 @@ public class FluidUtils
             float deltaV = maxV - minV;
             double tankLevel = percent * height;
 
-            RenderSystem.setShaderTexture(0, TextureAtlas.LOCATION_BLOCKS);
+            int color = IClientFluidTypeExtensions.of(fluid.getFluid()).getTintColor(fluid);
+            float r = (float)(color >> 16 & 255) / 255.0F;
+            float g = (float)(color >> 8 & 255) / 255.0F;
+            float b = (float)(color & 255) / 255.0F;
+            float a = (float)(color >> 24 & 255) / 255.0F;
+            if(a <= 0.0F) a = 1.0F;
 
+            RenderSystem.setShader(net.minecraft.client.renderer.GameRenderer::getPositionTexColorShader);
+            RenderSystem.setShaderTexture(0, TextureAtlas.LOCATION_BLOCKS);
             RenderSystem.enableBlend();
+            RenderSystem.defaultBlendFunc();
+            RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
+
             int count = 1 + ((int) Math.ceil(tankLevel)) / 16;
             for(int i = 0; i < count; i++)
             {
                 double subHeight = Math.min(16.0, tankLevel - (16.0 * i));
                 double offsetY = height - 16.0 * i - subHeight;
-                drawQuad(x, y + offsetY, 16, subHeight, minU, (float) (maxV - deltaV * (subHeight / 16.0)), maxU, maxV);
+                drawQuad(x, y + offsetY, 16, subHeight, minU, (float) (maxV - deltaV * (subHeight / 16.0)), maxU, maxV, r, g, b, a);
             }
             RenderSystem.disableBlend();
+            RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
         }
     }
 
     @OnlyIn(Dist.CLIENT)
-    private static void drawQuad(double x, double y, double width, double height, float minU, float minV, float maxU, float maxV)
+    private static void drawQuad(double x, double y, double width, double height, float minU, float minV, float maxU, float maxV, float r, float g, float b, float a)
     {
-        BufferBuilder buffer = Tesselator.getInstance().begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_TEX);
-        buffer.addVertex((float)x, (float)(y + height), 0.0F).setUv(minU, maxV);
-        buffer.addVertex((float)(x + width), (float)(y + height), 0.0F).setUv(maxU, maxV);
-        buffer.addVertex((float)(x + width), (float)y, 0.0F).setUv(maxU, minV);
-        buffer.addVertex((float)x, (float)y, 0.0F).setUv(minU, minV);
+        BufferBuilder buffer = Tesselator.getInstance().begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_TEX_COLOR);
+        buffer.addVertex((float)x, (float)(y + height), 0.0F).setUv(minU, maxV).setColor(r, g, b, a);
+        buffer.addVertex((float)(x + width), (float)(y + height), 0.0F).setUv(maxU, maxV).setColor(r, g, b, a);
+        buffer.addVertex((float)(x + width), (float)y, 0.0F).setUv(maxU, minV).setColor(r, g, b, a);
+        buffer.addVertex((float)x, (float)y, 0.0F).setUv(minU, minV).setColor(r, g, b, a);
         BufferUploader.drawWithShader(buffer.buildOrThrow());
     }
 

@@ -245,7 +245,7 @@ public class VehiclePropertiesGen extends VehiclePropertiesProvider
         this.add(ModEntities.JET_SKI.get(), VehicleProperties.builder()
                 .setAxleOffset(2.75F)
                 .setBodyTransform(Transform.create(0.0, 0.0, 0.25, 0.0, 0.0, 0.0, 1.25))
-                .setDisplayTransform(Transform.create(0.0F, 0.0F, -7.2F, 0.0F, 0.0F, 0.0F, 1.5F))
+                .setDisplayTransform(Transform.create(1.5))
                 .setHeldOffset(6.0, 0.0, 0.0)
                 .setTrailerOffset(0.0, -0.09375, -0.65)
                 .addSeat(Seat.of(0.0, 5.0, 0.0, true))

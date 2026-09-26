@@ -59,10 +59,10 @@ public class WorkstationBlock extends RotatedObjectBlock implements EntityBlock
         if(!world.isClientSide)
         {
             BlockEntity tileEntity = world.getBlockEntity(pos);
-            if(tileEntity instanceof MenuProvider)
+            if(tileEntity instanceof MenuProvider && playerEntity instanceof ServerPlayer serverPlayer)
             {
-                playerEntity.openMenu((MenuProvider) tileEntity);
-                return InteractionResult.SUCCESS;
+                serverPlayer.openMenu((MenuProvider) tileEntity, buffer -> buffer.writeBlockPos(pos));
+                return InteractionResult.CONSUME;
             }
         }
         return InteractionResult.SUCCESS;

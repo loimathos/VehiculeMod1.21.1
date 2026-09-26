@@ -117,8 +117,8 @@ public class EditVehicleScreen extends AbstractContainerScreen<EditVehicleContai
     @SuppressWarnings({"unchecked", "rawtypes"})
     protected void renderLabels(GuiGraphics guiGraphics, int mouseX, int mouseY)
     {
-        guiGraphics.drawString(this.minecraft.font, this.title.getString(), 8, 6, 4210752);
-        guiGraphics.drawString(this.minecraft.font, this.playerInventory.getDisplayName().getString(), 8, this.imageHeight - 96 + 2, 4210752);
+        guiGraphics.drawString(this.minecraft.font, this.title.getString(), 8, 6, 4210752, false);
+        guiGraphics.drawString(this.minecraft.font, this.playerInventory.getDisplayName().getString(), 8, this.imageHeight - 96 + 2, 4210752, false);
 
         if(this.showHelp)
         {
@@ -184,7 +184,6 @@ public class EditVehicleScreen extends AbstractContainerScreen<EditVehicleContai
     public void render(GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTicks)
     {
         this.renderVehicleToBuffer(guiGraphics, mouseX, mouseY, partialTicks);
-        this.renderBackground(guiGraphics, mouseX, mouseY, partialTicks);
         super.render(guiGraphics, mouseX, mouseY, partialTicks);
 
         int startX = (this.width - this.imageWidth) / 2;

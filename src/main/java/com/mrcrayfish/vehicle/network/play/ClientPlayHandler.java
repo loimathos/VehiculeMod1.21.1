@@ -50,7 +50,7 @@ public class ClientPlayHandler
             if(inventory != null)
             {
                 CompoundTag tag = tags[i];
-                inventory.fromTag(tag.getList("Inventory", Tag.TAG_COMPOUND));
+                inventory.fromTag(tag.getList("Inventory", Tag.TAG_COMPOUND), world.registryAccess());
             }
         }
     }

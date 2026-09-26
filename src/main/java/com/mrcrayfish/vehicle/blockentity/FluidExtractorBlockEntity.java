@@ -69,6 +69,8 @@ public class FluidExtractorBlockEntity extends BlockFluidHandlerSynced implement
     private boolean extracting;
 
     private String customName;
+    private int clientFluidId = 0;
+    private int clientAmount = 0;
 
     protected final ContainerData fluidExtractorData = new ContainerData()
     {
@@ -84,7 +86,7 @@ public class FluidExtractorBlockEntity extends BlockFluidHandlerSynced implement
                 case 2:
                     return fuelMaxProgress;
                 case 3:
-                    return BuiltInRegistries.FLUID.getKey(tank.getFluid().getFluid()).hashCode();
+                    return BuiltInRegistries.FLUID.getId(tank.getFluid().getFluid());
                 case 4:
                     return tank.getFluidAmount();
             }
@@ -106,13 +108,12 @@ public class FluidExtractorBlockEntity extends BlockFluidHandlerSynced implement
                     fuelMaxProgress = value;
                     break;
                 case 3:
-                    updateFluid(tank, value);
+                    clientFluidId = value;
+                    syncClientTank(tank, clientFluidId, clientAmount);
                     break;
                 case 4:
-                    if(!tank.isEmpty() || tank.getFluid().getFluid() != Fluids.EMPTY)
-                    {
-                        tank.getFluid().setAmount(value);
-                    }
+                    clientAmount = value;
+                    syncClientTank(tank, clientFluidId, clientAmount);
                     break;
             }
 
@@ -418,10 +419,17 @@ public class FluidExtractorBlockEntity extends BlockFluidHandlerSynced implement
         return fluidExtractorData;
     }
 
-    public void updateFluid(FluidTank tank, int fluidHash)
+    private void syncClientTank(FluidTank tank, int fluidId, int amount)
     {
-        Optional<Fluid> optional = ForgeRegistries.FLUIDS.getValues().stream().filter(fluid -> BuiltInRegistries.FLUID.getKey(fluid).hashCode() == fluidHash).findFirst();
-        optional.ifPresent(fluid -> tank.setFluid(new FluidStack(fluid, tank.getFluidAmount())));
+        Fluid fluid = BuiltInRegistries.FLUID.byId(fluidId);
+        if(fluid != null && fluid != Fluids.EMPTY && amount > 0)
+        {
+            tank.setFluid(new FluidStack(fluid, amount));
+        }
+        else
+        {
+            tank.setFluid(FluidStack.EMPTY);
+        }
     }
 
     public Optional<FluidExtractorRecipe> getRecipe()

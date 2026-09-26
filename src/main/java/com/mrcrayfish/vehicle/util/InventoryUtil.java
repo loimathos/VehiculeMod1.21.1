@@ -23,7 +23,7 @@ public class InventoryUtil
 {
     private static final Random RANDOM = new Random();
 
-    public static void writeInventoryToNBT(CompoundTag compound, String tagName, Container inventory)
+    public static void writeInventoryToNBT(CompoundTag compound, String tagName, Container inventory, net.minecraft.core.HolderLookup.Provider registries)
     {
         ListTag tagList = new ListTag();
         for(int i = 0; i < inventory.getContainerSize(); i++)
@@ -33,14 +33,20 @@ public class InventoryUtil
             {
                 CompoundTag stackTag = new CompoundTag();
                 stackTag.putByte("Slot", (byte) i);
-                stack.save(net.minecraft.core.HolderLookup.Provider.create(java.util.stream.Stream.of()), stackTag);
+                stack.save(registries, stackTag);
                 tagList.add(stackTag);
             }
         }
         compound.put(tagName, tagList);
     }
 
-    public static <T extends Container> T readInventoryToNBT(CompoundTag compound, String tagName, T t)
+    @Deprecated
+    public static void writeInventoryToNBT(CompoundTag compound, String tagName, Container inventory)
+    {
+        writeInventoryToNBT(compound, tagName, inventory, net.minecraft.core.HolderLookup.Provider.create(java.util.stream.Stream.of()));
+    }
+
+    public static <T extends Container> T readInventoryToNBT(CompoundTag compound, String tagName, T t, net.minecraft.core.HolderLookup.Provider registries)
     {
         if(compound.contains(tagName, Tag.TAG_LIST))
         {
@@ -51,11 +57,17 @@ public class InventoryUtil
                 byte slot = tagCompound.getByte("Slot");
                 if(slot >= 0 && slot < t.getContainerSize())
                 {
-                    t.setItem(slot, ItemStack.parseOptional(net.minecraft.core.HolderLookup.Provider.create(java.util.stream.Stream.of()), tagCompound));
+                    t.setItem(slot, ItemStack.parseOptional(registries, tagCompound));
                 }
             }
         }
         return t;
+    }
+
+    @Deprecated
+    public static <T extends Container> T readInventoryToNBT(CompoundTag compound, String tagName, T t)
+    {
+        return readInventoryToNBT(compound, tagName, t, net.minecraft.core.HolderLookup.Provider.create(java.util.stream.Stream.of()));
     }
 
     public static void dropInventoryItems(Level worldIn, double x, double y, double z, Container inventory)
@@ -142,8 +154,9 @@ public class InventoryUtil
     public static int getItemStackAmount(Player player, ItemStack find)
     {
         int count = 0;
-        for(ItemStack stack : player.getInventory().items)
+        for(int i = 0; i < player.getInventory().getContainerSize(); i++)
         {
+            ItemStack stack = player.getInventory().getItem(i);
             if(!stack.isEmpty() && areItemStacksEqualIgnoreCount(stack, find))
             {
                 count += stack.getCount();
@@ -155,8 +168,9 @@ public class InventoryUtil
     public static boolean hasItemStack(Player player, ItemStack find)
     {
         int count = 0;
-        for(ItemStack stack : player.getInventory().items)
+        for(int i = 0; i < player.getInventory().getContainerSize(); i++)
         {
+            ItemStack stack = player.getInventory().getItem(i);
             if(!stack.isEmpty() && areItemStacksEqualIgnoreCount(stack, find))
             {
                 count += stack.getCount();
@@ -168,8 +182,9 @@ public class InventoryUtil
     public static boolean hasWorkstationIngredient(Player player, WorkstationIngredient find)
     {
         int count = 0;
-        for(ItemStack stack : player.getInventory().items)
+        for(int i = 0; i < player.getInventory().getContainerSize(); i++)
         {
+            ItemStack stack = player.getInventory().getItem(i);
             if(!stack.isEmpty() && find.test(stack))
             {
                 count += stack.getCount();
@@ -194,7 +209,7 @@ public class InventoryUtil
                 else
                 {
                     amount -= stack.getCount();
-                    player.getInventory().items.set(i, ItemStack.EMPTY);
+                    player.getInventory().setItem(i, ItemStack.EMPTY);
                     if(amount == 0) return true;
                 }
             }
@@ -218,7 +233,7 @@ public class InventoryUtil
                 else
                 {
                     amount -= stack.getCount();
-                    player.getInventory().items.set(i, ItemStack.EMPTY);
+                    player.getInventory().setItem(i, ItemStack.EMPTY);
                     if(amount == 0) return true;
                 }
             }
