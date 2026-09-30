@@ -314,6 +314,12 @@ public abstract class PoweredVehicleEntity extends VehicleEntity implements Cont
         if(this.level().isClientSide())
         {
             this.onClientUpdate();
+            if(!this.isControlledByLocalInstance())
+            {
+                this.setDeltaMovement(Vec3.ZERO);
+                this.motion = Vec3.ZERO;
+                return;
+            }
         }
 
         Entity controllingPassenger = this.getControllingPassenger();
@@ -326,7 +332,7 @@ public abstract class PoweredVehicleEntity extends VehicleEntity implements Cont
         else
         {
             this.setThrottle(0F);
-            this.steeringAngle.set(this, this.steeringAngle.get(this) * 0.85F);
+            this.steeringAngle.set(this, 0F);
         }
 
         /* Handle the current speed of the vehicle based on rider's forward movement */

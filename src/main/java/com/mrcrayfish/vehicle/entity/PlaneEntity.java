@@ -141,6 +141,14 @@ public abstract class PlaneEntity extends PoweredVehicleEntity
         Vec3 frictionForce = this.velocity.scale(-friction).scale(0.05);
         acceleration = acceleration.add(frictionForce);
         this.velocity = this.velocity.add(acceleration);
+        if(this.getControllingPassenger() == null && this.onGround())
+        {
+            this.velocity = this.velocity.scale(0.75);
+            if(this.velocity.length() < 0.05)
+            {
+                this.velocity = Vec3.ZERO;
+            }
+        }
 
         // Add gravity but is countered based on the lift force
         this.velocity = this.velocity.add(0, -0.08 * (1.0F - liftForce), 0);

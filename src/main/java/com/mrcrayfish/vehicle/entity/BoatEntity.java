@@ -93,6 +93,14 @@ public abstract class BoatEntity extends PoweredVehicleEntity
             Vec3 friction = this.velocity.scale(-0.05);
             acceleration = acceleration.add(drag).add(friction);
             this.velocity = this.velocity.add(acceleration);
+            if(!operating)
+            {
+                this.velocity = this.velocity.scale(0.8);
+                if(this.velocity.length() < 0.005)
+                {
+                    this.velocity = Vec3.ZERO;
+                }
+            }
 
             // Align velocity with heading
             if(this.velocity.length() > 0.001)

@@ -124,12 +124,20 @@ public abstract class LandVehicleEntity extends PoweredVehicleEntity
         if(this.isBoosting()) forwardForce += forwardForce * this.getSpeedMultiplier();
         if(this.getThrottle() < 0) forwardForce *= 0.4F;
         Vec3 acceleration = forward.scale(forwardForce).scale(0.05);
+        if(this.getControllingPassenger() == null)
+        {
+            this.velocity = this.velocity.scale(0.75);
+        }
         if(this.velocity.length() < 0.05) this.velocity = Vec3.ZERO;
         Vec3 handbrakeForce = this.velocity.scale(this.isHandbraking() ? brakePower : 0F).scale(0.05);
         Vec3 frictionForce = this.velocity.scale(-friction).scale(0.05);
         Vec3 dragForce = this.velocity.scale(this.velocity.length()).scale(-drag).scale(0.05);
         acceleration = acceleration.add(dragForce).add(frictionForce).add(handbrakeForce);
         this.velocity = this.velocity.add(acceleration);
+        if(this.getControllingPassenger() == null && this.velocity.length() < 0.05)
+        {
+            this.velocity = Vec3.ZERO;
+        }
 
         // Clamps the speed based on the global speed limit
         this.velocity = CommonUtils.clampSpeed(this.velocity);

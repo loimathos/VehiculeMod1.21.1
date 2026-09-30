@@ -24,6 +24,9 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.Pose;
+import net.minecraft.world.entity.vehicle.DismountHelper;
+import net.minecraft.core.Direction;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.item.ItemStack;
@@ -861,39 +864,71 @@ public abstract class VehicleEntity extends Entity implements IEntityAdditionalS
     }
 
     @Override
-    protected void positionRider(Entity passenger, Entity.MoveFunction moveFunction)
+    public Vec3 getDismountLocationForPassenger(LivingEntity passenger)
     {
-        if(this.hasPassenger(passenger))
+        Direction vehicleDirection = this.getDirection();
+        if(vehicleDirection.getAxis() != Direction.Axis.Y)
         {
             int seatIndex = this.getSeatTracker().getSeatIndex(passenger.getUUID());
-            if(seatIndex != -1)
+            boolean prefersLeft = true;
+            if(seatIndex != -1 && seatIndex < this.getProperties().getSeats().size())
             {
-                VehicleProperties properties = this.getProperties();
-                if(seatIndex >= 0 && seatIndex < properties.getSeats().size())
+                Seat seat = this.getProperties().getSeats().get(seatIndex);
+                prefersLeft = seat.getPosition().x >= 0;
+            }
+
+            double lateralOffset = (this.getBbWidth() / 2.0) + (passenger.getBbWidth() / 2.0) + 0.35;
+            double longitudinalOffset = (this.getBbWidth() / 2.0) + (passenger.getBbWidth() / 2.0) + 0.35;
+
+            Vec3 left = Vec3.directionFromRotation(0, this.getYRot() - 90).scale(lateralOffset);
+            Vec3 right = Vec3.directionFromRotation(0, this.getYRot() + 90).scale(lateralOffset);
+            Vec3 back = Vec3.directionFromRotation(0, this.getYRot() + 180).scale(longitudinalOffset);
+            Vec3 front = Vec3.directionFromRotation(0, this.getYRot()).scale(longitudinalOffset);
+
+            Vec3[] candidateOffsets = prefersLeft
+                ? new Vec3[]{left, right, back, front}
+                : new Vec3[]{right, left, back, front};
+
+            for(Vec3 offset : candidateOffsets)
+            {
+                Vec3 candidate = this.position().add(offset);
+                BlockPos basePos = BlockPos.containing(candidate.x, this.getY(), candidate.z);
+                for(int dy : new int[]{0, 1, -1, 2, -2})
                 {
-                    Seat seat = properties.getSeats().get(seatIndex);
-                    Vec3 seatVec = seat.getPosition().add(0, properties.getAxleOffset() + properties.getWheelOffset(), 0).scale(properties.getBodyTransform().getScale()).multiply(-1, 1, 1).add(properties.getBodyTransform().getTranslate()).scale(0.0625).yRot(-(this.getYRot() + 180) * 0.017453292F);
-                    moveFunction.accept(passenger, this.getX() - seatVec.x, this.getY() + seatVec.y, this.getZ() - seatVec.z);
-                    if(this.level().isClientSide() && VehicleHelper.canFollowVehicleOrientation(passenger))
+                    BlockPos checkPos = basePos.above(dy);
+                    Vec3 safePos = DismountHelper.findSafeDismountLocation(passenger.getType(), this.level(), checkPos, false);
+                    if(safePos != null && DismountHelper.canDismountTo(this.level(), safePos, passenger, Pose.STANDING))
                     {
-                        //TODO launch the game to test this
-                        if(Config.CLIENT.immersiveCamera.get() && Config.CLIENT.shouldFollowPitch.get())
-                        {
-                            passenger.xRotO = passenger.getXRot();
-                            passenger.setXRot(this.getXRot() + this.passengerPitchOffset);
-                        }
-                        if(this.canApplyYawOffset(passenger) && Config.CLIENT.shouldFollowYaw.get())
-                        {
-                            passenger.setYRot(passenger.getYRot() - Mth.degreesDifference(this.getYRot() - this.passengerYawOffset, passenger.getYRot()));
-                            passenger.setYHeadRot(passenger.getYRot());
-                        }
+                        return safePos;
                     }
-                    this.clampYaw(passenger);
-                    return;
                 }
             }
         }
+        return super.getDismountLocationForPassenger(passenger);
+    }
+
+    @Override
+    protected void positionRider(Entity passenger, Entity.MoveFunction moveFunction)
+    {
         super.positionRider(passenger, moveFunction);
+        if(this.hasPassenger(passenger))
+        {
+            if(this.level().isClientSide() && VehicleHelper.canFollowVehicleOrientation(passenger))
+            {
+                //TODO launch the game to test this
+                if(Config.CLIENT.immersiveCamera.get() && Config.CLIENT.shouldFollowPitch.get())
+                {
+                    passenger.xRotO = passenger.getXRot();
+                    passenger.setXRot(this.getXRot() + this.passengerPitchOffset);
+                }
+                if(this.canApplyYawOffset(passenger) && Config.CLIENT.shouldFollowYaw.get())
+                {
+                    passenger.setYRot(passenger.getYRot() - Mth.degreesDifference(this.getYRot() - this.passengerYawOffset, passenger.getYRot()));
+                    passenger.setYHeadRot(passenger.getYRot());
+                }
+            }
+            this.clampYaw(passenger);
+        }
     }
 
     protected void updatePassengerPosition(Entity passenger)
