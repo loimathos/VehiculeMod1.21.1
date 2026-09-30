@@ -41,6 +41,7 @@ public class CameraHandler
 
     @Nullable
     private CameraType originalPointOfView = null;
+    private boolean wasRidingVehicle = false;
     private final CameraHelper cameraHelper = new CameraHelper();
 
     private CameraHandler() {}
@@ -72,20 +73,29 @@ public class CameraHandler
 
         if(event.isMounting())
         {
-            this.originalPointOfView = Minecraft.getInstance().options.getCameraType();
-            Minecraft.getInstance().options.setCameraType(CameraType.THIRD_PERSON_BACK);
+            if(!this.wasRidingVehicle)
+            {
+                this.originalPointOfView = Minecraft.getInstance().options.getCameraType();
+                Minecraft.getInstance().options.setCameraType(CameraType.THIRD_PERSON_BACK);
+                this.wasRidingVehicle = true;
+            }
+            this.cameraHelper.load((VehicleEntity) entity);
         }
         else
         {
-            if(Config.CLIENT.forceFirstPersonOnExit.get())
+            if(this.wasRidingVehicle)
             {
-                Minecraft.getInstance().options.setCameraType(CameraType.FIRST_PERSON);
+                if(Config.CLIENT.forceFirstPersonOnExit.get())
+                {
+                    Minecraft.getInstance().options.setCameraType(CameraType.FIRST_PERSON);
+                }
+                else if(this.originalPointOfView != null)
+                {
+                    Minecraft.getInstance().options.setCameraType(this.originalPointOfView);
+                }
+                this.originalPointOfView = null;
+                this.wasRidingVehicle = false;
             }
-            else if(this.originalPointOfView != null)
-            {
-                Minecraft.getInstance().options.setCameraType(this.originalPointOfView);
-            }
-            this.originalPointOfView = null;
         }
     }
 
@@ -116,10 +126,34 @@ public class CameraHandler
         if(event.phase != TickEvent.Phase.END || player == null)
             return;
 
-        if(player.getVehicle() != null)
-            return;
+        boolean isRiding = player.getVehicle() instanceof VehicleEntity;
 
-        this.originalPointOfView = null;
+        if(isRiding && !this.wasRidingVehicle)
+        {
+            if(Config.CLIENT.autoPerspective.get())
+            {
+                this.originalPointOfView = Minecraft.getInstance().options.getCameraType();
+                Minecraft.getInstance().options.setCameraType(CameraType.THIRD_PERSON_BACK);
+            }
+            this.cameraHelper.load((VehicleEntity) player.getVehicle());
+            this.wasRidingVehicle = true;
+        }
+        else if(!isRiding && this.wasRidingVehicle)
+        {
+            if(Config.CLIENT.autoPerspective.get())
+            {
+                if(Config.CLIENT.forceFirstPersonOnExit.get())
+                {
+                    Minecraft.getInstance().options.setCameraType(CameraType.FIRST_PERSON);
+                }
+                else if(this.originalPointOfView != null)
+                {
+                    Minecraft.getInstance().options.setCameraType(this.originalPointOfView);
+                }
+            }
+            this.originalPointOfView = null;
+            this.wasRidingVehicle = false;
+        }
     }
 
     @SubscribeEvent
@@ -182,7 +216,20 @@ public class CameraHandler
     @SubscribeEvent
     public void onCameraSetup(ViewportEvent.ComputeCameraAngles event)
     {
-        this.setupVanillaCamera(event.getCamera(), (float) event.getPartialTick());
+        if(!Config.CLIENT.immersiveCamera.get())
+            return;
+
+        Minecraft minecraft = Minecraft.getInstance();
+        if(minecraft.level == null || minecraft.player == null)
+            return;
+
+        LocalPlayer player = minecraft.player;
+        if(!(player.getVehicle() instanceof VehicleEntity))
+            return;
+
+        CameraType pointOfView = minecraft.options.getCameraType();
+        VehicleEntity vehicle = (VehicleEntity) player.getVehicle();
+        this.cameraHelper.setupVanillaCamera(event, pointOfView, vehicle, player, (float) event.getPartialTick());
     }
 
     public void setupVanillaCamera(Camera info, float partialTicks)
@@ -200,7 +247,7 @@ public class CameraHandler
 
         CameraType pointOfView = minecraft.options.getCameraType();
         VehicleEntity vehicle = (VehicleEntity) player.getVehicle();
-        this.cameraHelper.setupVanillaCamera(info, pointOfView, vehicle, player, partialTicks);
+        this.cameraHelper.setupVanillaCameraLegacy(info, pointOfView, vehicle, player, partialTicks);
     }
 
     /*
