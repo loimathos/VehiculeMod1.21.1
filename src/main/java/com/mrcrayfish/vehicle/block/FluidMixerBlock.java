@@ -2,7 +2,10 @@ package com.mrcrayfish.vehicle.block;
 
 
 import net.minecraft.world.level.block.EntityBlock;
+import net.minecraft.world.level.block.entity.BlockEntityTicker;
+import net.minecraft.world.level.block.entity.BlockEntityType;
 import com.mrcrayfish.vehicle.blockentity.FluidMixerBlockEntity;
+import com.mrcrayfish.vehicle.init.ModBlockEntities;
 import com.mrcrayfish.vehicle.util.BlockEntityUtil;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.Block;
@@ -92,6 +95,13 @@ public class FluidMixerBlock extends RotatedObjectBlock implements EntityBlock
     public BlockEntity newBlockEntity(BlockPos pos, BlockState state)
     {
         return new FluidMixerBlockEntity(pos, state);
+    }
+
+    @Nullable
+    @Override
+    public <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level level, BlockState state, BlockEntityType<T> type)
+    {
+        return level.isClientSide ? null : BlockEntityUtil.createTicker(type, ModBlockEntities.FLUID_MIXER.get(), (level1, pos1, state1, be) -> be.tick());
     }
 
     @Override

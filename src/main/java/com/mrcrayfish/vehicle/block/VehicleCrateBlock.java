@@ -3,12 +3,15 @@ package com.mrcrayfish.vehicle.block;
 
 import net.minecraft.core.particles.BlockParticleOption;
 import net.minecraft.world.level.block.EntityBlock;
+import net.minecraft.world.level.block.entity.BlockEntityTicker;
+import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.nbt.Tag;
 
 import com.google.common.base.Strings;
 import com.mrcrayfish.vehicle.init.ModBlocks;
 import com.mrcrayfish.vehicle.init.ModItems;
 import com.mrcrayfish.vehicle.blockentity.VehicleCrateBlockEntity;
+import com.mrcrayfish.vehicle.util.BlockEntityUtil;
 import com.mrcrayfish.vehicle.util.RenderUtil;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.RenderShape;
@@ -194,6 +197,13 @@ public class VehicleCrateBlock extends RotatedObjectBlock implements EntityBlock
     public BlockEntity newBlockEntity(BlockPos pos, BlockState state)
     {
         return new VehicleCrateBlockEntity(pos, state);
+    }
+
+    @Nullable
+    @Override
+    public <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level level, BlockState state, BlockEntityType<T> type)
+    {
+        return BlockEntityUtil.createTicker(type, ModBlockEntities.VEHICLE_CRATE.get(), (level1, pos1, state1, crate) -> crate.tick());
     }
 
     @Override

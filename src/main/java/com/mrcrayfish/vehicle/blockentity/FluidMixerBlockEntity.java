@@ -628,7 +628,7 @@ public class FluidMixerBlockEntity extends BlockEntity implements Container, Men
             }
             return LazyOptional.empty();
         }
-        else if(!this.remove && cap == null /* TODO: Capabilities removed in 1.21.1, use IItemHandler attachment */)
+        else if(!this.remove && cap == net.minecraftforge.common.capabilities.ForgeCapabilities.ITEM_HANDLER)
         {
             return this.itemHandler.cast();
         }

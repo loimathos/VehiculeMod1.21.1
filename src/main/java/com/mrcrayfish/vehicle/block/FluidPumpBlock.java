@@ -1,11 +1,15 @@
 package com.mrcrayfish.vehicle.block;
 
 import com.mrcrayfish.vehicle.init.ModItems;
+import com.mrcrayfish.vehicle.init.ModBlockEntities;
 import com.mrcrayfish.vehicle.blockentity.PipeBlockEntity;
 import com.mrcrayfish.vehicle.blockentity.PumpBlockEntity;
+import com.mrcrayfish.vehicle.util.BlockEntityUtil;
 import com.mrcrayfish.vehicle.util.VoxelShapeHelper;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.block.entity.BlockEntityTicker;
+import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.block.state.properties.DirectionProperty;
@@ -183,5 +187,12 @@ public class FluidPumpBlock extends FluidPipeBlock
     public BlockEntity newBlockEntity(BlockPos pos, BlockState state)
     {
         return new PumpBlockEntity(pos, state);
+    }
+
+    @Nullable
+    @Override
+    public <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level level, BlockState state, BlockEntityType<T> type)
+    {
+        return level.isClientSide ? null : BlockEntityUtil.createTicker(type, ModBlockEntities.FLUID_PUMP.get(), (level1, pos1, state1, be) -> be.tick());
     }
 }

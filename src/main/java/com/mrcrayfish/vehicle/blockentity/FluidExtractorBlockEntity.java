@@ -459,7 +459,7 @@ public class FluidExtractorBlockEntity extends BlockFluidHandlerSynced implement
     @Override
     public <T> LazyOptional<T> getCapability(@Nonnull Capability<T> cap, @Nullable Direction side)
     {
-        if (!this.remove && cap == null /* TODO: Capabilities removed in 1.21.1, use IItemHandler attachment */ )
+        if(!this.remove && cap == net.minecraftforge.common.capabilities.ForgeCapabilities.ITEM_HANDLER)
             return this.itemHandler.cast();
         return super.getCapability(cap, side);
     }

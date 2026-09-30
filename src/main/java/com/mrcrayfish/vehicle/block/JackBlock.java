@@ -2,7 +2,11 @@ package com.mrcrayfish.vehicle.block;
 
 
 import net.minecraft.world.level.block.EntityBlock;
+import net.minecraft.world.level.block.entity.BlockEntityTicker;
+import net.minecraft.world.level.block.entity.BlockEntityType;
 import com.mrcrayfish.vehicle.blockentity.JackBlockEntity;
+import com.mrcrayfish.vehicle.init.ModBlockEntities;
+import com.mrcrayfish.vehicle.util.BlockEntityUtil;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.RenderShape;
@@ -53,6 +57,13 @@ public class JackBlock extends RotatedObjectBlock implements EntityBlock
     public BlockEntity newBlockEntity(BlockPos pos, BlockState state)
     {
         return new JackBlockEntity(pos, state);
+    }
+
+    @Nullable
+    @Override
+    public <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level level, BlockState state, BlockEntityType<T> type)
+    {
+        return BlockEntityUtil.createTicker(type, ModBlockEntities.JACK.get(), (level1, pos1, state1, be) -> be.tick());
     }
 
     @Override

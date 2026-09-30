@@ -4,11 +4,14 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
 import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.entity.BlockEntityTicker;
+import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.Level;
 import net.minecraft.server.level.ServerLevel;
 
+import javax.annotation.Nullable;
 import java.util.List;
 import java.util.stream.Stream;
 
@@ -17,6 +20,13 @@ import java.util.stream.Stream;
  */
 public class BlockEntityUtil
 {
+    @Nullable
+    @SuppressWarnings("unchecked")
+    public static <E extends BlockEntity, A extends BlockEntity> BlockEntityTicker<A> createTicker(BlockEntityType<A> actualType, BlockEntityType<E> expectedType, BlockEntityTicker<? super E> ticker)
+    {
+        return expectedType == actualType ? (BlockEntityTicker<A>) ticker : null;
+    }
+
     /**
      * Sends an update packet to clients tracking a block entity.
      *

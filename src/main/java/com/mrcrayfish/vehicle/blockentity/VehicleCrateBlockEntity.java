@@ -165,7 +165,7 @@ public class VehicleCrateBlockEntity extends BlockEntitySynced
             if(!this.level.isClientSide && this.timer > 250)
             {
                 BlockState state = this.level.getBlockState(this.worldPosition);
-                Direction facing = state.getValue(VehicleCrateBlock.DIRECTION);
+                Direction facing = state.hasProperty(VehicleCrateBlock.DIRECTION) ? state.getValue(VehicleCrateBlock.DIRECTION) : Direction.NORTH;
                 EntityType<?> entityType = ForgeRegistries.ENTITY_TYPES.getValue(this.entityId);
                 if(entityType != null)
                 {
@@ -216,11 +216,18 @@ public class VehicleCrateBlockEntity extends BlockEntitySynced
         {
             this.engineStack = CommonUtils.readItemStackFromTag(compound, "EngineStack", registries);
         }
-        else if(compound.getBoolean("Creative"))
+        else if(compound.getBoolean("Creative") && this.entityId != null)
         {
             VehicleProperties properties = VehicleProperties.get(this.entityId);
-            EngineItem engineItem = VehicleRegistry.getEngineItem(properties.getExtended(PoweredProperties.class).getEngineType(), EngineTier.IRON);
-            this.engineStack = engineItem != null ? new ItemStack(engineItem) : ItemStack.EMPTY;
+            if(properties != null)
+            {
+                PoweredProperties poweredProperties = properties.getExtended(PoweredProperties.class);
+                if(poweredProperties != null)
+                {
+                    EngineItem engineItem = VehicleRegistry.getEngineItem(poweredProperties.getEngineType(), EngineTier.IRON);
+                    this.engineStack = engineItem != null ? new ItemStack(engineItem) : ItemStack.EMPTY;
+                }
+            }
         }
         if(compound.contains("WheelStack", Tag.TAG_COMPOUND))
         {

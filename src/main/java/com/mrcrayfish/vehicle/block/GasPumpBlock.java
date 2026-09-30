@@ -2,9 +2,13 @@ package com.mrcrayfish.vehicle.block;
 
 
 import net.minecraft.world.level.block.EntityBlock;
+import net.minecraft.world.level.block.entity.BlockEntityTicker;
+import net.minecraft.world.level.block.entity.BlockEntityType;
+import com.mrcrayfish.vehicle.init.ModBlockEntities;
 import com.mrcrayfish.vehicle.init.ModSounds;
 import com.mrcrayfish.vehicle.blockentity.GasPumpTankBlockEntity;
 import com.mrcrayfish.vehicle.blockentity.GasPumpBlockEntity;
+import com.mrcrayfish.vehicle.util.BlockEntityUtil;
 import com.mrcrayfish.vehicle.util.VoxelShapeHelper;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.Block;
@@ -196,5 +200,12 @@ public class GasPumpBlock extends RotatedObjectBlock implements EntityBlock
             return new GasPumpBlockEntity(pos, state);
         }
         return new GasPumpTankBlockEntity(pos, state);
+    }
+
+    @Nullable
+    @Override
+    public <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level level, BlockState state, BlockEntityType<T> type)
+    {
+        return state.getValue(TOP) ? BlockEntityUtil.createTicker(type, ModBlockEntities.GAS_PUMP.get(), (level1, pos1, state1, be) -> be.tick()) : null;
     }
 }
