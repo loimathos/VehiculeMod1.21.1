@@ -145,7 +145,7 @@ public abstract class AbstractPoweredRenderer<T extends PoweredVehicleEntity> ex
             matrixStack.mulPose(Axis.YP.rotationDegrees(180F));
         }
         int wheelColor = IDyeable.getColorFromStack(stack);
-        RenderUtil.renderColoredModel(model, ItemDisplayContext.FIXED, false, matrixStack, renderTypeBuffer, wheelColor, light, OverlayTexture.NO_OVERLAY);
+        RenderUtil.renderColoredModel(model, ItemDisplayContext.NONE, false, matrixStack, renderTypeBuffer, wheelColor, light, OverlayTexture.NO_OVERLAY);
         matrixStack.popPose();
     }
 

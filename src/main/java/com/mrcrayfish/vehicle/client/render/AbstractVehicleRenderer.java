@@ -153,7 +153,7 @@ public abstract class AbstractVehicleRenderer<T extends VehicleEntity>
         {
             if(vehicle.getDestroyedStage() > 0)
             {
-                RenderUtil.renderDamagedVehicleModel(model.getBaseModel(), ItemDisplayContext.FIXED, false, matrixStack, vehicle.getDestroyedStage(), this.colorProperty.get(vehicle), light, OverlayTexture.NO_OVERLAY);
+                RenderUtil.renderDamagedVehicleModel(model.getBaseModel(), ItemDisplayContext.NONE, false, matrixStack, vehicle.getDestroyedStage(), this.colorProperty.get(vehicle), light, OverlayTexture.NO_OVERLAY);
             }
         }
         else
@@ -179,7 +179,7 @@ public abstract class AbstractVehicleRenderer<T extends VehicleEntity>
         matrixStack.mulPose(Axis.XP.rotationDegrees((float) position.getRotX()));
         matrixStack.mulPose(Axis.YP.rotationDegrees((float) position.getRotY()));
         matrixStack.mulPose(Axis.ZP.rotationDegrees((float) position.getRotZ()));
-        RenderUtil.renderColoredModel(model, ItemDisplayContext.FIXED, false, matrixStack, buffer, color, lightTexture, overlayTexture);
+        RenderUtil.renderColoredModel(model, ItemDisplayContext.NONE, false, matrixStack, buffer, color, lightTexture, overlayTexture);
         matrixStack.popPose();
     }
 
@@ -194,7 +194,7 @@ public abstract class AbstractVehicleRenderer<T extends VehicleEntity>
         matrixStack.mulPose(Axis.YP.rotationDegrees((float) position.getRotY()));
         matrixStack.mulPose(Axis.ZP.rotationDegrees((float) position.getRotZ()));
         matrixStack.translate(0.0, 0.0, -0.05);
-        RenderUtil.renderModel(stack, ItemDisplayContext.FIXED, false, matrixStack, buffer, lightTexture, overlayTexture, model);
+        RenderUtil.renderModel(stack, ItemDisplayContext.NONE, false, matrixStack, buffer, lightTexture, overlayTexture, model);
         matrixStack.popPose();
     }
 
@@ -231,7 +231,7 @@ public abstract class AbstractVehicleRenderer<T extends VehicleEntity>
             matrixStack.mulPose(Axis.YP.rotationDegrees(180F));
         }
         int wheelColor = IDyeable.getColorFromStack(stack);
-        RenderUtil.renderColoredModel(model, ItemDisplayContext.FIXED, false, matrixStack, renderTypeBuffer, wheelColor, light, OverlayTexture.NO_OVERLAY);
+        RenderUtil.renderColoredModel(model, ItemDisplayContext.NONE, false, matrixStack, renderTypeBuffer, wheelColor, light, OverlayTexture.NO_OVERLAY);
         matrixStack.popPose();
     }
 
