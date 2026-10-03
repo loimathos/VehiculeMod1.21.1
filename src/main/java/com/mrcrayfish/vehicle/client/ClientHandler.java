@@ -59,6 +59,8 @@ import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.ModList;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraftforge.client.event.AddGuiOverlayLayersEvent;
 import net.minecraftforge.client.event.EntityRenderersEvent;
 import net.minecraftforge.client.event.RegisterColorHandlersEvent;
 import net.minecraftforge.fml.common.Mod;
@@ -93,7 +95,6 @@ public class ClientHandler
         MinecraftForge.EVENT_BUS.register(new FuelingHandler());
         MinecraftForge.EVENT_BUS.register(new HeldVehicleHandler());
         MinecraftForge.EVENT_BUS.register(new InputHandler());
-        MinecraftForge.EVENT_BUS.register(new OverlayHandler());
         MinecraftForge.EVENT_BUS.register(new PlayerModelHandler());
         MinecraftForge.EVENT_BUS.register(new SprayCanHandler());
         MinecraftForge.EVENT_BUS.register(new ClientEvents());
@@ -148,6 +149,12 @@ public class ClientHandler
         ItemBlockRenderTypes.setRenderLayer(ModBlocks.FUEL_DRUM.get(), RenderType.cutout());
         ItemBlockRenderTypes.setRenderLayer(ModBlocks.INDUSTRIAL_FUEL_DRUM.get(), RenderType.cutout());
         ItemBlockRenderTypes.setRenderLayer(ModBlocks.TRAFFIC_CONE.get(), RenderType.cutout());
+    }
+
+    @SubscribeEvent
+    public static void onAddGuiOverlayLayers(AddGuiOverlayLayersEvent event)
+    {
+        event.getLayeredDraw().add(ResourceLocation.fromNamespaceAndPath(Reference.MOD_ID, "stats"), OverlayHandler::render);
     }
 
     @SubscribeEvent

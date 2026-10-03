@@ -628,6 +628,14 @@ public abstract class PoweredVehicleEntity extends VehicleEntity implements Cont
 
     public double getSpeed()
     {
+        double dx = this.getX() - this.xo;
+        double dy = this.getY() - this.yo;
+        double dz = this.getZ() - this.zo;
+        double dist = Math.sqrt(dx * dx + dy * dy + dz * dz) * 20;
+        if(dist > 0.01)
+        {
+            return dist;
+        }
         return Math.sqrt(Math.pow(this.motion.x, 2) + Math.pow(this.motion.z, 2)) * 20;
     }
 
