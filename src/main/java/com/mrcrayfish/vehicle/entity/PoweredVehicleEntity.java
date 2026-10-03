@@ -318,39 +318,16 @@ public abstract class PoweredVehicleEntity extends VehicleEntity implements Cont
 
         Entity controllingPassenger = this.getControllingPassenger();
 
-        if(controllingPassenger == null)
+        if(controllingPassenger != null)
+        {
+            this.createParticles();
+        }
+        else
         {
             this.setThrottle(0F);
             this.steeringAngle.set(this, 0F);
             this.motion = Vec3.ZERO;
-
-            this.updateVehicleMotion();
-            this.updateWheelPositions();
-
-            if(!this.level().isClientSide())
-            {
-                boolean inWater = this.isInWater() || this.isInFluidType();
-                boolean hasSupport = this.onGround() || !this.level().noCollision(this, this.getBoundingBox().move(0, -0.05, 0));
-
-                if(!hasSupport && !inWater)
-                {
-                    this.setDeltaMovement(new Vec3(0, Math.max(this.getDeltaMovement().y - 0.08, -2.0), 0));
-                    this.move(MoverType.SELF, this.getDeltaMovement());
-                }
-                else
-                {
-                    this.setDeltaMovement(Vec3.ZERO);
-                }
-            }
-            else
-            {
-                this.setDeltaMovement(Vec3.ZERO);
-            }
-            return;
         }
-
-        /* If there driver, create particles */
-        this.createParticles();
 
         /* Handle the current speed of the vehicle based on rider's forward movement */
         this.updateTurning();
@@ -359,6 +336,20 @@ public abstract class PoweredVehicleEntity extends VehicleEntity implements Cont
         /* Updates the vehicle motion */
         this.updateVehicleMotion();
 
+        // If on client and not controlled locally, do NOT simulate physics or move!
+        // tickLerp() handles position and rotation from server packets.
+        if(this.level().isClientSide())
+        {
+            this.updateWheelPositions();
+            this.updateEngineSound();
+            if(!this.isControlledByLocalInstance())
+            {
+                this.setDeltaMovement(Vec3.ZERO);
+                this.motion = Vec3.ZERO;
+                return;
+            }
+        }
+
         /* Updates the rotation and fixes the old rotation */
         this.setRot(this.getYRot(), this.getXRot());
         double deltaRot = this.yRotO - this.getYRot();
@@ -366,25 +357,36 @@ public abstract class PoweredVehicleEntity extends VehicleEntity implements Cont
 
         this.updateWheelPositions();
 
-        // If on client and not controlled locally (e.g. observing another player drive), don't predict movement
-        if(this.level().isClientSide() && !this.isControlledByLocalInstance())
-        {
-            this.setDeltaMovement(Vec3.ZERO);
-            this.motion = Vec3.ZERO;
-            return;
-        }
-
         // Move vehicle
-        this.move(MoverType.SELF, this.getDeltaMovement().add(this.motion));
-
-        /* Reduces the motion and speed multiplier */
-        if(this.onGround())
+        if(controllingPassenger != null)
         {
-            this.setDeltaMovement(this.getDeltaMovement().multiply(0.75, 0.0, 0.75));
+            this.move(MoverType.SELF, this.getDeltaMovement().add(this.motion));
+
+            /* Reduces the motion and speed multiplier */
+            if(this.onGround())
+            {
+                this.setDeltaMovement(this.getDeltaMovement().multiply(0.75, 0.0, 0.75));
+            }
+            else
+            {
+                this.setDeltaMovement(this.getDeltaMovement().multiply(0.98, 1.0, 0.98));
+            }
         }
         else
         {
-            this.setDeltaMovement(this.getDeltaMovement().multiply(0.98, 1.0, 0.98));
+            // Unpiloted vehicle on server: parked if on ground / supported, falls if in air
+            boolean inWater = this.isInWater() || this.isInFluidType();
+            boolean hasSupport = this.onGround() || !this.level().noCollision(this, this.getBoundingBox().move(0, -0.05, 0));
+
+            if(!hasSupport && !inWater)
+            {
+                this.setDeltaMovement(new Vec3(0, Math.max(this.getDeltaMovement().y - 0.08, -2.0), 0));
+                this.move(MoverType.SELF, this.getDeltaMovement());
+            }
+            else
+            {
+                this.setDeltaMovement(Vec3.ZERO);
+            }
         }
 
         if(this.boostTimer > 0 && this.getThrottle() > 0)

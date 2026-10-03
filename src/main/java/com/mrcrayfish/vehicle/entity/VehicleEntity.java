@@ -247,10 +247,14 @@ public abstract class VehicleEntity extends Entity implements IEntityAdditionalS
                 int seatIndex = this.seatTracker.getClosestAvailableSeatToPlayer(player);
                 if(seatIndex != -1)
                 {
+                    this.seatTracker.setSeatIndex(seatIndex, player.getUUID());
                     if(player.startRiding(this))
                     {
-                        this.getSeatTracker().setSeatIndex(seatIndex, player.getUUID());
                         this.onPlayerChangeSeat(player, -1, seatIndex);
+                    }
+                    else
+                    {
+                        this.seatTracker.remove(player.getUUID());
                     }
                 }
                 return InteractionResult.SUCCESS;
@@ -507,6 +511,7 @@ public abstract class VehicleEntity extends Entity implements IEntityAdditionalS
         if(this.isControlledByLocalInstance())
         {
             this.lerpSteps = 0;
+            this.syncPacketPositionCodec(this.getX(), this.getY(), this.getZ());
         }
 
         if(this.lerpSteps > 0)
@@ -531,7 +536,7 @@ public abstract class VehicleEntity extends Entity implements IEntityAdditionalS
         this.lerpZ = z;
         this.lerpYaw = (double) yaw;
         this.lerpPitch = (double) pitch;
-        this.lerpSteps = posRotationIncrements;
+        this.lerpSteps = 10;
     }
 
     @Override
@@ -798,12 +803,15 @@ public abstract class VehicleEntity extends Entity implements IEntityAdditionalS
      */
     public void onPlayerChangeSeat(Player player, int oldSeatIndex, int newSeatIndex)
     {
-        if(newSeatIndex != -1 && this.level().isClientSide())
+        if(newSeatIndex != -1)
         {
             Seat seat = this.getProperties().getSeats().get(newSeatIndex);
             player.setYRot(this.getYRot() + seat.getYawOffset());
             player.setYHeadRot(player.getYRot());
-            this.updatePassengerOffsets(player);
+            if(this.level().isClientSide())
+            {
+                this.updatePassengerOffsets(player);
+            }
             this.updatePassengerPosition(player);
         }
     }
@@ -812,10 +820,14 @@ public abstract class VehicleEntity extends Entity implements IEntityAdditionalS
     protected void removePassenger(Entity passenger)
     {
         super.removePassenger(passenger);
-        if(!this.level().isClientSide() && passenger instanceof Player)
+        if(passenger instanceof Player player)
         {
-            int oldSeatIndex = this.seatTracker.getSeatIndex(passenger.getUUID());
-            this.onPlayerChangeSeat((Player) passenger, oldSeatIndex, -1);
+            int oldSeatIndex = this.seatTracker.getSeatIndex(player.getUUID());
+            if(!this.level().isClientSide())
+            {
+                this.onPlayerChangeSeat(player, oldSeatIndex, -1);
+            }
+            this.seatTracker.remove(player.getUUID());
         }
     }
 
@@ -841,6 +853,15 @@ public abstract class VehicleEntity extends Entity implements IEntityAdditionalS
             this.passengerYawOffset = 0;
             this.passengerPitchOffset = 0;
         }
+
+        if(passenger instanceof Player player)
+        {
+            int seatIndex = this.seatTracker.getSeatIndex(player.getUUID());
+            if(seatIndex != -1)
+            {
+                this.onPlayerChangeSeat(player, -1, seatIndex);
+            }
+        }
     }
 
     @Override
@@ -862,7 +883,8 @@ public abstract class VehicleEntity extends Entity implements IEntityAdditionalS
                 {
                     Seat seat = properties.getSeats().get(seatIndex);
                     Vec3 seatVec = seat.getPosition().add(0, properties.getAxleOffset() + properties.getWheelOffset(), 0).scale(properties.getBodyTransform().getScale()).multiply(-1, 1, 1).add(properties.getBodyTransform().getTranslate()).scale(0.0625).yRot(-(this.getYRot() + 180) * 0.017453292F);
-                    return new Vec3(this.getX() - seatVec.x, this.getY() + seatVec.y - 0.35D, this.getZ() - seatVec.z);
+                    Vec3 attachment = passenger.getVehicleAttachmentPoint(this);
+                    return new Vec3(this.getX() - seatVec.x + attachment.x, this.getY() + seatVec.y - 0.35D + attachment.y, this.getZ() - seatVec.z + attachment.z);
                 }
             }
         }
@@ -916,37 +938,28 @@ public abstract class VehicleEntity extends Entity implements IEntityAdditionalS
     @Override
     protected void positionRider(Entity passenger, Entity.MoveFunction moveFunction)
     {
+        super.positionRider(passenger, moveFunction);
         if(this.hasPassenger(passenger))
         {
             int seatIndex = this.getSeatTracker().getSeatIndex(passenger.getUUID());
             if(seatIndex != -1)
             {
-                VehicleProperties properties = this.getProperties();
-                if(seatIndex >= 0 && seatIndex < properties.getSeats().size())
+                if(this.level().isClientSide() && VehicleHelper.canFollowVehicleOrientation(passenger))
                 {
-                    Seat seat = properties.getSeats().get(seatIndex);
-                    Vec3 seatVec = seat.getPosition().add(0, properties.getAxleOffset() + properties.getWheelOffset(), 0).scale(properties.getBodyTransform().getScale()).multiply(-1, 1, 1).add(properties.getBodyTransform().getTranslate()).scale(0.0625).yRot(-(this.getYRot() + 180) * 0.017453292F);
-                    moveFunction.accept(passenger, this.getX() - seatVec.x, this.getY() + seatVec.y - 0.35D, this.getZ() - seatVec.z);
-                    if(this.level().isClientSide() && VehicleHelper.canFollowVehicleOrientation(passenger))
+                    if(Config.CLIENT.immersiveCamera.get() && Config.CLIENT.shouldFollowPitch.get())
                     {
-                        //TODO launch the game to test this
-                        if(Config.CLIENT.immersiveCamera.get() && Config.CLIENT.shouldFollowPitch.get())
-                        {
-                            passenger.xRotO = passenger.getXRot();
-                            passenger.setXRot(this.getXRot() + this.passengerPitchOffset);
-                        }
-                        if(this.canApplyYawOffset(passenger) && Config.CLIENT.shouldFollowYaw.get())
-                        {
-                            passenger.setYRot(passenger.getYRot() - Mth.degreesDifference(this.getYRot() - this.passengerYawOffset, passenger.getYRot()));
-                            passenger.setYHeadRot(passenger.getYRot());
-                        }
+                        passenger.xRotO = passenger.getXRot();
+                        passenger.setXRot(this.getXRot() + this.passengerPitchOffset);
                     }
-                    this.clampYaw(passenger);
-                    return;
+                    if(this.canApplyYawOffset(passenger) && Config.CLIENT.shouldFollowYaw.get())
+                    {
+                        passenger.setYRot(passenger.getYRot() - Mth.degreesDifference(this.getYRot() - this.passengerYawOffset, passenger.getYRot()));
+                        passenger.setYHeadRot(passenger.getYRot());
+                    }
                 }
+                this.clampYaw(passenger);
             }
         }
-        super.positionRider(passenger, moveFunction);
     }
 
     protected void updatePassengerPosition(Entity passenger)

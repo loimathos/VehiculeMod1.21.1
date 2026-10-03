@@ -6,6 +6,8 @@ import com.mrcrayfish.vehicle.entity.properties.VehicleProperties;
 import com.mrcrayfish.vehicle.network.PacketHandler;
 import com.mrcrayfish.vehicle.network.message.MessageSyncPlayerSeat;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.network.FriendlyByteBuf;
@@ -64,7 +66,16 @@ public class SeatTracker
         VehicleEntity vehicle = this.vehicleRef.get();
         if(vehicle != null && !vehicle.level().isClientSide())
         {
-            PacketHandler.getPlayChannel().send(new MessageSyncPlayerSeat(vehicle.getId(), index, uuid), PacketDistributor.TRACKING_ENTITY.with(vehicle));
+            MessageSyncPlayerSeat packet = new MessageSyncPlayerSeat(vehicle.getId(), index, uuid);
+            PacketHandler.getPlayChannel().send(packet, PacketDistributor.TRACKING_ENTITY.with(vehicle));
+            if(vehicle.level() instanceof ServerLevel serverLevel)
+            {
+                ServerPlayer player = serverLevel.getServer().getPlayerList().getPlayer(uuid);
+                if(player != null)
+                {
+                    PacketHandler.getPlayChannel().send(packet, PacketDistributor.PLAYER.with(player));
+                }
+            }
         }
     }
 

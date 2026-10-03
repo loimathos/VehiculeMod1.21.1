@@ -88,9 +88,13 @@ public class ClientPlayHandler
                 int oldSeatIndex = vehicle.getSeatTracker().getSeatIndex(message.getUuid());
                 vehicle.getSeatTracker().setSeatIndex(message.getSeatIndex(), message.getUuid());
                 Entity passenger = vehicle.getPassengers().stream().filter(e -> e.getUUID().equals(message.getUuid())).findFirst().orElse(null);
-                if(passenger instanceof Player)
+                if(passenger == null && player.level() != null)
                 {
-                    vehicle.onPlayerChangeSeat((Player) passenger, oldSeatIndex, message.getSeatIndex());
+                    passenger = player.level().getPlayerByUUID(message.getUuid());
+                }
+                if(passenger instanceof Player passengerPlayer && vehicle.hasPassenger(passengerPlayer))
+                {
+                    vehicle.onPlayerChangeSeat(passengerPlayer, oldSeatIndex, message.getSeatIndex());
                 }
             }
         }
