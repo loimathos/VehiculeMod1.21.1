@@ -70,6 +70,13 @@ public abstract class HelicopterEntity extends PoweredVehicleEntity
     {
         this.motion = Vec3.ZERO;
 
+        if(this.getControllingPassenger() == null)
+        {
+            this.velocity = Vec3.ZERO;
+            this.bladeSpeed *= 0.95F;
+            return;
+        }
+
         boolean operating = this.canDrive() && this.getControllingPassenger() != null;
         Entity entity = this.getControllingPassenger();
         if(entity != null && this.isFlying() && operating)

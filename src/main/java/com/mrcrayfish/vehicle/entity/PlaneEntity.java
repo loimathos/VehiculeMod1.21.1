@@ -84,6 +84,13 @@ public abstract class PlaneEntity extends PoweredVehicleEntity
     {
         this.motion = Vec3.ZERO;
 
+        if(this.getControllingPassenger() == null)
+        {
+            this.velocity = Vec3.ZERO;
+            this.propellerSpeed *= 0.95F;
+            return;
+        }
+
         this.updatePropellerSpeed();
 
         // Updates the planes roll based on input from the player

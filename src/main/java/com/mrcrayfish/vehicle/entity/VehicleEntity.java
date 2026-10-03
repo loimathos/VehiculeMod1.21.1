@@ -531,7 +531,7 @@ public abstract class VehicleEntity extends Entity implements IEntityAdditionalS
         this.lerpZ = z;
         this.lerpYaw = (double) yaw;
         this.lerpPitch = (double) pitch;
-        this.lerpSteps = 10;
+        this.lerpSteps = posRotationIncrements;
     }
 
     @Override
@@ -542,6 +542,12 @@ public abstract class VehicleEntity extends Entity implements IEntityAdditionalS
 
     @Override
     public void push(double x, double y, double z) {}
+
+    @Override
+    public boolean isPushable()
+    {
+        return false;
+    }
 
     /**
      * Sets the time to count down from since the last time entity was hit.

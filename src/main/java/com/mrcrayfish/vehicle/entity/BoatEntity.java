@@ -40,6 +40,12 @@ public abstract class BoatEntity extends PoweredVehicleEntity
     {
         this.motion = Vec3.ZERO;
 
+        if(this.getControllingPassenger() == null)
+        {
+            this.velocity = Vec3.ZERO;
+            return;
+        }
+
         boolean operating = this.canDrive() && this.getControllingPassenger() != null;
         float throttle = operating ? this.getThrottle() : 0F;
         float steeringAngle = this.getSteeringAngle();

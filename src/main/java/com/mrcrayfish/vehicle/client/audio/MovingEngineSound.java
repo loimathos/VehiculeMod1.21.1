@@ -50,8 +50,9 @@ public class MovingEngineSound extends AbstractTickableSoundInstance
 
         PoweredVehicleEntity vehicle = this.vehicleRef.get();
         Player player = this.playerRef.get();
-        if(vehicle == null || player == null || ((vehicle.getControllingPassenger() == null || !vehicle.isEnginePowered()) && this.volume <= 0.05F) || !vehicle.isAlive())
+        if(vehicle == null || player == null || !vehicle.isAlive() || vehicle.getControllingPassenger() == null || !vehicle.isEnginePowered())
         {
+            this.volume = 0.0F;
             this.stop();
             return;
         }

@@ -84,6 +84,12 @@ public abstract class LandVehicleEntity extends PoweredVehicleEntity
     {
         this.motion = Vec3.ZERO;
 
+        if(this.getControllingPassenger() == null)
+        {
+            this.velocity = Vec3.ZERO;
+            return;
+        }
+
         VehicleProperties properties = this.getProperties();
 
         // Gets the forward vector of the vehicle

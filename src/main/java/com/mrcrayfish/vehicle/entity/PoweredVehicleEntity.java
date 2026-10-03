@@ -314,26 +314,43 @@ public abstract class PoweredVehicleEntity extends VehicleEntity implements Cont
         if(this.level().isClientSide())
         {
             this.onClientUpdate();
-            if(!this.isControlledByLocalInstance())
-            {
-                this.setDeltaMovement(Vec3.ZERO);
-                this.motion = Vec3.ZERO;
-                return;
-            }
         }
 
         Entity controllingPassenger = this.getControllingPassenger();
 
-        /* If there driver, create particles */
-        if(controllingPassenger != null)
-        {
-            this.createParticles();
-        }
-        else
+        if(controllingPassenger == null)
         {
             this.setThrottle(0F);
             this.steeringAngle.set(this, 0F);
+            this.motion = Vec3.ZERO;
+
+            this.updateVehicleMotion();
+            this.updateWheelPositions();
+
+            if(!this.level().isClientSide())
+            {
+                boolean inWater = this.isInWater() || this.isInFluidType();
+                boolean hasSupport = this.onGround() || !this.level().noCollision(this, this.getBoundingBox().move(0, -0.05, 0));
+
+                if(!hasSupport && !inWater)
+                {
+                    this.setDeltaMovement(new Vec3(0, Math.max(this.getDeltaMovement().y - 0.08, -2.0), 0));
+                    this.move(MoverType.SELF, this.getDeltaMovement());
+                }
+                else
+                {
+                    this.setDeltaMovement(Vec3.ZERO);
+                }
+            }
+            else
+            {
+                this.setDeltaMovement(Vec3.ZERO);
+            }
+            return;
         }
+
+        /* If there driver, create particles */
+        this.createParticles();
 
         /* Handle the current speed of the vehicle based on rider's forward movement */
         this.updateTurning();
@@ -348,6 +365,14 @@ public abstract class PoweredVehicleEntity extends VehicleEntity implements Cont
         this.yRotO += (deltaRot < -180) ? 360F : (deltaRot >= 180) ? -360F : 0F;
 
         this.updateWheelPositions();
+
+        // If on client and not controlled locally (e.g. observing another player drive), don't predict movement
+        if(this.level().isClientSide() && !this.isControlledByLocalInstance())
+        {
+            this.setDeltaMovement(Vec3.ZERO);
+            this.motion = Vec3.ZERO;
+            return;
+        }
 
         // Move vehicle
         this.move(MoverType.SELF, this.getDeltaMovement().add(this.motion));
@@ -487,6 +512,7 @@ public abstract class PoweredVehicleEntity extends VehicleEntity implements Cont
     public void onClientUpdate()
     {
         this.prevRenderWheelAngle = this.renderWheelAngle;
+        this.updateEngineSound();
 
         Entity entity = this.getControllingPassenger();
         if(entity instanceof LivingEntity && entity.equals(Minecraft.getInstance().player))
@@ -1124,6 +1150,12 @@ public abstract class PoweredVehicleEntity extends VehicleEntity implements Cont
     @OnlyIn(Dist.CLIENT)
     protected void updateEngineSound()
     {
+        if(this.getControllingPassenger() == null || !this.isEnginePowered())
+        {
+            this.engineVolume = 0.0F;
+            return;
+        }
+
         if(this.charging)
         {
             this.enginePitch = this.getMinEnginePitch() + (this.getMaxEnginePitch() - this.getMinEnginePitch()) * 0.75F * this.chargingAmount;
@@ -1131,7 +1163,7 @@ public abstract class PoweredVehicleEntity extends VehicleEntity implements Cont
         }
 
         this.enginePitch = this.getMinEnginePitch() + (this.getMaxEnginePitch() - this.getMinEnginePitch()) * (float) Math.abs(this.getSpeed() / 25F);
-        this.engineVolume = this.getControllingPassenger() != null && this.isEnginePowered() ? 1.0F : 0.001F;
+        this.engineVolume = 1.0F;
     }
 
     @OnlyIn(Dist.CLIENT)
