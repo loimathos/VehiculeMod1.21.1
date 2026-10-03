@@ -157,8 +157,7 @@ public class CameraHelper
             .add(properties.getBodyTransform().getTranslate())
             .scale(0.0625);
 
-        Vec3 attachmentPoint = player.getVehicleAttachmentPoint(vehicle);
-        double eyeHeight = player.getEyeHeight() - attachmentPoint.y;
+        double eyeHeight = player.getEyeHeight() - 0.35D;
         Vector3f headPos = new Vector3f((float) -seatVec.x, (float) (seatVec.y + eyeHeight), (float) -seatVec.z);
 
         Quaternionf vehicleOrientation = MathUtil.slerp(this.prevRotation, this.currentRotation, partialTicks);
@@ -226,8 +225,7 @@ public class CameraHelper
                     .multiply(-1, 1, 1)
                     .add(properties.getBodyTransform().getTranslate())
                     .scale(0.0625);
-                Vec3 attachmentPoint = player.getVehicleAttachmentPoint(vehicle);
-                double eyeHeight = player.getEyeHeight() - attachmentPoint.y;
+                double eyeHeight = player.getEyeHeight() - 0.35D;
                 Vector3f headPos = new Vector3f((float) -seatVec.x, (float) (seatVec.y + eyeHeight), (float) -seatVec.z);
                 headPos.rotate(vehicleOrientation);
                 focusX = vehicleX + headPos.x();

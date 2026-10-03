@@ -856,7 +856,7 @@ public abstract class VehicleEntity extends Entity implements IEntityAdditionalS
                 {
                     Seat seat = properties.getSeats().get(seatIndex);
                     Vec3 seatVec = seat.getPosition().add(0, properties.getAxleOffset() + properties.getWheelOffset(), 0).scale(properties.getBodyTransform().getScale()).multiply(-1, 1, 1).add(properties.getBodyTransform().getTranslate()).scale(0.0625).yRot(-(this.getYRot() + 180) * 0.017453292F);
-                    return new Vec3(this.getX() - seatVec.x, this.getY() + seatVec.y, this.getZ() - seatVec.z);
+                    return new Vec3(this.getX() - seatVec.x, this.getY() + seatVec.y - 0.35D, this.getZ() - seatVec.z);
                 }
             }
         }
@@ -910,25 +910,37 @@ public abstract class VehicleEntity extends Entity implements IEntityAdditionalS
     @Override
     protected void positionRider(Entity passenger, Entity.MoveFunction moveFunction)
     {
-        super.positionRider(passenger, moveFunction);
         if(this.hasPassenger(passenger))
         {
-            if(this.level().isClientSide() && VehicleHelper.canFollowVehicleOrientation(passenger))
+            int seatIndex = this.getSeatTracker().getSeatIndex(passenger.getUUID());
+            if(seatIndex != -1)
             {
-                //TODO launch the game to test this
-                if(Config.CLIENT.immersiveCamera.get() && Config.CLIENT.shouldFollowPitch.get())
+                VehicleProperties properties = this.getProperties();
+                if(seatIndex >= 0 && seatIndex < properties.getSeats().size())
                 {
-                    passenger.xRotO = passenger.getXRot();
-                    passenger.setXRot(this.getXRot() + this.passengerPitchOffset);
-                }
-                if(this.canApplyYawOffset(passenger) && Config.CLIENT.shouldFollowYaw.get())
-                {
-                    passenger.setYRot(passenger.getYRot() - Mth.degreesDifference(this.getYRot() - this.passengerYawOffset, passenger.getYRot()));
-                    passenger.setYHeadRot(passenger.getYRot());
+                    Seat seat = properties.getSeats().get(seatIndex);
+                    Vec3 seatVec = seat.getPosition().add(0, properties.getAxleOffset() + properties.getWheelOffset(), 0).scale(properties.getBodyTransform().getScale()).multiply(-1, 1, 1).add(properties.getBodyTransform().getTranslate()).scale(0.0625).yRot(-(this.getYRot() + 180) * 0.017453292F);
+                    moveFunction.accept(passenger, this.getX() - seatVec.x, this.getY() + seatVec.y - 0.35D, this.getZ() - seatVec.z);
+                    if(this.level().isClientSide() && VehicleHelper.canFollowVehicleOrientation(passenger))
+                    {
+                        //TODO launch the game to test this
+                        if(Config.CLIENT.immersiveCamera.get() && Config.CLIENT.shouldFollowPitch.get())
+                        {
+                            passenger.xRotO = passenger.getXRot();
+                            passenger.setXRot(this.getXRot() + this.passengerPitchOffset);
+                        }
+                        if(this.canApplyYawOffset(passenger) && Config.CLIENT.shouldFollowYaw.get())
+                        {
+                            passenger.setYRot(passenger.getYRot() - Mth.degreesDifference(this.getYRot() - this.passengerYawOffset, passenger.getYRot()));
+                            passenger.setYHeadRot(passenger.getYRot());
+                        }
+                    }
+                    this.clampYaw(passenger);
+                    return;
                 }
             }
-            this.clampYaw(passenger);
         }
+        super.positionRider(passenger, moveFunction);
     }
 
     protected void updatePassengerPosition(Entity passenger)
